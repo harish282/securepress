@@ -8,9 +8,15 @@ use SecurePress\Core\Config\Config;
 use SecurePress\Core\Logging\FileLogger;
 use SecurePress\Core\Logging\LoggerInterface;
 use SecurePress\Core\Logging\NullLogger;
+use SecurePress\Core\Http\RouteGuardRegistry;
+use SecurePress\Core\Middleware\MiddlewareManager;
+use SecurePress\Core\Middleware\MiddlewarePipeline;
+use SecurePress\Core\Middleware\MiddlewareRegistry;
+use SecurePress\Core\Middleware\MiddlewareStack;
 use SecurePress\Core\Requirements\SystemRequirementsChecker;
 use SecurePress\Core\Support\WpHelper;
 use SecurePress\Core\View\View;
+use SecurePress\Facades\Security;
 
 final class Plugin
 {
@@ -32,6 +38,7 @@ final class Plugin
         }
 
         $this->container->get(LoggerInterface::class)->info('SecurePress plugin booted.');
+        Security::bootstrap($this->container);
         $this->registerAdminHooks();
     }
 
@@ -119,6 +126,30 @@ final class Plugin
             static fn (Container $container): SystemRequirementsChecker => new SystemRequirementsChecker(
                 $container->get(Config::class),
                 $container->get(LoggerInterface::class)
+            )
+        );
+        $this->container->singleton(
+            MiddlewareRegistry::class,
+            static fn (): MiddlewareRegistry => new MiddlewareRegistry()
+        );
+        $this->container->singleton(
+            MiddlewareStack::class,
+            static fn (): MiddlewareStack => new MiddlewareStack()
+        );
+        $this->container->singleton(
+            RouteGuardRegistry::class,
+            static fn (): RouteGuardRegistry => new RouteGuardRegistry()
+        );
+        $this->container->singleton(
+            MiddlewarePipeline::class,
+            static fn (): MiddlewarePipeline => new MiddlewarePipeline()
+        );
+        $this->container->singleton(
+            MiddlewareManager::class,
+            fn (Container $container): MiddlewareManager => new MiddlewareManager(
+                $container->get(MiddlewareRegistry::class),
+                $container->get(MiddlewarePipeline::class),
+                $container
             )
         );
     }
