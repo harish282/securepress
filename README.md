@@ -36,6 +36,12 @@ Core principles:
 * [ ] Beta Release
 * [ ] Public Launch
 
+## Agile Roadmap
+
+* [ ] Roadmap document created: [`ROADMAP_AGILE.md`](ROADMAP_AGILE.md)
+* [ ] Sprint issues created in GitHub project
+* [ ] Sprint 0 initialized
+
 ---
 
 # Core Features
