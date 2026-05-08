@@ -9,6 +9,7 @@ use SecurePress\Core\Logging\FileLogger;
 use SecurePress\Core\Logging\LoggerInterface;
 use SecurePress\Core\Logging\NullLogger;
 use SecurePress\Core\Requirements\SystemRequirementsChecker;
+use SecurePress\Core\Support\WpHelper;
 
 final class Plugin
 {
@@ -24,7 +25,7 @@ final class Plugin
     {
         $requirements = $this->container->get(SystemRequirementsChecker::class);
         if (!$requirements->passes()) {
-            $this->wpAddAction('admin_notices', [$this, 'renderRequirementsNotice']);
+            WpHelper::addAction('admin_notices', [$this, 'renderRequirementsNotice']);
 
             return;
         }
@@ -35,7 +36,7 @@ final class Plugin
 
     public function renderRequirementsNotice(): void
     {
-        if (!$this->currentUserCan('manage_options')) {
+        if (!WpHelper::currentUserCan('manage_options')) {
             return;
         }
 
@@ -46,14 +47,14 @@ final class Plugin
 
         echo '<div class="notice notice-error"><p><strong>SecurePress:</strong></p><ul>';
         foreach ($errors as $error) {
-            echo '<li>' . $this->escapeHtml($error) . '</li>';
+            echo '<li>' . WpHelper::escapeHtml($error) . '</li>';
         }
         echo '</ul></div>';
     }
 
     public function renderMuLoaderNotice(): void
     {
-        if (!$this->currentUserCan('manage_options')) {
+        if (!WpHelper::currentUserCan('manage_options')) {
             return;
         }
 
@@ -61,7 +62,7 @@ final class Plugin
             return;
         }
 
-        $screenId = $this->getCurrentScreenId();
+        $screenId = WpHelper::getCurrentScreenId();
         if ($screenId !== 'plugins') {
             return;
         }
@@ -72,9 +73,9 @@ final class Plugin
 
         echo '<div class="notice notice-warning"><p><strong>SecurePress:</strong> MU loader is not installed. ';
         echo 'For earliest request monitoring, copy the loader file now.</p>';
-        echo '<p><strong>Copy from:</strong> <code>' . $this->escapeHtml($templatePath) . '</code><br />';
-        echo '<strong>Copy to:</strong> <code>' . $this->escapeHtml($expectedPath) . '</code><br />';
-        echo '<strong>Guide:</strong> <code>' . $this->escapeHtml($guidePath) . '</code></p></div>';
+        echo '<p><strong>Copy from:</strong> <code>' . WpHelper::escapeHtml($templatePath) . '</code><br />';
+        echo '<strong>Copy to:</strong> <code>' . WpHelper::escapeHtml($expectedPath) . '</code><br />';
+        echo '<strong>Guide:</strong> <code>' . WpHelper::escapeHtml($guidePath) . '</code></p></div>';
     }
 
     /**
@@ -86,7 +87,7 @@ final class Plugin
     {
         unset($pluginData, $status);
 
-        if ($pluginFile !== $this->pluginBasename(SECUREPRESS_FILE)) {
+        if ($pluginFile !== WpHelper::pluginBasename(SECUREPRESS_FILE)) {
             return $pluginMeta;
         }
 
@@ -121,12 +122,12 @@ final class Plugin
 
     private function registerAdminHooks(): void
     {
-        if (!$this->isAdmin()) {
+        if (!WpHelper::isAdmin()) {
             return;
         }
 
-        $this->wpAddAction('admin_notices', [$this, 'renderMuLoaderNotice']);
-        $this->wpAddFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
+        WpHelper::addAction('admin_notices', [$this, 'renderMuLoaderNotice']);
+        WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
     }
 
     private function isMuLoaderInstalled(): bool
@@ -143,67 +144,4 @@ final class Plugin
         return rtrim($muDirectory, '/') . '/' . SECUREPRESS_MU_LOADER_FILENAME;
     }
 
-    private function wpAddAction(string $hook, array $callback, int $priority = 10, int $acceptedArgs = 1): void
-    {
-        if (\function_exists('add_action')) {
-            \call_user_func('add_action', $hook, $callback, $priority, $acceptedArgs);
-        }
-    }
-
-    private function wpAddFilter(string $hook, array $callback, int $priority = 10, int $acceptedArgs = 1): void
-    {
-        if (\function_exists('add_filter')) {
-            \call_user_func('add_filter', $hook, $callback, $priority, $acceptedArgs);
-        }
-    }
-
-    private function currentUserCan(string $capability): bool
-    {
-        if (!\function_exists('current_user_can')) {
-            return false;
-        }
-
-        return (bool) \call_user_func('current_user_can', $capability);
-    }
-
-    private function getCurrentScreenId(): ?string
-    {
-        if (!\function_exists('get_current_screen')) {
-            return null;
-        }
-
-        $screen = \call_user_func('get_current_screen');
-        if (!is_object($screen) || !isset($screen->id) || !is_string($screen->id)) {
-            return null;
-        }
-
-        return $screen->id;
-    }
-
-    private function escapeHtml(string $value): string
-    {
-        if (\function_exists('esc_html')) {
-            return (string) \call_user_func('esc_html', $value);
-        }
-
-        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
-    }
-
-    private function pluginBasename(string $file): string
-    {
-        if (\function_exists('plugin_basename')) {
-            return (string) \call_user_func('plugin_basename', $file);
-        }
-
-        return basename($file);
-    }
-
-    private function isAdmin(): bool
-    {
-        if (!\function_exists('is_admin')) {
-            return false;
-        }
-
-        return (bool) \call_user_func('is_admin');
-    }
 }
