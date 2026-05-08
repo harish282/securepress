@@ -10,6 +10,7 @@ use SecurePress\Core\Logging\LoggerInterface;
 use SecurePress\Core\Logging\NullLogger;
 use SecurePress\Core\Requirements\SystemRequirementsChecker;
 use SecurePress\Core\Support\WpHelper;
+use SecurePress\Core\View\ViewRenderer;
 
 final class Plugin
 {
@@ -45,11 +46,9 @@ final class Plugin
             return;
         }
 
-        echo '<div class="notice notice-error"><p><strong>SecurePress:</strong></p><ul>';
-        foreach ($errors as $error) {
-            echo '<li>' . WpHelper::escapeHtml($error) . '</li>';
-        }
-        echo '</ul></div>';
+        $this->container->get(ViewRenderer::class)->render('admin.notices.requirements', [
+            'errors' => $errors,
+        ]);
     }
 
     public function renderMuLoaderNotice(): void
@@ -71,11 +70,11 @@ final class Plugin
         $templatePath = SECUREPRESS_MU_LOADER_TEMPLATE_PATH;
         $guidePath = SECUREPRESS_PATH . '/docs/MU_LOADER_INSTALL.md';
 
-        echo '<div class="notice notice-warning"><p><strong>SecurePress:</strong> MU loader is not installed. ';
-        echo 'For earliest request monitoring, copy the loader file now.</p>';
-        echo '<p><strong>Copy from:</strong> <code>' . WpHelper::escapeHtml($templatePath) . '</code><br />';
-        echo '<strong>Copy to:</strong> <code>' . WpHelper::escapeHtml($expectedPath) . '</code><br />';
-        echo '<strong>Guide:</strong> <code>' . WpHelper::escapeHtml($guidePath) . '</code></p></div>';
+        $this->container->get(ViewRenderer::class)->render('admin.notices.mu-loader-missing', [
+            'templatePath' => $templatePath,
+            'expectedPath' => $expectedPath,
+            'guidePath' => $guidePath,
+        ]);
     }
 
     /**
@@ -101,6 +100,10 @@ final class Plugin
     private function registerServices(): void
     {
         $this->container->singleton(Config::class, static fn (): Config => new Config());
+        $this->container->singleton(
+            ViewRenderer::class,
+            static fn (): ViewRenderer => new ViewRenderer(SECUREPRESS_VIEWS_PATH)
+        );
 
         $this->container->singleton(LoggerInterface::class, function (Container $container): LoggerInterface {
             $config = $container->get(Config::class);

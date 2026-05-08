@@ -34,6 +34,14 @@ if (!defined('SECUREPRESS_LOG_PATH')) {
     define('SECUREPRESS_LOG_PATH', SECUREPRESS_STORAGE_PATH . '/logs');
 }
 
+if (!defined('SECUREPRESS_RESOURCES_PATH')) {
+    define('SECUREPRESS_RESOURCES_PATH', SECUREPRESS_PATH . '/resources');
+}
+
+if (!defined('SECUREPRESS_VIEWS_PATH')) {
+    define('SECUREPRESS_VIEWS_PATH', SECUREPRESS_RESOURCES_PATH . '/views');
+}
+
 if (!defined('SECUREPRESS_MU_LOADER_FILENAME')) {
     define('SECUREPRESS_MU_LOADER_FILENAME', '00-securepress-loader.php');
 }
