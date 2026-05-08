@@ -12,7 +12,16 @@ use SecurePress\Core\Middleware\MiddlewareRegistry;
 use SecurePress\Core\Middleware\MiddlewareStack;
 
 /**
- * Facade for security-related APIs. Bootstrapped from the plugin container.
+ * Facade-style entry point for security APIs.
+ *
+ * Usage (after WordPress bootstrap):
+ *
+ * ```
+ * SecurePress\Facades\Security::middleware([RateLimit::class, CsrfProtection::class]);
+ * SecurePress\Facades\Security::protectRoute('/admin/export');
+ * ```
+ *
+ * Call {@see Security::bootstrap()} from the plugin; third-party code should not bootstrap manually.
  */
 final class Security
 {
@@ -24,6 +33,12 @@ final class Security
     }
 
     /**
+     * Registers middleware classes.
+     *
+     * Each class-string is queued on {@see MiddlewareStack}. If the class is already loadable and
+     * implements {@see MiddlewareInterface}, it is also registered on {@see MiddlewareRegistry}
+     * under FQCN. Unknown classes remain on the stack for later validation when the kernel runs.
+     *
      * @param array<int, class-string> $middleware
      */
     public static function middleware(array $middleware): void
@@ -46,6 +61,7 @@ final class Security
     }
 
     /**
+     * @throws LogicException Until the signed-url module ships.
      * @param int|null $expires Seconds until expiry (named argument: expires: 3600).
      */
     public static function signedUrl(string $path, ?int $expires = null): string
@@ -54,6 +70,9 @@ final class Security
         throw new LogicException('SecurePress::signedUrl() is not implemented yet.');
     }
 
+    /**
+     * Records a URI pattern so the middleware / route kernel can enforce it later.
+     */
     public static function protectRoute(string $route): void
     {
         $route = trim($route);
@@ -63,6 +82,9 @@ final class Security
         self::routeGuards()->register($route);
     }
 
+    /**
+     * @throws LogicException Until the CSRF verifier is wired to WordPress / custom tokens.
+     */
     public static function verifyCsrf(): bool
     {
         throw new LogicException('SecurePress::verifyCsrf() is not implemented yet.');
