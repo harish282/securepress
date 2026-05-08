@@ -6,7 +6,7 @@ namespace SecurePress\Core\View;
 
 use RuntimeException;
 
-final class ViewRenderer
+final class View
 {
     public function __construct(private readonly string $basePath)
     {

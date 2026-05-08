@@ -10,7 +10,7 @@ use SecurePress\Core\Logging\LoggerInterface;
 use SecurePress\Core\Logging\NullLogger;
 use SecurePress\Core\Requirements\SystemRequirementsChecker;
 use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\View\ViewRenderer;
+use SecurePress\Core\View\View;
 
 final class Plugin
 {
@@ -46,7 +46,7 @@ final class Plugin
             return;
         }
 
-        $this->container->get(ViewRenderer::class)->render('admin.notices.requirements', [
+        $this->container->get(View::class)->render('admin.notices.requirements', [
             'errors' => $errors,
         ]);
     }
@@ -70,7 +70,7 @@ final class Plugin
         $templatePath = SECUREPRESS_MU_LOADER_TEMPLATE_PATH;
         $guidePath = SECUREPRESS_PATH . '/docs/MU_LOADER_INSTALL.md';
 
-        $this->container->get(ViewRenderer::class)->render('admin.notices.mu-loader-missing', [
+        $this->container->get(View::class)->render('admin.notices.mu-loader-missing', [
             'templatePath' => $templatePath,
             'expectedPath' => $expectedPath,
             'guidePath' => $guidePath,
@@ -101,8 +101,8 @@ final class Plugin
     {
         $this->container->singleton(Config::class, static fn (): Config => new Config());
         $this->container->singleton(
-            ViewRenderer::class,
-            static fn (): ViewRenderer => new ViewRenderer(SECUREPRESS_VIEWS_PATH)
+            View::class,
+            static fn (): View => new View(SECUREPRESS_VIEWS_PATH)
         );
 
         $this->container->singleton(LoggerInterface::class, function (Container $container): LoggerInterface {
