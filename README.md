@@ -42,6 +42,16 @@ Core principles:
 * [ ] Sprint issues created in GitHub project
 * [ ] Sprint 0 initialized
 
+## MU Loader (Early Load)
+
+To make SecurePress load earlier in WordPress lifecycle, install the MU loader:
+
+* [ ] Copy `mu-loader/00-securepress-loader.php` to `wp-content/mu-plugins/00-securepress-loader.php`
+* [ ] Keep `SecurePress` active in normal plugin list
+* [ ] Verify plugin list shows: `MU Loader: Installed`
+
+Install guide: [`docs/MU_LOADER_INSTALL.md`](docs/MU_LOADER_INSTALL.md)
+
 ---
 
 # Core Features
