@@ -27,6 +27,9 @@ final class WpStubState
     /** @var array<string, string> */
     public static array $salts = [];
 
+    /** @var array<string, mixed> */
+    public static array $options = [];
+
     private static int $createCounter = 0;
 
     public static function reset(): void
@@ -37,7 +40,30 @@ final class WpStubState
         self::$transients = [];
         self::$now = time();
         self::$salts = [];
+        self::$options = [];
         self::$createCounter = 0;
+    }
+
+    public static function getOption(string $name, mixed $default = false): mixed
+    {
+        return array_key_exists($name, self::$options) ? self::$options[$name] : $default;
+    }
+
+    public static function updateOption(string $name, mixed $value): bool
+    {
+        self::$options[$name] = $value;
+
+        return true;
+    }
+
+    public static function deleteOption(string $name): bool
+    {
+        if (!array_key_exists($name, self::$options)) {
+            return false;
+        }
+        unset(self::$options[$name]);
+
+        return true;
     }
 
     public static function saltFor(string $scheme): string

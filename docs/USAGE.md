@@ -1,15 +1,16 @@
 # SecurePress Usage Guide
 
-This guide shows what SecurePress does once you install and activate it, and how to use the three security primitives that ship in the current build:
+This guide shows what SecurePress does once you install and activate it, and how to use the security primitives that ship in the current build:
 
 1. [Lifecycle: what happens on activation](#lifecycle-what-happens-on-activation)
 2. [The middleware pipeline](#the-middleware-pipeline)
 3. [CSRF protection](#csrf-protection)
 4. [Rate limiting](#rate-limiting)
 5. [Signed URLs](#signed-urls)
-6. [Configuration reference](#configuration-reference)
-7. [Recipes / cookbook](#recipes--cookbook)
-8. [Troubleshooting](#troubleshooting)
+6. [Security headers](#security-headers)
+7. [Configuration reference](#configuration-reference)
+8. [Recipes / cookbook](#recipes--cookbook)
+9. [Troubleshooting](#troubleshooting)
 
 > **Convention.** All examples use the `SecurePress\Facades\Security` facade. Import it once at the top of your file:
 >
@@ -36,8 +37,10 @@ When you activate SecurePress (and optionally install the MU loader for earlier 
      - `RateLimiter`, `RateLimitMiddleware`, `RateLimitStoreInterface` (transient-backed)
      - `CsrfProtectionMiddleware`
      - `UrlSigner`, `SignedUrlMiddleware`, `NonceStoreInterface` (transient-backed), `SecretProviderInterface` (`SECUREPRESS_URL_SECRET` env → `wp_salt('auth')`)
+     - `SecurityHeadersOptions`, `HeaderRegistryFactory`, `SecurityHeadersDispatcher`, `SecurityHeadersMiddleware`, `SecurityHeadersSettingsPage`
    - Calls `Security::bootstrap($container)` so the static facade can resolve services.
-   - Registers admin hooks (notices, plugin row meta).
+   - Registers the **security headers dispatcher** on the `send_headers` hook (priority 1) so the configured headers are emitted on every WordPress response.
+   - Registers admin hooks (notices, plugin row meta, **Settings → Security Headers** page).
 
 3. **Your code** registers middleware and protected routes during `init` or earlier:
    ```php
@@ -470,9 +473,183 @@ $result['signed_url'] === [
 
 ---
 
+## Security headers
+
+The Security Headers Manager lets administrators emit a curated set of HTTP security response headers on every WordPress response. Each header is independently toggleable from the admin UI; the same registry powers both the global dispatcher and an opt-in middleware for per-route customisation.
+
+### Where to find it
+
+After activating the plugin, log in as an administrator and visit:
+
+```
+Settings → Security Headers
+```
+
+You'll see one section per supported header:
+
+| Header | Default | Why this default |
+|---|---|---|
+| `Strict-Transport-Security` (HSTS) | **Off** | Hard-locks the domain to HTTPS for a year+ once enabled. Enable only when you've verified HTTPS works site-wide; never enable `preload` casually. |
+| `Content-Security-Policy` (CSP) | **Off** (Report-Only when on) | Most likely to break sites — start in Report-Only, watch the browser console / your reporting endpoint, then flip to enforce. |
+| `X-Frame-Options` | **On** — `SAMEORIGIN` | Blocks clickjacking from third-party origins while keeping the WP customizer / preview iframes working. |
+| `Referrer-Policy` | **On** — `strict-origin-when-cross-origin` | Modern browser default; sends full URL same-origin, only the origin to less-secure cross-origin destinations. |
+| `Permissions-Policy` | **On** — denies geolocation, camera, microphone, payment, usb, sensors, FLoC | Most content sites don't need any of these APIs. Includes `interest-cohort=()` to opt out of Google FLoC / Topics. |
+| `X-Content-Type-Options` | **On** — `nosniff` | Disables MIME-sniffing. Effectively zero risk of breaking anything. |
+
+### How emission works
+
+```
+[WP request] → send_headers hook (priority 1)
+        ↓
+SecurityHeadersDispatcher::send()
+        ↓
+HeaderRegistryFactory::make()  ←  SecurityHeadersOptions::all()
+        ↓                                 ↓
+HeaderRegistry::emit()        ←  config/plugin.php  +  wp_options[securepress_security_headers]
+        ↓
+header('Strict-Transport-Security: …')
+header('X-Frame-Options: …')
+…
+```
+
+The dispatcher hooks `send_headers` at priority `1`, so it runs before any plugin or theme that uses the default priority of `10` and gets stomped by anything later that sets the same header on purpose. It is also guarded by `headers_sent()` — if WordPress has already flushed output, the dispatcher silently does nothing rather than triggering a PHP warning.
+
+### Toggling from the admin UI
+
+For each header section:
+
+1. Tick **Enable** to turn the header on.
+2. Adjust the section-specific fields (max-age, policy string, allowlist).
+3. Click **Save Changes**.
+
+Save is handled by the standard WordPress Settings API, which already gives you:
+
+- A nonce for CSRF protection on the form submission.
+- A `manage_options` capability check.
+- Persistence into a single autoloaded `wp_option` named `securepress_security_headers`.
+- Sanitisation through `SecurityHeadersOptions::sanitize()`, which coerces `'1'`/`'on'`/`'true'` to booleans, clamps negative `max-age` to zero, validates `X-Frame-Options` and `Referrer-Policy` against their allowed values, and trims policy strings.
+
+After saving, verify on the front of the site:
+
+```bash
+curl -sI https://example.com/ | grep -E '^(Strict-Transport-Security|Content-Security-Policy|X-Frame-Options|Referrer-Policy|Permissions-Policy|X-Content-Type-Options):'
+```
+
+### Header-specific guidance
+
+#### HSTS (Strict-Transport-Security)
+
+```
+Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+```
+
+- **Verify HTTPS works site-wide and on every subdomain you might enable** before turning this on.
+- Start with a small `max-age` (e.g. `300` = 5 minutes) for a few days, then bump to `31536000` (1 year) once you're confident.
+- `includeSubDomains` applies the policy to **all** subdomains — make sure every subdomain serves HTTPS, including any internal admin / API hosts.
+- `preload` is *one-way*. It bakes your domain into the browser-shipped HSTS preload list and is effectively impossible to remove. Only enable after submitting at <https://hstspreload.org>.
+
+#### CSP (Content-Security-Policy)
+
+The shipped default policy is intentionally conservative:
+
+```
+default-src 'self'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; font-src 'self' data:; connect-src 'self'
+```
+
+`'unsafe-inline'` is included for both styles and scripts because the WordPress admin and Gutenberg are full of inline `<style>`/`<script>` blocks. If you only enforce CSP on the front-end, you can tighten this considerably.
+
+**Recommended rollout:**
+
+1. Toggle **Enable CSP** on with **Report-Only mode** also on — this emits `Content-Security-Policy-Report-Only` so the browser reports violations without enforcing.
+2. Open the site, navigate the admin and front-end, watch the browser console for `Refused to load…` violations.
+3. Either widen the policy to allow legitimate sources, or remove the dependency.
+4. Once the console is quiet, untick **Report-Only mode** to switch to enforcing `Content-Security-Policy`.
+
+> **Tip.** A `report-uri` / `report-to` directive is not added by default. If you want centralised reporting, append it to the policy field, e.g.:
+>
+> ```
+> default-src 'self'; …; report-uri /wp-json/myplugin/v1/csp-report
+> ```
+
+#### X-Frame-Options
+
+Two valid values; the deprecated `ALLOW-FROM` is intentionally not exposed:
+
+| Value | Effect |
+|---|---|
+| `DENY` | The page can never be framed, even by your own origin. |
+| `SAMEORIGIN` | Only same-origin pages can frame this one (default). |
+
+For richer control (allowing specific external origins to frame your content), use a CSP `frame-ancestors` directive — it supersedes `X-Frame-Options` in modern browsers.
+
+#### Referrer-Policy
+
+Pick one from the dropdown. The eight values browsers support are listed in `ReferrerPolicyHeader::VALID_POLICIES`. The default `strict-origin-when-cross-origin` matches modern browser default behaviour and is a good balance of privacy and analytics utility.
+
+#### Permissions-Policy
+
+Format: comma-separated `feature=(allowlist)` directives. `()` denies the feature everywhere; `(self)` allows it only on your own origin; `(self "https://example.com")` adds an allowlist.
+
+The default policy denies a long list of APIs that most content sites don't use, including the Google FLoC / Topics tracking opt-out:
+
+```
+geolocation=(), camera=(), microphone=(), payment=(), usb=(), accelerometer=(), gyroscope=(), magnetometer=(), interest-cohort=()
+```
+
+If your site does use one of these (e.g. a webcam appointment plugin needs the camera), change that directive — for example, `camera=(self)`.
+
+#### X-Content-Type-Options
+
+The only valid value is `nosniff`. Safe to leave on; the only requirement is that your server emits accurate `Content-Type` headers (which WordPress and almost every CDN do).
+
+### Per-route headers via the middleware
+
+Most installs only need the dispatcher's site-wide emission. If you want **different** headers on a specific route — say, a tighter CSP for `/admin/sensitive-tool` — register `SecurityHeadersMiddleware` in the pipeline; the middleware merges registry headers into `$context['response']['headers']` while letting any header you set on the response win.
+
+```php
+use SecurePress\Facades\Security;
+use SecurePress\Middleware\SecurityHeadersMiddleware;
+use SecurePress\Middleware\CsrfProtectionMiddleware;
+
+Security::middleware([
+    SecurityHeadersMiddleware::class,
+    CsrfProtectionMiddleware::class,
+]);
+
+// inside your handler, before passing to the middleware manager:
+$context = [
+    'response' => ['headers' => [
+        'Content-Security-Policy' => "default-src 'none'; script-src 'self'",
+    ]],
+];
+```
+
+The route-level `Content-Security-Policy` will be emitted as-is; the registry-level `X-Frame-Options`, `Referrer-Policy`, etc. are still appended.
+
+### Programmatic configuration overrides
+
+The `SecurityHeadersOptions` resolver merges three sources, last-wins:
+
+1. The defaults baked into `config/plugin.php` (`security_headers.*`).
+2. Any keys present in `wp_options[securepress_security_headers]` (set by the admin UI or a deployment script).
+3. Per-route overrides (via the middleware pattern above).
+
+For deploy-time configuration without touching the admin UI, you can seed the option from `wp-config.php` or a CLI script:
+
+```php
+update_option('securepress_security_headers', [
+    'hsts' => ['enabled' => true, 'max_age' => 31_536_000, 'include_subdomains' => true],
+    'csp'  => ['enabled' => true, 'report_only' => false, 'policy' => "default-src 'self'"],
+]);
+```
+
+Any keys you omit fall back to their config defaults.
+
+---
+
 ## Configuration reference
 
-`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable.
+`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*`, which is intended to be configured from the admin UI (or via `update_option('securepress_security_headers', …)`).
 
 | Config key | ENV variable | Default | Used by |
 |---|---|---|---|
@@ -486,6 +663,20 @@ $result['signed_url'] === [
 | `rate_limit.limit` | — | `60` | global RateLimitMiddleware |
 | `rate_limit.window` | — | `60` | global RateLimitMiddleware (seconds) |
 | `signed_url.ttl_default` | `SECUREPRESS_SIGNED_URL_TTL` | `3600` | `Security::signedUrl()` when no `expires` is passed |
+| `security_headers.hsts.enabled` | — | `false` | HSTS dispatcher / middleware |
+| `security_headers.hsts.max_age` | — | `31536000` | HSTS `max-age` directive |
+| `security_headers.hsts.include_subdomains` | — | `false` | HSTS `includeSubDomains` flag |
+| `security_headers.hsts.preload` | — | `false` | HSTS `preload` flag (irreversible) |
+| `security_headers.csp.enabled` | — | `false` | CSP dispatcher / middleware |
+| `security_headers.csp.policy` | — | conservative WP-friendly policy | CSP directive string |
+| `security_headers.csp.report_only` | — | `true` | switch wire name to `Content-Security-Policy-Report-Only` |
+| `security_headers.x_frame_options.enabled` | — | `true` | X-Frame-Options dispatcher / middleware |
+| `security_headers.x_frame_options.value` | — | `SAMEORIGIN` | `DENY` or `SAMEORIGIN` |
+| `security_headers.referrer_policy.enabled` | — | `true` | Referrer-Policy dispatcher / middleware |
+| `security_headers.referrer_policy.policy` | — | `strict-origin-when-cross-origin` | one of the 8 standard values |
+| `security_headers.permissions_policy.enabled` | — | `true` | Permissions-Policy dispatcher / middleware |
+| `security_headers.permissions_policy.policy` | — | conservative deny-list | comma-separated `feature=(allowlist)` |
+| `security_headers.x_content_type_options.enabled` | — | `true` | emits `nosniff` |
 | (none) | `SECUREPRESS_URL_SECRET` | `wp_salt('auth')` | URL signing secret — **set this in production** |
 
 ### Recommended production setup
@@ -671,6 +862,68 @@ $nonce = WpHelper::createNonce(CsrfProtectionMiddleware::DEFAULT_ACTION);
 
 The `admin_post_my_form` handler runs the CSRF middleware as shown in [Use the middleware → manually](#manually-around-an-admin-postphp-handler).
 
+### Recipe: enable CSP gradually with reporting
+
+```php
+// 1. seed reasonable defaults from a deploy script
+update_option('securepress_security_headers', array_replace_recursive(
+    get_option('securepress_security_headers', []),
+    [
+        'csp' => [
+            'enabled'     => true,
+            'report_only' => true,
+            'policy'      => "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; report-uri /wp-json/myplugin/v1/csp-report",
+        ],
+    ]
+));
+
+// 2. expose a tiny REST endpoint that logs CSP violations
+add_action('rest_api_init', static function (): void {
+    register_rest_route('myplugin/v1', '/csp-report', [
+        'methods'             => 'POST',
+        'permission_callback' => '__return_true',
+        'callback'            => static function (\WP_REST_Request $request) {
+            error_log('CSP violation: ' . wp_json_encode($request->get_json_params()));
+            return new \WP_REST_Response(null, 204);
+        },
+    ]);
+});
+```
+
+Once your reports are quiet for a day or two, log into **Settings → Security Headers** and untick "Report-Only mode" to start enforcing.
+
+### Recipe: tighten headers for a sensitive admin tool
+
+```php
+use SecurePress\Facades\Security;
+use SecurePress\Middleware\SecurityHeadersMiddleware;
+
+Security::middleware([SecurityHeadersMiddleware::class]);
+
+add_action('admin_post_export_secrets', static function () use ($container): void {
+    if (!current_user_can('manage_options')) {
+        wp_die('Forbidden', '', ['response' => 403]);
+    }
+
+    $manager = $container->get(\SecurePress\Core\Middleware\MiddlewareManager::class);
+    $result  = $manager->handle([SecurityHeadersMiddleware::class], [
+        'response' => ['headers' => [
+            // a much tighter, page-specific CSP, just for this handler
+            'Content-Security-Policy' => "default-src 'none'; script-src 'self'; style-src 'self'",
+            'Cache-Control'           => 'no-store',
+        ]],
+    ]);
+
+    foreach ($result['response']['headers'] as $name => $value) {
+        header($name . ': ' . $value);
+    }
+
+    // ... emit the export ...
+});
+```
+
+The route-level `Content-Security-Policy` overrides the registry-level one (the middleware honors `array + array` precedence — left-hand side wins), while the registry's `X-Frame-Options`, `Referrer-Policy`, `X-Content-Type-Options`, etc. are still appended.
+
 ---
 
 ## Troubleshooting
@@ -717,6 +970,29 @@ Check server clock skew. The signer uses `time()` and the `expires` field is bou
 - Set `SECUREPRESS_URL_SECRET` in your server environment, or
 - Ensure `wp-includes/pluggable.php` is loaded before any code that calls `Security::signedUrl()`.
 
+### CSP breaks the WP admin / Gutenberg
+
+`'unsafe-inline'` is included by default in both `script-src` and `style-src` because Gutenberg and many admin screens emit inline `<script>` / `<style>`. If you removed `'unsafe-inline'` and the editor stopped working, either add it back or restrict the policy to non-admin URLs (e.g. apply it only on the front-end via a route-level middleware override, see ["Recipe: tighten headers for a sensitive admin tool"](#recipe-tighten-headers-for-a-sensitive-admin-tool)).
+
+### After enabling HSTS, my browser refuses to load the site over HTTP
+
+That's the headline feature. The browser remembers the policy for `max-age` seconds and will not connect over plain HTTP for that long, even if you remove the header. Recovery options:
+
+- Restore HTTPS — usually the right answer.
+- Clear HSTS for the domain in browser settings (`chrome://net-internals/#hsts` on Chromium, similar on Firefox / Safari).
+- Wait `max-age` seconds — this is why we ship `enabled: false` by default and recommend a small `max-age` (e.g. 5 minutes) when first turning HSTS on.
+
+If you toggled `preload`: there is no easy escape — see <https://hstspreload.org/#removal>.
+
+### Headers don't appear in `curl -I`
+
+Make sure:
+
+1. The plugin is actually active (it's a no-op while inactive).
+2. The header is enabled in **Settings → Security Headers** and saved.
+3. The page hits `send_headers` — most WP requests do, but `wp-cron.php` and a few admin AJAX endpoints can short-circuit before that point.
+4. No higher-priority `send_headers` hook (or a downstream proxy / CDN) is stripping the header. The dispatcher hooks at priority `1`, so most plugin-set headers will run after it; if something replaces a header you're trying to set, increase `Priority` or set the header at a different layer (Apache `Header set`, nginx `add_header`).
+
 ### Tests fail with "Undefined function wp_verify_nonce"
 
 You're running the plugin's tests without the bootstrap. From the plugin root:
@@ -732,13 +1008,12 @@ The test bootstrap (`tests/bootstrap.php`) loads stubs for `wp_verify_nonce`, `w
 
 ## What's NOT in this build (yet)
 
-The current build provides the **primitives** (signer, limiter, CSRF middleware, signed-URL middleware, secret/nonce stores, DI bindings, facade). Things still on the roadmap:
+The current build provides the **primitives** (signer, limiter, CSRF middleware, signed-URL middleware, security headers manager, secret/nonce stores, DI bindings, facade). Things still on the roadmap:
 
 - An HTTP **kernel** that automatically dispatches the middleware stack on every request matching a registered route — until then, integrate the pipeline manually as shown in the recipes above.
-- **Security headers** middleware (CSP, HSTS, X-Frame-Options, …)
 - **Audit logging**
 - **2FA** flows
 - **Bot/firewall** rules
-- Admin **dashboard** UI
+- Full admin **dashboard** UI (the Settings → Security Headers page is the first one shipped)
 
 See [`ROADMAP_AGILE.md`](../ROADMAP_AGILE.md) for the prioritized backlog.

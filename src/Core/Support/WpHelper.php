@@ -195,4 +195,83 @@ final class WpHelper
 
         return is_string($salt) ? $salt : '';
     }
+
+    public static function getOption(string $name, mixed $default = false): mixed
+    {
+        if (!\function_exists('get_option')) {
+            return $default;
+        }
+
+        return \call_user_func('get_option', $name, $default);
+    }
+
+    public static function updateOption(string $name, mixed $value, bool $autoload = true): bool
+    {
+        if (!\function_exists('update_option')) {
+            return false;
+        }
+
+        return (bool) \call_user_func('update_option', $name, $value, $autoload);
+    }
+
+    public static function deleteOption(string $name): bool
+    {
+        if (!\function_exists('delete_option')) {
+            return false;
+        }
+
+        return (bool) \call_user_func('delete_option', $name);
+    }
+
+    /**
+     * @param array<string, mixed> $args
+     */
+    public static function registerSetting(string $optionGroup, string $optionName, array $args = []): void
+    {
+        if (\function_exists('register_setting')) {
+            \call_user_func('register_setting', $optionGroup, $optionName, $args);
+        }
+    }
+
+    public static function addSettingsSection(string $id, string $title, callable $callback, string $page): void
+    {
+        if (\function_exists('add_settings_section')) {
+            \call_user_func('add_settings_section', $id, $title, $callback, $page);
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $args
+     */
+    public static function addSettingsField(string $id, string $title, callable $callback, string $page, string $section = 'default', array $args = []): void
+    {
+        if (\function_exists('add_settings_field')) {
+            \call_user_func('add_settings_field', $id, $title, $callback, $page, $section, $args);
+        }
+    }
+
+    public static function addOptionsPage(string $pageTitle, string $menuTitle, string $capability, string $menuSlug, callable $callback): void
+    {
+        if (\function_exists('add_options_page')) {
+            \call_user_func('add_options_page', $pageTitle, $menuTitle, $capability, $menuSlug, $callback);
+        }
+    }
+
+    public static function escapeAttribute(string $value): string
+    {
+        if (\function_exists('esc_attr')) {
+            return (string) \call_user_func('esc_attr', $value);
+        }
+
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
+
+    public static function escapeTextarea(string $value): string
+    {
+        if (\function_exists('esc_textarea')) {
+            return (string) \call_user_func('esc_textarea', $value);
+        }
+
+        return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+    }
 }

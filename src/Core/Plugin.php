@@ -4,7 +4,11 @@ declare(strict_types=1);
 
 namespace SecurePress\Core;
 
+use SecurePress\Admin\SecurityHeadersSettingsPage;
 use SecurePress\Core\Config\Config;
+use SecurePress\Core\Headers\HeaderRegistryFactory;
+use SecurePress\Core\Headers\SecurityHeadersDispatcher;
+use SecurePress\Core\Headers\SecurityHeadersOptions;
 use SecurePress\Core\Logging\FileLogger;
 use SecurePress\Core\Logging\LoggerInterface;
 use SecurePress\Core\Logging\NullLogger;
@@ -23,6 +27,7 @@ use SecurePress\Core\Url\UrlSigner;
 use SecurePress\Core\Url\WpSaltSecretProvider;
 use SecurePress\Middleware\CsrfProtectionMiddleware;
 use SecurePress\Middleware\RateLimitMiddleware;
+use SecurePress\Middleware\SecurityHeadersMiddleware;
 use SecurePress\Middleware\SignedUrlMiddleware;
 use SecurePress\Core\Requirements\SystemRequirementsChecker;
 use SecurePress\Core\Support\WpHelper;
@@ -50,6 +55,7 @@ final class Plugin
 
         $this->container->get(LoggerInterface::class)->info('SecurePress plugin booted.');
         Security::bootstrap($this->container);
+        $this->container->get(SecurityHeadersDispatcher::class)->register();
         $this->registerAdminHooks();
     }
 
@@ -210,6 +216,37 @@ final class Plugin
                 $container->get(LoggerInterface::class)
             )
         );
+        $this->container->singleton(
+            SecurityHeadersOptions::class,
+            static fn (Container $container): SecurityHeadersOptions => new SecurityHeadersOptions(
+                $container->get(Config::class)
+            )
+        );
+        $this->container->singleton(
+            HeaderRegistryFactory::class,
+            static fn (Container $container): HeaderRegistryFactory => new HeaderRegistryFactory(
+                $container->get(SecurityHeadersOptions::class)
+            )
+        );
+        $this->container->singleton(
+            SecurityHeadersDispatcher::class,
+            static fn (Container $container): SecurityHeadersDispatcher => new SecurityHeadersDispatcher(
+                $container->get(HeaderRegistryFactory::class)
+            )
+        );
+        $this->container->singleton(
+            SecurityHeadersMiddleware::class,
+            static fn (Container $container): SecurityHeadersMiddleware => new SecurityHeadersMiddleware(
+                $container->get(HeaderRegistryFactory::class)
+            )
+        );
+        $this->container->singleton(
+            SecurityHeadersSettingsPage::class,
+            static fn (Container $container): SecurityHeadersSettingsPage => new SecurityHeadersSettingsPage(
+                $container->get(SecurityHeadersOptions::class),
+                $container->get(View::class)
+            )
+        );
     }
 
     private function registerAdminHooks(): void
@@ -220,6 +257,7 @@ final class Plugin
 
         WpHelper::addAction('admin_notices', [$this, 'renderMuLoaderNotice']);
         WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
+        $this->container->get(SecurityHeadersSettingsPage::class)->register();
     }
 
     private function isMuLoaderInstalled(): bool

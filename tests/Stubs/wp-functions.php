@@ -82,3 +82,26 @@ if (!function_exists('wp_salt')) {
         return WpStubState::saltFor($scheme);
     }
 }
+
+if (!function_exists('get_option')) {
+    function get_option(string $name, mixed $default = false): mixed
+    {
+        return WpStubState::getOption($name, $default);
+    }
+}
+
+if (!function_exists('update_option')) {
+    function update_option(string $name, mixed $value, bool $autoload = true): bool
+    {
+        unset($autoload);
+
+        return WpStubState::updateOption($name, $value);
+    }
+}
+
+if (!function_exists('delete_option')) {
+    function delete_option(string $name): bool
+    {
+        return WpStubState::deleteOption($name);
+    }
+}
