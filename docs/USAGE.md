@@ -8,9 +8,10 @@ This guide shows what SecurePress does once you install and activate it, and how
 4. [Rate limiting](#rate-limiting)
 5. [Signed URLs](#signed-urls)
 6. [Security headers](#security-headers)
-7. [Configuration reference](#configuration-reference)
-8. [Recipes / cookbook](#recipes--cookbook)
-9. [Troubleshooting](#troubleshooting)
+7. [Audit logging](#audit-logging)
+8. [Configuration reference](#configuration-reference)
+9. [Recipes / cookbook](#recipes--cookbook)
+10. [Troubleshooting](#troubleshooting)
 
 > **Convention.** All examples use the `SecurePress\Facades\Security` facade. Import it once at the top of your file:
 >
@@ -38,9 +39,12 @@ When you activate SecurePress (and optionally install the MU loader for earlier 
      - `CsrfProtectionMiddleware`
      - `UrlSigner`, `SignedUrlMiddleware`, `NonceStoreInterface` (transient-backed), `SecretProviderInterface` (`SECUREPRESS_URL_SECRET` env → `wp_salt('auth')`)
      - `SecurityHeadersOptions`, `HeaderRegistryFactory`, `SecurityHeadersDispatcher`, `SecurityHeadersMiddleware`, `SecurityHeadersSettingsPage`
-   - Calls `Security::bootstrap($container)` so the static facade can resolve services.
+     - `AuditLogSchema`, `AuditLogRepositoryInterface` (`WpdbAuditLogRepository`), `AuditLoggerInterface` (`AuditLogger`), `AuditLogPruner`, all `Listeners\*`, `AuditLogPage`
+   - Calls `Security::bootstrap($container)` and `AuditLog::bootstrap($container)` so the static facades can resolve services.
    - Registers the **security headers dispatcher** on the `send_headers` hook (priority 1) so the configured headers are emitted on every WordPress response.
-   - Registers admin hooks (notices, plugin row meta, **Settings → Security Headers** page).
+   - Runs the **audit log schema installer** (idempotent, only does work when `securepress_audit_log_db_version` is older than the bundled version) and registers each enabled audit listener.
+   - Schedules the **daily audit log pruner** WP cron event.
+   - Registers admin hooks (notices, plugin row meta, **Settings → Security Headers** page, **Tools → Audit Logs** page).
 
 3. **Your code** registers middleware and protected routes during `init` or earlier:
    ```php
@@ -647,9 +651,223 @@ Any keys you omit fall back to their config defaults.
 
 ---
 
+## Audit logging
+
+A first-class audit trail for security-sensitive WordPress activity. Events are stored in a custom DB table, surfaced through an admin viewer, and pruned automatically on a configurable retention window.
+
+### What gets tracked out of the box
+
+| Subsystem (category) | Events | Default level |
+|---|---|---|
+| `auth` | `user.login.success`, `user.login.failed`, `user.logout` | info / notice / info |
+| `plugin` | `plugin.activated`, `plugin.deactivated`, `plugin.deleted`, `plugin.installed`, `plugin.updated` | warning / notice / warning / warning / warning |
+| `theme` | `theme.installed`, `theme.updated`, `theme.switched` | warning |
+| `user` | `user.created`, `user.deleted`, `user.password.reset` | notice / warning / warning |
+| `role` | `user.role.changed`, `user.role.added`, `user.role.removed`, `user.super_admin.granted`, `user.super_admin.revoked` | warning if the change touches `administrator` / `super_admin`, otherwise notice. `super_admin.granted` is critical. |
+| `options` | `option.updated` for an allowlist of security-relevant options (see config) | warning for high-impact (siteurl, admin_email, default_role, …), notice for the rest |
+| `file_editor` | `file_editor.viewed`, `file_editor.modified` | notice / **critical** |
+| `woocommerce` | `order.created`, `order.status.changed`, `order.payment_complete`, `order.refunded` (only when WC is active) | notice / variable / notice / warning |
+
+Events that don't fit a built-in listener can be recorded via the `AuditLog` facade (see below).
+
+### Where to find it
+
+Once the plugin is active, log in as an administrator and visit:
+
+```
+Tools → Audit Logs
+```
+
+The page shows a paginated, filterable list with one row per event:
+
+- **Time (UTC)** — when the event occurred. Always stored UTC; rendered UTC.
+- **Level** — PSR-3 level (`emergency` → `debug`).
+- **Category** — coarse subsystem bucket; use the dropdown to filter.
+- **Action** — fine-grained event name in dot.notation (`user.login.failed`).
+- **Actor** — the WordPress user that performed the action, or `system` for automatic events.
+- **Target** — the thing being acted on (`user:42`, `plugin:akismet/akismet.php`, `option:siteurl`).
+- **IP** — `REMOTE_ADDR` at the time of the event.
+- **Details** — opens an event-detail panel below the list with the full JSON context, request URI, and user agent.
+
+Filters on top of the list: **Category**, **Level**, **Search** (matches action / message / actor name / target id), date range, and per-page size. Filters are reflected in the URL so log views can be shared / bookmarked.
+
+### Maintenance buttons
+
+At the bottom of the page:
+
+- **Run prune now** — invokes the pruner immediately (instead of waiting for the daily cron).
+- **Clear all logs** — permanently deletes every entry (with a `confirm()` prompt). Both buttons are gated by the `manage_options` capability and a one-shot WP nonce.
+
+### Storage
+
+A custom table is created by `dbDelta()` on first boot:
+
+```
+wp_securepress_audit_logs
+  id BIGINT UNSIGNED PK
+  occurred_at DATETIME (UTC)
+  level VARCHAR(20)
+  category VARCHAR(40)
+  action VARCHAR(120)
+  actor_id BIGINT UNSIGNED NULL
+  actor_name VARCHAR(120) NULL
+  target_type VARCHAR(40) NULL
+  target_id VARCHAR(120) NULL
+  ip VARCHAR(45) NULL
+  user_agent VARCHAR(255) NULL
+  request_uri VARCHAR(255) NULL
+  message TEXT NULL
+  context LONGTEXT NULL  -- JSON
+
+  INDEX (occurred_at), (actor_id), (category, action), (level), (target_type, target_id)
+```
+
+The `securepress_audit_log_db_version` option tracks schema generation — bump the constant in `AuditLogSchema::VERSION` if you change the table, and `dbDelta()` will alter the existing table on the next boot.
+
+### Recording events from your own code (Laravel-style)
+
+The `AuditLog` facade is a thin static surface over `AuditLoggerInterface`. Three calling styles are supported:
+
+#### 1. PSR-3 helpers — the fast path
+
+```php
+use SecurePress\Facades\AuditLog;
+
+AuditLog::info('user.profile.updated', ['user_id' => 5]);
+AuditLog::warning('options.changed', ['option' => 'siteurl', 'old' => $old, 'new' => $new]);
+AuditLog::critical('plugin.activated', ['slug' => 'evil-plugin/evil.php']);
+```
+
+Actor (current user), IP, user agent, and request URI are auto-filled from the active request — you only have to supply the action and any extra context.
+
+#### 2. Fluent builder — when you need actor / target / message
+
+```php
+AuditLog::for($user)                                       // accepts WP_User, int, or null
+    ->category(AuditEventCategory::WOOCOMMERCE)
+    ->action('order.refunded')
+    ->target('order', (string) $order->get_id())
+    ->message('Issued partial refund')
+    ->context(['amount' => 12.50, 'reason' => $reason])
+    ->warning();    // or ->critical(), ->info(), ->record()
+```
+
+The builder:
+- `for(null)` clears the actor (use for system / cron events).
+- `for($numericId)` sets only `actor_id` — `actor_name` stays null.
+- `for($wpUser)` sets both id and display name.
+- `target($type, $id)` is optional — most events have a target, some don't.
+
+#### 3. Full-fidelity AuditEvent — for custom listeners
+
+```php
+use SecurePress\Core\Audit\AuditEvent;
+use SecurePress\Core\Audit\AuditEventCategory;
+use SecurePress\Core\Audit\AuditEventLevel;
+
+AuditLog::record(
+    AuditEvent::make('webhook.signature.invalid', AuditEventCategory::SECURITY, AuditEventLevel::ERROR)
+        ->withTarget('webhook', $webhookId)
+        ->withMessage('Stripe webhook rejected — bad signature.')
+        ->withContext(['ip' => $ip, 'event_id' => $stripeEventId])
+);
+```
+
+This is the most explicit form — useful when you're building a reusable listener and want to bypass the builder's WordPress-flavored conveniences.
+
+### Listening to your own events
+
+Need to record domain-specific events on every WP hook your plugin emits? Implement `\SecurePress\Core\Audit\Listeners\ListenerInterface`, take the logger via constructor, and register your hooks in `register()`:
+
+```php
+final class CartAbandonedListener implements ListenerInterface
+{
+    public function __construct(private readonly AuditLoggerInterface $logger) {}
+
+    public function register(): void
+    {
+        WpHelper::addAction('mystore_cart_abandoned', [$this, 'onCartAbandoned'], 10, 2);
+    }
+
+    public function onCartAbandoned(int $cartId, int $userId): void
+    {
+        $this->logger->record(
+            AuditEvent::make('cart.abandoned', 'mystore', 'notice')
+                ->withActor($userId)
+                ->withTarget('cart', (string) $cartId)
+        );
+    }
+}
+```
+
+Bind it on the container during your own `plugins_loaded` hook (priority 30+ so SecurePress is up):
+
+```php
+add_action('plugins_loaded', static function () use ($plugin): void {
+    $listener = new CartAbandonedListener($plugin->container->get(AuditLoggerInterface::class));
+    $listener->register();
+}, 30);
+```
+
+### Retention & pruning
+
+The pruner runs on a daily WP cron event named `securepress_audit_log_prune` and deletes entries older than `audit_log.retention_days` (default **90**). To disable pruning entirely (e.g. for compliance regimes that require permanent retention), set the value to `0`:
+
+```php
+// wp-config.php
+add_filter('option_securepress_audit_log_retention', static fn () => 0); // or via the option directly
+```
+
+…or override at config-load time via the `audit_log.retention_days` key in `config/plugin.php`.
+
+To force a prune outside cron, click **Run prune now** in the admin UI, or invoke from PHP:
+
+```php
+$plugin->container->get(\SecurePress\Core\Audit\AuditLogPruner::class)->prune();
+```
+
+### Mirroring to the file logger (Laravel-style channels)
+
+Set `audit_log.mirror_to_file_logger` to `true` (default `false`) and every audit event will *also* be written to the existing `LoggerInterface` (which writes to `storage/logs/securepress.log` by default). Useful when you want to:
+
+- Ship audit events to a SIEM via tail / Filebeat / Vector without scraping the database.
+- Have a redundant copy in case the DB write fails.
+- Get audit events into the standard application log for grep-friendly debugging.
+
+The mirrored line uses the form `[audit] {category} {action}` with the full context as a structured array — your file logger formatter receives the raw context.
+
+### Disabling listeners
+
+Each listener can be turned off independently. In `config/plugin.php`:
+
+```php
+'audit_log' => [
+    'listeners' => [
+        'auth' => true,
+        'plugin' => true,
+        'user' => true,
+        'options' => false,         // skip option-change auditing
+        'file_editor' => true,
+        'woocommerce' => false,     // skip WooCommerce auditing even when WC is active
+    ],
+],
+```
+
+Or disable the audit log entirely (every facade method becomes a no-op, no DB writes):
+
+```php
+'audit_log' => [
+    'enabled' => false,
+],
+```
+
+Disabling at the listener level is preferred to leaving listeners on but ignoring their output — instantiating a disabled listener still costs a tiny amount of memory and adds an unused hook.
+
+---
+
 ## Configuration reference
 
-`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*`, which is intended to be configured from the admin UI (or via `update_option('securepress_security_headers', …)`).
+`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*` and `audit_log.*`, which are intended to be configured from the admin UI / `update_option` (security headers) or `config/plugin.php` (audit log).
 
 | Config key | ENV variable | Default | Used by |
 |---|---|---|---|
@@ -677,6 +895,16 @@ Any keys you omit fall back to their config defaults.
 | `security_headers.permissions_policy.enabled` | — | `true` | Permissions-Policy dispatcher / middleware |
 | `security_headers.permissions_policy.policy` | — | conservative deny-list | comma-separated `feature=(allowlist)` |
 | `security_headers.x_content_type_options.enabled` | — | `true` | emits `nosniff` |
+| `audit_log.enabled` | — | `true` | Master killswitch for audit logging |
+| `audit_log.retention_days` | — | `90` | Days of audit history kept; `0` = forever |
+| `audit_log.mirror_to_file_logger` | — | `false` | Mirror every event to `storage/logs/securepress.log` |
+| `audit_log.listeners.auth` | — | `true` | Login / logout / failed-login tracking |
+| `audit_log.listeners.plugin` | — | `true` | Plugin activate / deactivate / install / update / delete |
+| `audit_log.listeners.user` | — | `true` | User register / delete / role change / password reset |
+| `audit_log.listeners.options` | — | `true` | Allowlisted option changes |
+| `audit_log.listeners.file_editor` | — | `true` | Built-in theme / plugin file editor usage |
+| `audit_log.listeners.woocommerce` | — | `true` | WooCommerce orders / payments / refunds (no-op if WC inactive) |
+| `audit_log.option_allowlist` | — | siteurl, home, admin_email, users_can_register, default_role, blogname, blogdescription, wp_user_roles, permalink_structure, template, stylesheet | List of options the `OptionsListener` watches — extend as needed |
 | (none) | `SECUREPRESS_URL_SECRET` | `wp_salt('auth')` | URL signing secret — **set this in production** |
 
 ### Recommended production setup
@@ -892,6 +1120,55 @@ add_action('rest_api_init', static function (): void {
 
 Once your reports are quiet for a day or two, log into **Settings → Security Headers** and untick "Report-Only mode" to start enforcing.
 
+### Recipe: alert on critical audit events
+
+Hook the `audit_log` listener pipeline yourself by wrapping the recorder — useful when you want to trigger Slack pings / email alerts without copying every event.
+
+```php
+use SecurePress\Core\Audit\AuditEvent;
+use SecurePress\Core\Audit\AuditEventLevel;
+use SecurePress\Core\Audit\AuditLoggerInterface;
+use SecurePress\Core\Container;
+
+add_action('plugins_loaded', static function () use ($plugin): void {
+    $original = $plugin->container->get(AuditLoggerInterface::class);
+
+    $plugin->container->set(AuditLoggerInterface::class, new class ($original) implements AuditLoggerInterface {
+        public function __construct(private readonly AuditLoggerInterface $inner) {}
+
+        public function record(AuditEvent $event): ?AuditEvent {
+            $stored = $this->inner->record($event);
+
+            if ($stored !== null && in_array($event->level, [AuditEventLevel::CRITICAL, AuditEventLevel::EMERGENCY], true)) {
+                MyAlerter::ping(sprintf('[%s] %s', $event->level, $event->action), $event->context);
+            }
+
+            return $stored;
+        }
+
+        // Forward every other method to the inner logger
+        public function log(string $level, string $action, array $context = []): ?AuditEvent { return $this->inner->log($level, $action, $context); }
+        public function info(string $action, array $context = []): ?AuditEvent { return $this->inner->info($action, $context); }
+        public function notice(string $action, array $context = []): ?AuditEvent { return $this->inner->notice($action, $context); }
+        public function warning(string $action, array $context = []): ?AuditEvent { return $this->inner->warning($action, $context); }
+        public function error(string $action, array $context = []): ?AuditEvent { return $this->inner->error($action, $context); }
+        public function critical(string $action, array $context = []): ?AuditEvent { return $this->inner->critical($action, $context); }
+    });
+}, 30);
+```
+
+### Recipe: extend the audit option allowlist
+
+```php
+add_filter('securepress_audit_option_allowlist', static fn (array $options): array => array_merge($options, [
+    'mailserver_url',
+    'wp_calendar_settings',
+    'mystore_payment_gateway',
+]));
+```
+
+> The current build doesn't ship a filter on the allowlist (the value comes straight from `Config`); to add to the list, edit `config/plugin.php` directly. A filter hook will be added in a future release.
+
 ### Recipe: tighten headers for a sensitive admin tool
 
 ```php
@@ -993,6 +1270,45 @@ Make sure:
 3. The page hits `send_headers` — most WP requests do, but `wp-cron.php` and a few admin AJAX endpoints can short-circuit before that point.
 4. No higher-priority `send_headers` hook (or a downstream proxy / CDN) is stripping the header. The dispatcher hooks at priority `1`, so most plugin-set headers will run after it; if something replaces a header you're trying to set, increase `Priority` or set the header at a different layer (Apache `Header set`, nginx `add_header`).
 
+### Audit log table is missing or empty after install
+
+The schema runs on first boot. Check:
+
+```sql
+SHOW TABLES LIKE '%securepress_audit_logs%';
+SELECT option_value FROM wp_options WHERE option_name = 'securepress_audit_log_db_version';
+```
+
+If the option is missing, the migration didn't run — usually because `dbDelta()` was unavailable (rare; happens when the plugin runs before `wp-admin/includes/upgrade.php` is on the include path). To manually trigger the install:
+
+```php
+$plugin->container->get(\SecurePress\Core\Audit\AuditLogSchema::class)->install();
+```
+
+If the table exists but stays empty, audit logging is probably disabled — check `audit_log.enabled` in `config/plugin.php`.
+
+### Failed login storm fills the log
+
+Each failed login is one row; with brute-force traffic this can run to thousands of rows per hour. Mitigations, in order of bluntness:
+
+1. **Pair with the rate limiter** on `wp-login.php` — covered in [Rate limiting](#rate-limiting). Most attempts will be 429'd before they reach the auth listener.
+2. **Disable the auth listener** specifically (`audit_log.listeners.auth = false`) and rely on `auth.log` from your webserver instead.
+3. **Lower retention** (`audit_log.retention_days`) so the table is auto-pruned more aggressively.
+
+### `notice` for high-volume events drowns out important entries
+
+Use the level filter in **Tools → Audit Logs** to focus on `warning` / `critical` only. For programmatic SIEM exports, the `audit_log.mirror_to_file_logger` mode lets you tail `storage/logs/securepress.log` and grep for the level prefix.
+
+### Pruner cron isn't running
+
+WP cron runs on traffic. On low-traffic sites (or when `DISABLE_WP_CRON` is set) the daily prune may lag for hours / days — switch to a real cron job:
+
+```cron
+*/15 * * * * cd /var/www/html && /usr/bin/wp cron event run --due-now --quiet
+```
+
+Verify the schedule exists with `wp cron event list | grep securepress_audit_log_prune`.
+
 ### Tests fail with "Undefined function wp_verify_nonce"
 
 You're running the plugin's tests without the bootstrap. From the plugin root:
@@ -1008,12 +1324,13 @@ The test bootstrap (`tests/bootstrap.php`) loads stubs for `wp_verify_nonce`, `w
 
 ## What's NOT in this build (yet)
 
-The current build provides the **primitives** (signer, limiter, CSRF middleware, signed-URL middleware, security headers manager, secret/nonce stores, DI bindings, facade). Things still on the roadmap:
+The current build provides the **primitives** (signer, limiter, CSRF middleware, signed-URL middleware, security headers manager, audit logger + viewer, secret/nonce stores, DI bindings, facades). Things still on the roadmap:
 
 - An HTTP **kernel** that automatically dispatches the middleware stack on every request matching a registered route — until then, integrate the pipeline manually as shown in the recipes above.
-- **Audit logging**
 - **2FA** flows
 - **Bot/firewall** rules
-- Full admin **dashboard** UI (the Settings → Security Headers page is the first one shipped)
+- A unified admin **dashboard** UI (currently each feature has its own page: Settings → Security Headers, Tools → Audit Logs)
+- An **audit log CSV / NDJSON exporter** for offline forensics
+- **WP-CLI** commands (`wp securepress audit:list`, `wp securepress audit:prune`)
 
 See [`ROADMAP_AGILE.md`](../ROADMAP_AGILE.md) for the prioritized backlog.

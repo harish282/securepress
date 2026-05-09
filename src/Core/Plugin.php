@@ -4,7 +4,21 @@ declare(strict_types=1);
 
 namespace SecurePress\Core;
 
+use SecurePress\Admin\AuditLogPage;
 use SecurePress\Admin\SecurityHeadersSettingsPage;
+use SecurePress\Core\Audit\AuditLogger;
+use SecurePress\Core\Audit\AuditLoggerInterface;
+use SecurePress\Core\Audit\AuditLogPruner;
+use SecurePress\Core\Audit\AuditLogRepositoryInterface;
+use SecurePress\Core\Audit\AuditLogSchema;
+use SecurePress\Core\Audit\Listeners\AuthListener;
+use SecurePress\Core\Audit\Listeners\FileEditorListener;
+use SecurePress\Core\Audit\Listeners\ListenerInterface;
+use SecurePress\Core\Audit\Listeners\OptionsListener;
+use SecurePress\Core\Audit\Listeners\PluginListener;
+use SecurePress\Core\Audit\Listeners\UserRoleListener;
+use SecurePress\Core\Audit\Listeners\WooCommerceListener;
+use SecurePress\Core\Audit\WpdbAuditLogRepository;
 use SecurePress\Core\Config\Config;
 use SecurePress\Core\Headers\HeaderRegistryFactory;
 use SecurePress\Core\Headers\SecurityHeadersDispatcher;
@@ -32,6 +46,7 @@ use SecurePress\Middleware\SignedUrlMiddleware;
 use SecurePress\Core\Requirements\SystemRequirementsChecker;
 use SecurePress\Core\Support\WpHelper;
 use SecurePress\Core\View\View;
+use SecurePress\Facades\AuditLog;
 use SecurePress\Facades\Security;
 
 final class Plugin
@@ -55,7 +70,13 @@ final class Plugin
 
         $this->container->get(LoggerInterface::class)->info('SecurePress plugin booted.');
         Security::bootstrap($this->container);
+        AuditLog::bootstrap($this->container);
         $this->container->get(SecurityHeadersDispatcher::class)->register();
+
+        $this->container->get(AuditLogSchema::class)->install();
+        $this->registerAuditListeners();
+        $this->container->get(AuditLogPruner::class)->register();
+
         $this->registerAdminHooks();
     }
 
@@ -247,6 +268,112 @@ final class Plugin
                 $container->get(View::class)
             )
         );
+        $this->container->singleton(
+            AuditLogSchema::class,
+            static fn (): AuditLogSchema => new AuditLogSchema()
+        );
+        $this->container->singleton(
+            AuditLogRepositoryInterface::class,
+            static fn (Container $container): AuditLogRepositoryInterface => new WpdbAuditLogRepository(
+                $container->get(AuditLogSchema::class)
+            )
+        );
+        $this->container->singleton(
+            AuditLoggerInterface::class,
+            static fn (Container $container): AuditLoggerInterface => new AuditLogger(
+                $container->get(AuditLogRepositoryInterface::class),
+                $container->get(LoggerInterface::class),
+                (bool) $container->get(Config::class)->get('audit_log.enabled', true),
+                (bool) $container->get(Config::class)->get('audit_log.mirror_to_file_logger', false),
+            )
+        );
+        $this->container->singleton(
+            AuditLogPruner::class,
+            static fn (Container $container): AuditLogPruner => new AuditLogPruner(
+                $container->get(AuditLogRepositoryInterface::class),
+                $container->get(LoggerInterface::class),
+                (int) $container->get(Config::class)->get('audit_log.retention_days', 90),
+            )
+        );
+        $this->container->singleton(
+            AuthListener::class,
+            static fn (Container $container): AuthListener => new AuthListener(
+                $container->get(AuditLoggerInterface::class)
+            )
+        );
+        $this->container->singleton(
+            PluginListener::class,
+            static fn (Container $container): PluginListener => new PluginListener(
+                $container->get(AuditLoggerInterface::class)
+            )
+        );
+        $this->container->singleton(
+            UserRoleListener::class,
+            static fn (Container $container): UserRoleListener => new UserRoleListener(
+                $container->get(AuditLoggerInterface::class)
+            )
+        );
+        $this->container->singleton(
+            OptionsListener::class,
+            static function (Container $container): OptionsListener {
+                $allowlist = $container->get(Config::class)->get('audit_log.option_allowlist', []);
+                /** @var list<string> $list */
+                $list = is_array($allowlist) ? array_values(array_filter($allowlist, 'is_string')) : [];
+
+                return new OptionsListener(
+                    $container->get(AuditLoggerInterface::class),
+                    $list,
+                );
+            }
+        );
+        $this->container->singleton(
+            FileEditorListener::class,
+            static fn (Container $container): FileEditorListener => new FileEditorListener(
+                $container->get(AuditLoggerInterface::class)
+            )
+        );
+        $this->container->singleton(
+            WooCommerceListener::class,
+            static fn (Container $container): WooCommerceListener => new WooCommerceListener(
+                $container->get(AuditLoggerInterface::class)
+            )
+        );
+        $this->container->singleton(
+            AuditLogPage::class,
+            static fn (Container $container): AuditLogPage => new AuditLogPage(
+                $container->get(AuditLogRepositoryInterface::class),
+                $container->get(AuditLogPruner::class),
+                $container->get(View::class),
+            )
+        );
+    }
+
+    private function registerAuditListeners(): void
+    {
+        $config = $this->container->get(Config::class);
+        $listeners = $config->get('audit_log.listeners', []);
+        if (!is_array($listeners)) {
+            return;
+        }
+
+        $map = [
+            'auth' => AuthListener::class,
+            'plugin' => PluginListener::class,
+            'user' => UserRoleListener::class,
+            'options' => OptionsListener::class,
+            'file_editor' => FileEditorListener::class,
+            'woocommerce' => WooCommerceListener::class,
+        ];
+
+        foreach ($map as $key => $class) {
+            if (!($listeners[$key] ?? false)) {
+                continue;
+            }
+            $listener = $this->container->get($class);
+            if ($listener instanceof ListenerInterface) {
+                $listener->register();
+            }
+        }
     }
 
     private function registerAdminHooks(): void
@@ -258,6 +385,7 @@ final class Plugin
         WpHelper::addAction('admin_notices', [$this, 'renderMuLoaderNotice']);
         WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
         $this->container->get(SecurityHeadersSettingsPage::class)->register();
+        $this->container->get(AuditLogPage::class)->register();
     }
 
     private function isMuLoaderInstalled(): bool

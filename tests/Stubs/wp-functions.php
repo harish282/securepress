@@ -105,3 +105,63 @@ if (!function_exists('delete_option')) {
         return WpStubState::deleteOption($name);
     }
 }
+
+if (!function_exists('get_current_user_id')) {
+    function get_current_user_id(): int
+    {
+        return WpStubState::$currentUserId;
+    }
+}
+
+if (!function_exists('wp_get_current_user')) {
+    function wp_get_current_user(): object
+    {
+        $data = WpStubState::$currentUser ?? ['ID' => 0, 'user_login' => '', 'display_name' => ''];
+
+        return (object) $data;
+    }
+}
+
+if (!function_exists('wp_next_scheduled')) {
+    function wp_next_scheduled(string $hook): int|false
+    {
+        return WpStubState::$scheduledEvents[$hook]['timestamp'] ?? false;
+    }
+}
+
+if (!function_exists('wp_schedule_event')) {
+    function wp_schedule_event(int $timestamp, string $recurrence, string $hook): bool
+    {
+        WpStubState::$scheduledEvents[$hook] = [
+            'timestamp' => $timestamp,
+            'recurrence' => $recurrence,
+        ];
+
+        return true;
+    }
+}
+
+if (!function_exists('wp_clear_scheduled_hook')) {
+    function wp_clear_scheduled_hook(string $hook): void
+    {
+        unset(WpStubState::$scheduledEvents[$hook]);
+    }
+}
+
+if (!function_exists('add_action')) {
+    function add_action(string $hook, mixed $callback, int $priority = 10, int $acceptedArgs = 1): bool
+    {
+        unset($hook, $callback, $priority, $acceptedArgs);
+
+        return true;
+    }
+}
+
+if (!function_exists('add_filter')) {
+    function add_filter(string $hook, mixed $callback, int $priority = 10, int $acceptedArgs = 1): bool
+    {
+        unset($hook, $callback, $priority, $acceptedArgs);
+
+        return true;
+    }
+}

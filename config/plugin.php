@@ -24,6 +24,32 @@ return [
     'signed_url' => [
         'ttl_default' => 3600,
     ],
+    'audit_log' => [
+        'enabled' => true,
+        'retention_days' => 90,
+        'mirror_to_file_logger' => false,
+        'listeners' => [
+            'auth' => true,
+            'plugin' => true,
+            'user' => true,
+            'options' => true,
+            'file_editor' => true,
+            'woocommerce' => true,
+        ],
+        'option_allowlist' => [
+            'siteurl',
+            'home',
+            'admin_email',
+            'users_can_register',
+            'default_role',
+            'blogname',
+            'blogdescription',
+            'wp_user_roles',
+            'permalink_structure',
+            'template',
+            'stylesheet',
+        ],
+    ],
     'security_headers' => [
         'hsts' => [
             'enabled' => false,

@@ -30,6 +30,14 @@ final class WpStubState
     /** @var array<string, mixed> */
     public static array $options = [];
 
+    public static int $currentUserId = 0;
+
+    /** @var array{ID:int,user_login:string,display_name:string}|null */
+    public static ?array $currentUser = null;
+
+    /** @var array<string, array{timestamp:int,recurrence:string}> */
+    public static array $scheduledEvents = [];
+
     private static int $createCounter = 0;
 
     public static function reset(): void
@@ -41,7 +49,25 @@ final class WpStubState
         self::$now = time();
         self::$salts = [];
         self::$options = [];
+        self::$currentUserId = 0;
+        self::$currentUser = null;
+        self::$scheduledEvents = [];
         self::$createCounter = 0;
+    }
+
+    /**
+     * @return array{ID:int,user_login:string,display_name:string}
+     */
+    public static function setCurrentUser(int $id, string $login, string $displayName = ''): array
+    {
+        self::$currentUserId = $id;
+        self::$currentUser = [
+            'ID' => $id,
+            'user_login' => $login,
+            'display_name' => $displayName !== '' ? $displayName : $login,
+        ];
+
+        return self::$currentUser;
     }
 
     public static function getOption(string $name, mixed $default = false): mixed
