@@ -69,4 +69,113 @@ final class WpHelper
 
         return (bool) \call_user_func('is_admin');
     }
+
+    /**
+     * Verifies a WordPress nonce.
+     *
+     * Returns the lifecycle tick from {@see wp_verify_nonce()}: `1` when the nonce is within
+     * its first half-life (fresh), `2` when within its second (stale-but-accepted), or `0`
+     * when missing/invalid. Callers that only need a boolean can compare against `> 0`.
+     */
+    public static function verifyNonce(string $nonce, string $action): int
+    {
+        if ($nonce === '' || !\function_exists('wp_verify_nonce')) {
+            return 0;
+        }
+
+        $result = \call_user_func('wp_verify_nonce', $nonce, $action);
+
+        return is_int($result) && $result > 0 ? $result : 0;
+    }
+
+    public static function createNonce(string $action): string
+    {
+        if ($action === '' || !\function_exists('wp_create_nonce')) {
+            return '';
+        }
+
+        $nonce = \call_user_func('wp_create_nonce', $action);
+
+        return is_string($nonce) ? $nonce : '';
+    }
+
+    public static function isDoingAjax(): bool
+    {
+        if (\function_exists('wp_doing_ajax')) {
+            return (bool) \call_user_func('wp_doing_ajax');
+        }
+
+        return \defined('DOING_AJAX') && \constant('DOING_AJAX') === true;
+    }
+
+    public static function isRestRequest(): bool
+    {
+        if (\function_exists('wp_is_serving_rest_request')) {
+            return (bool) \call_user_func('wp_is_serving_rest_request');
+        }
+
+        return \defined('REST_REQUEST') && \constant('REST_REQUEST') === true;
+    }
+
+    public static function unslash(string $value): string
+    {
+        if (\function_exists('wp_unslash')) {
+            $unslashed = \call_user_func('wp_unslash', $value);
+
+            return is_string($unslashed) ? $unslashed : $value;
+        }
+
+        return stripslashes($value);
+    }
+
+    public static function getTransient(string $name): mixed
+    {
+        if (!\function_exists('get_transient')) {
+            return false;
+        }
+
+        return \call_user_func('get_transient', $name);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    public static function setTransient(string $name, mixed $value, int $expiration): bool
+    {
+        if (!\function_exists('set_transient')) {
+            return false;
+        }
+
+        return (bool) \call_user_func('set_transient', $name, $value, max(0, $expiration));
+    }
+
+    public static function deleteTransient(string $name): bool
+    {
+        if (!\function_exists('delete_transient')) {
+            return false;
+        }
+
+        return (bool) \call_user_func('delete_transient', $name);
+    }
+
+    /**
+     * Returns the client IP from `REMOTE_ADDR` only.
+     *
+     * Forwarded headers (`X-Forwarded-For`, `CF-Connecting-IP`, etc.) are intentionally NOT
+     * consulted because they are trivially spoofable when the application is not behind a
+     * known proxy. Callers that terminate behind a trusted proxy should normalize the IP
+     * upstream and pass it through middleware context (`request.ip`) instead of relying on
+     * this helper.
+     */
+    public static function getClientIp(): ?string
+    {
+        $remote = $_SERVER['REMOTE_ADDR'] ?? null;
+        if (!is_string($remote) || $remote === '') {
+            return null;
+        }
+
+        $ip = filter_var($remote, FILTER_VALIDATE_IP);
+
+        return is_string($ip) ? $ip : null;
+    }
 }

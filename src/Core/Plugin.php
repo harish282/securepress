@@ -13,6 +13,11 @@ use SecurePress\Core\Middleware\MiddlewareManager;
 use SecurePress\Core\Middleware\MiddlewarePipeline;
 use SecurePress\Core\Middleware\MiddlewareRegistry;
 use SecurePress\Core\Middleware\MiddlewareStack;
+use SecurePress\Core\RateLimit\RateLimiter;
+use SecurePress\Core\RateLimit\RateLimitStoreInterface;
+use SecurePress\Core\RateLimit\TransientStore;
+use SecurePress\Middleware\CsrfProtectionMiddleware;
+use SecurePress\Middleware\RateLimitMiddleware;
 use SecurePress\Core\Requirements\SystemRequirementsChecker;
 use SecurePress\Core\Support\WpHelper;
 use SecurePress\Core\View\View;
@@ -150,6 +155,31 @@ final class Plugin
                 $container->get(MiddlewareRegistry::class),
                 $container->get(MiddlewarePipeline::class),
                 $container
+            )
+        );
+        $this->container->singleton(
+            CsrfProtectionMiddleware::class,
+            static fn (Container $container): CsrfProtectionMiddleware => new CsrfProtectionMiddleware(
+                $container->get(LoggerInterface::class)
+            )
+        );
+        $this->container->singleton(
+            RateLimitStoreInterface::class,
+            static fn (): RateLimitStoreInterface => new TransientStore()
+        );
+        $this->container->singleton(
+            RateLimiter::class,
+            static fn (Container $container): RateLimiter => new RateLimiter(
+                $container->get(RateLimitStoreInterface::class)
+            )
+        );
+        $this->container->singleton(
+            RateLimitMiddleware::class,
+            static fn (Container $container): RateLimitMiddleware => new RateLimitMiddleware(
+                $container->get(RateLimiter::class),
+                $container->get(LoggerInterface::class),
+                (int) $container->get(Config::class)->get('rate_limit.limit', RateLimitMiddleware::DEFAULT_LIMIT),
+                (int) $container->get(Config::class)->get('rate_limit.window', RateLimitMiddleware::DEFAULT_WINDOW)
             )
         );
     }

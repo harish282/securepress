@@ -17,4 +17,8 @@ return [
         'level' => 'info',
         'file' => 'securepress.log',
     ],
+    'rate_limit' => [
+        'limit' => 60,
+        'window' => 60,
+    ],
 ];
