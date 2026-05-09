@@ -63,13 +63,57 @@ final class SecurityFacadeTest extends TestCase
         self::assertSame(['/admin/export'], $routes->all());
     }
 
-    public function test_signed_url_throws_until_implemented(): void
+    public function test_signed_url_mints_a_url_that_round_trips_through_verifySignedUrl(): void
     {
-        $container = $this->createMinimalContainer();
+        $container = $this->createSignedUrlContainer();
         Security::bootstrap($container);
 
-        $this->expectException(LogicException::class);
-        Security::signedUrl('/download/123', expires: 3600);
+        $url = Security::signedUrl('/download/123', expires: 600, params: ['file' => 'manual.pdf']);
+
+        $result = Security::verifySignedUrl($url);
+        self::assertTrue($result->valid);
+        self::assertSame('/download/123', $result->path);
+        self::assertSame('manual.pdf', $result->params['file']);
+    }
+
+    public function test_signed_url_uses_default_ttl_from_config_when_expires_omitted(): void
+    {
+        $container = $this->createSignedUrlContainer();
+        Security::bootstrap($container);
+
+        $url = Security::signedUrl('/share');
+        $result = Security::verifySignedUrl($url);
+
+        self::assertTrue($result->valid);
+        self::assertNotNull($result->expiresAt);
+    }
+
+    public function test_signed_url_with_one_time_flag_registers_a_consumable_nonce(): void
+    {
+        $container = $this->createSignedUrlContainer();
+        Security::bootstrap($container);
+
+        $url = Security::signedUrl('/reset', expires: 600, params: ['user' => 7], oneTime: true);
+        self::assertStringContainsString('n=', $url);
+
+        $store = $container->get(\SecurePress\Core\Url\NonceStoreInterface::class);
+        $params = $this->parseQuery($url);
+        $nonce = $params['n'] ?? '';
+
+        self::assertNotSame('', $nonce);
+        self::assertTrue($store->consume($nonce));
+        self::assertFalse($store->consume($nonce));
+    }
+
+    public function test_verify_signed_url_returns_failure_for_unsigned_paths(): void
+    {
+        $container = $this->createSignedUrlContainer();
+        Security::bootstrap($container);
+
+        $result = Security::verifySignedUrl('/no-signature?id=1');
+
+        self::assertFalse($result->valid);
+        self::assertSame('missing-signature', $result->reason);
     }
 
     public function test_verify_csrf_throws_until_implemented(): void
@@ -117,7 +161,49 @@ final class SecurityFacadeTest extends TestCase
 
         return $container;
     }
+
+    private function createSignedUrlContainer(): Container
+    {
+        $container = $this->createMinimalContainer();
+        $container->singleton(
+            \SecurePress\Core\Config\Config::class,
+            static fn (): \SecurePress\Core\Config\Config => new \SecurePress\Core\Config\Config()
+        );
+
+        $signer = new \SecurePress\Core\Url\UrlSigner(
+            new \SecurePress\Core\Url\ArraySecretProvider('test-secret-32-bytes-of-entropy-XX')
+        );
+        $container->set(\SecurePress\Core\Url\UrlSigner::class, $signer);
+        $container->singleton(
+            \SecurePress\Core\Url\NonceStoreInterface::class,
+            static fn (): \SecurePress\Core\Url\NonceStoreInterface => new \SecurePress\Core\Url\ArrayNonceStore()
+        );
+
+        return $container;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function parseQuery(string $url): array
+    {
+        $parts = parse_url($url);
+        if (!is_array($parts) || !isset($parts['query'])) {
+            return [];
+        }
+        parse_str($parts['query'], $parsed);
+
+        $out = [];
+        foreach ($parsed as $key => $value) {
+            if (is_string($key) && is_string($value)) {
+                $out[$key] = $value;
+            }
+        }
+
+        return $out;
+    }
 }
+
 
 final class SecurityTestMiddlewareAlpha implements MiddlewareInterface
 {

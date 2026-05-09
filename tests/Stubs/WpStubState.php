@@ -24,6 +24,9 @@ final class WpStubState
 
     public static int $now = 0;
 
+    /** @var array<string, string> */
+    public static array $salts = [];
+
     private static int $createCounter = 0;
 
     public static function reset(): void
@@ -33,7 +36,13 @@ final class WpStubState
         self::$isRestRequest = false;
         self::$transients = [];
         self::$now = time();
+        self::$salts = [];
         self::$createCounter = 0;
+    }
+
+    public static function saltFor(string $scheme): string
+    {
+        return self::$salts[$scheme] ?? '';
     }
 
     public static function getTransient(string $name): mixed

@@ -16,8 +16,14 @@ use SecurePress\Core\Middleware\MiddlewareStack;
 use SecurePress\Core\RateLimit\RateLimiter;
 use SecurePress\Core\RateLimit\RateLimitStoreInterface;
 use SecurePress\Core\RateLimit\TransientStore;
+use SecurePress\Core\Url\NonceStoreInterface;
+use SecurePress\Core\Url\SecretProviderInterface;
+use SecurePress\Core\Url\TransientNonceStore;
+use SecurePress\Core\Url\UrlSigner;
+use SecurePress\Core\Url\WpSaltSecretProvider;
 use SecurePress\Middleware\CsrfProtectionMiddleware;
 use SecurePress\Middleware\RateLimitMiddleware;
+use SecurePress\Middleware\SignedUrlMiddleware;
 use SecurePress\Core\Requirements\SystemRequirementsChecker;
 use SecurePress\Core\Support\WpHelper;
 use SecurePress\Core\View\View;
@@ -180,6 +186,28 @@ final class Plugin
                 $container->get(LoggerInterface::class),
                 (int) $container->get(Config::class)->get('rate_limit.limit', RateLimitMiddleware::DEFAULT_LIMIT),
                 (int) $container->get(Config::class)->get('rate_limit.window', RateLimitMiddleware::DEFAULT_WINDOW)
+            )
+        );
+        $this->container->singleton(
+            SecretProviderInterface::class,
+            static fn (): SecretProviderInterface => new WpSaltSecretProvider()
+        );
+        $this->container->singleton(
+            UrlSigner::class,
+            static fn (Container $container): UrlSigner => new UrlSigner(
+                $container->get(SecretProviderInterface::class)
+            )
+        );
+        $this->container->singleton(
+            NonceStoreInterface::class,
+            static fn (): NonceStoreInterface => new TransientNonceStore()
+        );
+        $this->container->singleton(
+            SignedUrlMiddleware::class,
+            static fn (Container $container): SignedUrlMiddleware => new SignedUrlMiddleware(
+                $container->get(UrlSigner::class),
+                $container->get(NonceStoreInterface::class),
+                $container->get(LoggerInterface::class)
             )
         );
     }

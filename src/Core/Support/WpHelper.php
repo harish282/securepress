@@ -178,4 +178,21 @@ final class WpHelper
 
         return is_string($ip) ? $ip : null;
     }
+
+    /**
+     * Returns the WordPress salt for the given scheme, or an empty string if unavailable.
+     *
+     * Schemes: `auth`, `secure_auth`, `logged_in`, `nonce`. Defaults to `auth` which is
+     * appropriate for general-purpose HMAC signing.
+     */
+    public static function salt(string $scheme = 'auth'): string
+    {
+        if (!\function_exists('wp_salt')) {
+            return '';
+        }
+
+        $salt = \call_user_func('wp_salt', $scheme);
+
+        return is_string($salt) ? $salt : '';
+    }
 }

@@ -75,3 +75,10 @@ if (!function_exists('delete_transient')) {
         return WpStubState::deleteTransient($name);
     }
 }
+
+if (!function_exists('wp_salt')) {
+    function wp_salt(string $scheme = 'auth'): string
+    {
+        return WpStubState::saltFor($scheme);
+    }
+}

@@ -21,4 +21,7 @@ return [
         'limit' => 60,
         'window' => 60,
     ],
+    'signed_url' => [
+        'ttl_default' => 3600,
+    ],
 ];

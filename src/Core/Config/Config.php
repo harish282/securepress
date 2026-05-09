@@ -55,6 +55,10 @@ final class Config
         $config['logging']['channel'] = $this->env('SECUREPRESS_LOG_CHANNEL', (string) ($config['logging']['channel'] ?? 'file'));
         $config['logging']['level'] = $this->env('SECUREPRESS_LOG_LEVEL', (string) ($config['logging']['level'] ?? 'info'));
         $config['logging']['file'] = $this->env('SECUREPRESS_LOG_FILE', (string) ($config['logging']['file'] ?? 'securepress.log'));
+        $config['signed_url']['ttl_default'] = (int) $this->env(
+            'SECUREPRESS_SIGNED_URL_TTL',
+            (string) ($config['signed_url']['ttl_default'] ?? 3600)
+        );
 
         return $config;
     }

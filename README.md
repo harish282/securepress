@@ -52,6 +52,10 @@ To make SecurePress load earlier in WordPress lifecycle, install the MU loader:
 
 Install guide: [`docs/MU_LOADER_INSTALL.md`](docs/MU_LOADER_INSTALL.md)
 
+## Usage Guide
+
+How to use what's already shipped (CSRF, rate limiter, signed URLs) inside WordPress, with end-to-end recipes for REST endpoints, admin-post forms, magic-link login, paid downloads, and WooCommerce checkout throttling: [`docs/USAGE.md`](docs/USAGE.md).
+
 ---
 
 # Core Features

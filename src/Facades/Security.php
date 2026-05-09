@@ -5,11 +5,15 @@ declare(strict_types=1);
 namespace SecurePress\Facades;
 
 use LogicException;
+use SecurePress\Core\Config\Config;
 use SecurePress\Core\Container;
 use SecurePress\Core\Http\RouteGuardRegistry;
 use SecurePress\Core\Middleware\MiddlewareInterface;
 use SecurePress\Core\Middleware\MiddlewareRegistry;
 use SecurePress\Core\Middleware\MiddlewareStack;
+use SecurePress\Core\Url\NonceStoreInterface;
+use SecurePress\Core\Url\SignedUrlResult;
+use SecurePress\Core\Url\UrlSigner;
 
 /**
  * Facade-style entry point for security APIs.
@@ -61,13 +65,54 @@ final class Security
     }
 
     /**
-     * @throws LogicException Until the signed-url module ships.
-     * @param int|null $expires Seconds until expiry (named argument: expires: 3600).
+     * Mints a signed URL.
+     *
+     * Returns a path + query string (no scheme/host); prefix with `home_url()` or
+     * `site_url()` before sharing externally.
+     *
+     * @param array<string, scalar|null> $params Extra query parameters bound into the signature.
+     * @param int|null                   $expires TTL seconds from now. `null` uses
+     *                                            `signed_url.ttl_default` from config (3600s default).
+     *                                            Pass an explicit value to override.
+     * @param bool                       $oneTime When `true`, mints a single-use URL backed by the
+     *                                            nonce store. The URL is invalidated the first time
+     *                                            it passes through {@see SignedUrlMiddleware}.
      */
-    public static function signedUrl(string $path, ?int $expires = null): string
+    public static function signedUrl(
+        string $path,
+        ?int $expires = null,
+        array $params = [],
+        bool $oneTime = false,
+    ): string {
+        $signer = self::container()->get(UrlSigner::class);
+        $config = self::container()->get(Config::class);
+        $ttl = $expires ?? (int) $config->get('signed_url.ttl_default', 3600);
+
+        if ($oneTime) {
+            $store = self::container()->get(NonceStoreInterface::class);
+            $nonce = bin2hex(random_bytes(16));
+            $store->register($nonce, $ttl + 60);
+            $params = ['n' => $nonce] + $params;
+        }
+
+        return $signer->sign($path, $params, $ttl);
+    }
+
+    /**
+     * Verifies the signed URL on the current request (or a supplied URL).
+     *
+     * Pure verification of the signature/expiry only — does not consume one-time-use nonces.
+     * Use {@see SignedUrlMiddleware} when single-use enforcement is required.
+     */
+    public static function verifySignedUrl(?string $url = null): SignedUrlResult
     {
-        unset($path, $expires);
-        throw new LogicException('SecurePress::signedUrl() is not implemented yet.');
+        $target = $url;
+        if ($target === null) {
+            $requestUri = $_SERVER['REQUEST_URI'] ?? null;
+            $target = is_string($requestUri) && $requestUri !== '' ? $requestUri : '';
+        }
+
+        return self::container()->get(UrlSigner::class)->verify($target);
     }
 
     /**
