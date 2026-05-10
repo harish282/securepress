@@ -165,3 +165,95 @@ if (!function_exists('add_filter')) {
         return true;
     }
 }
+
+if (!function_exists('do_action')) {
+    function do_action(string $hook, mixed ...$args): void
+    {
+        unset($hook, $args);
+    }
+}
+
+if (!function_exists('get_user_meta')) {
+    function get_user_meta(int $userId, string $key = '', bool $single = false): mixed
+    {
+        unset($single);
+
+        return WpStubState::getUserMeta($userId, $key, '');
+    }
+}
+
+if (!function_exists('update_user_meta')) {
+    function update_user_meta(int $userId, string $key, mixed $value): bool
+    {
+        WpStubState::setUserMeta($userId, $key, $value);
+
+        return true;
+    }
+}
+
+if (!function_exists('delete_user_meta')) {
+    function delete_user_meta(int $userId, string $key): bool
+    {
+        return WpStubState::deleteUserMeta($userId, $key);
+    }
+}
+
+if (!function_exists('wp_mail')) {
+    function wp_mail(array|string $to, string $subject, string $message, array $headers = []): bool
+    {
+        WpStubState::recordMail($to, $subject, $message, $headers);
+
+        return true;
+    }
+}
+
+if (!function_exists('wp_generate_password')) {
+    function wp_generate_password(int $length = 12, bool $specialChars = true): string
+    {
+        unset($specialChars);
+
+        return str_repeat('x', max(1, $length));
+    }
+}
+
+if (!function_exists('wp_set_auth_cookie')) {
+    function wp_set_auth_cookie(int $userId, bool $remember = false): void
+    {
+        WpStubState::$authCookies[] = ['user_id' => $userId, 'remember' => $remember];
+    }
+}
+
+if (!function_exists('get_user_by')) {
+    function get_user_by(string $field, mixed $value): object|false
+    {
+        if ($field === 'login') {
+            return WpStubState::$usersByLogin[(string) $value] ?? false;
+        }
+        if ($field === 'id' || $field === 'ID') {
+            return WpStubState::$usersById[(int) $value] ?? false;
+        }
+
+        return false;
+    }
+}
+
+if (!function_exists('wp_login_url')) {
+    function wp_login_url(string $redirect = ''): string
+    {
+        return WpStubState::$siteUrl . '/wp-login.php' . ($redirect !== '' ? '?redirect_to=' . rawurlencode($redirect) : '');
+    }
+}
+
+if (!function_exists('site_url')) {
+    function site_url(string $path = ''): string
+    {
+        return WpStubState::$siteUrl . '/' . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('get_bloginfo')) {
+    function get_bloginfo(string $key = 'name'): string
+    {
+        return $key === 'name' ? WpStubState::$blogName : '';
+    }
+}

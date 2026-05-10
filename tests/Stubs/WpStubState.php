@@ -38,6 +38,25 @@ final class WpStubState
     /** @var array<string, array{timestamp:int,recurrence:string}> */
     public static array $scheduledEvents = [];
 
+    /** @var array<int, array<string, mixed>> */
+    public static array $userMeta = [];
+
+    /** @var list<array{to:array|string,subject:string,message:string,headers:array}> */
+    public static array $sentMail = [];
+
+    /** @var array<string, object> */
+    public static array $usersByLogin = [];
+
+    /** @var array<int, object> */
+    public static array $usersById = [];
+
+    /** @var list<array{user_id:int,remember:bool}> */
+    public static array $authCookies = [];
+
+    public static string $blogName = 'Test Site';
+
+    public static string $siteUrl = 'https://example.test';
+
     private static int $createCounter = 0;
 
     public static function reset(): void
@@ -52,7 +71,59 @@ final class WpStubState
         self::$currentUserId = 0;
         self::$currentUser = null;
         self::$scheduledEvents = [];
+        self::$userMeta = [];
+        self::$sentMail = [];
+        self::$usersByLogin = [];
+        self::$usersById = [];
+        self::$authCookies = [];
+        self::$blogName = 'Test Site';
+        self::$siteUrl = 'https://example.test';
         self::$createCounter = 0;
+    }
+
+    public static function setUserMeta(int $userId, string $key, mixed $value): void
+    {
+        self::$userMeta[$userId] ??= [];
+        self::$userMeta[$userId][$key] = $value;
+    }
+
+    public static function getUserMeta(int $userId, string $key, mixed $default = ''): mixed
+    {
+        return self::$userMeta[$userId][$key] ?? $default;
+    }
+
+    public static function deleteUserMeta(int $userId, string $key): bool
+    {
+        if (!isset(self::$userMeta[$userId][$key])) {
+            return false;
+        }
+        unset(self::$userMeta[$userId][$key]);
+
+        return true;
+    }
+
+    public static function registerUser(int $id, string $login, string $email, string $displayName = ''): object
+    {
+        $user = (object) [
+            'ID' => $id,
+            'user_login' => $login,
+            'user_email' => $email,
+            'display_name' => $displayName !== '' ? $displayName : $login,
+        ];
+        self::$usersByLogin[$login] = $user;
+        self::$usersById[$id] = $user;
+
+        return $user;
+    }
+
+    public static function recordMail(array|string $to, string $subject, string $message, array $headers = []): void
+    {
+        self::$sentMail[] = [
+            'to' => $to,
+            'subject' => $subject,
+            'message' => $message,
+            'headers' => $headers,
+        ];
     }
 
     /**

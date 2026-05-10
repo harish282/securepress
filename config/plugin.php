@@ -50,6 +50,48 @@ return [
             'stylesheet',
         ],
     ],
+    'auth_hardening' => [
+        'enabled' => true,
+
+        'two_factor' => [
+            // The HMAC issuer string baked into provisioning URIs — shows up in the
+            // user's authenticator app (e.g., "SecurePress: alice@example.com").
+            'issuer' => 'SecurePress',
+            // How long a pending 2FA challenge stays valid after the user submits
+            // their password but before they enter the code.
+            'challenge_ttl_seconds' => 600,
+        ],
+
+        'lockout' => [
+            'enabled' => true,
+            // Threshold and window for the rolling failure counter.
+            'max_attempts' => 5,
+            'window_seconds' => 900,
+            // How long an account / IP stays locked after the threshold is crossed.
+            'lock_seconds' => 900,
+        ],
+
+        'sessions' => [
+            'enabled' => true,
+            // Sessions older than this (relative to last_seen / revoked_at) are
+            // hard-deleted by the daily pruner cron.
+            'retention_days' => 90,
+        ],
+
+        'suspicion' => [
+            'enabled' => true,
+            // Minimum score from the rule engine before we email a "new device" alert.
+            'alert_threshold' => 50,
+            'rules' => [
+                'new_device' => true,
+            ],
+        ],
+
+        'notifications' => [
+            // Globally disable outbound email if the site is in dry-run / staging.
+            'enabled' => true,
+        ],
+    ],
     'security_headers' => [
         'hsts' => [
             'enabled' => false,

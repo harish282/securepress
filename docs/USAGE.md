@@ -9,9 +9,10 @@ This guide shows what SecurePress does once you install and activate it, and how
 5. [Signed URLs](#signed-urls)
 6. [Security headers](#security-headers)
 7. [Audit logging](#audit-logging)
-8. [Configuration reference](#configuration-reference)
-9. [Recipes / cookbook](#recipes--cookbook)
-10. [Troubleshooting](#troubleshooting)
+8. [Authentication hardening](#authentication-hardening)
+9. [Configuration reference](#configuration-reference)
+10. [Recipes / cookbook](#recipes--cookbook)
+11. [Troubleshooting](#troubleshooting)
 
 > **Convention.** All examples use the `SecurePress\Facades\Security` facade. Import it once at the top of your file:
 >
@@ -39,12 +40,15 @@ When you activate SecurePress (and optionally install the MU loader for earlier 
      - `CsrfProtectionMiddleware`
      - `UrlSigner`, `SignedUrlMiddleware`, `NonceStoreInterface` (transient-backed), `SecretProviderInterface` (`SECUREPRESS_URL_SECRET` env → `wp_salt('auth')`)
      - `SecurityHeadersOptions`, `HeaderRegistryFactory`, `SecurityHeadersDispatcher`, `SecurityHeadersMiddleware`, `SecurityHeadersSettingsPage`
-     - `AuditLogSchema`, `AuditLogRepositoryInterface` (`WpdbAuditLogRepository`), `AuditLoggerInterface` (`AuditLogger`), `AuditLogPruner`, all `Listeners\*`, `AuditLogPage`
+     - `SessionSchema`, `SessionRepositoryInterface`, `SessionService`, session pruner (`securepress_sessions_prune` daily cron)
+     - `AuthenticationHardeningKernel`, `TwoFactorChallengeController`, two-factor services (`TotpProvider`, `EmailOtpProvider`, `RecoveryCodeService`, `TwoFactorService`), lockout + suspicion detector, `AuthNotifier`, `UserSecurityProfilePage`
    - Calls `Security::bootstrap($container)` and `AuditLog::bootstrap($container)` so the static facades can resolve services.
    - Registers the **security headers dispatcher** on the `send_headers` hook (priority 1) so the configured headers are emitted on every WordPress response.
    - Runs the **audit log schema installer** (idempotent, only does work when `securepress_audit_log_db_version` is older than the bundled version) and registers each enabled audit listener.
-   - Schedules the **daily audit log pruner** WP cron event.
-   - Registers admin hooks (notices, plugin row meta, **Settings → Security Headers** page, **Tools → Audit Logs** page).
+   - Runs the **sessions schema installer** (`wp_securepress_sessions`) when authentication hardening is enabled.
+   - Schedules the **daily audit log pruner** WP cron event and, when sessions are enabled, the **daily session pruner** (`securepress_sessions_prune`).
+   - Registers the **authentication hardening kernel** (login lockout, 2FA gate, session tracking, suspicious-login alerts) when `auth_hardening.enabled` is true.
+   - Registers admin hooks (notices, plugin row meta, **Settings → Security Headers** page, **Tools → Audit Logs** page, **Account Security** top-level menu when auth hardening is enabled).
 
 3. **Your code** registers middleware and protected routes during `init` or earlier:
    ```php
@@ -865,9 +869,78 @@ Disabling at the listener level is preferred to leaving listeners on but ignorin
 
 ---
 
+## Authentication hardening
+
+SecurePress adds an optional **authentication hardening** stack that layers on top of WordPress’s normal login:
+
+| Capability | What it does |
+|---|---|
+| **Two-factor authentication (2FA)** | After a correct username/password, users with 2FA enabled must enter a **TOTP code** (authenticator app) or an **email one-time code**. Recovery codes work as a fallback. |
+| **Login rate limiting** | Tracks failed attempts **per username** and **per IP** (transient-backed). Crossing the threshold temporarily locks further attempts and optionally emails the account holder. |
+| **Session / device awareness** | Persists session rows (`wp_securepress_sessions`) with a coarse device fingerprint (IP prefix + User-Agent digest). Users can revoke sessions from **Account Security**. |
+| **Email alerts** | Sends plain-text notifications for OTP delivery, 2FA enable/disable, recovery-code use, forced lockouts, and **suspicious logins** (see below). |
+| **Suspicious login detection** | Scores logins using pluggable rules. The shipped **New device** rule compares the current fingerprint against prior active sessions; when the score reaches the threshold (default **50**), an informational email is sent. |
+
+### Admin UI: Account Security
+
+When `auth_hardening.enabled` is `true`, every logged-in user sees **Account Security** in the WordPress admin sidebar (`read` capability).
+
+From there users can:
+
+- Enable **authenticator-app (TOTP)** 2FA — scan the provisioning URI or enter the secret manually, then confirm with a live code.
+- Enable **email OTP** 2FA — codes are emailed at each sign-in (recovery codes are still issued once at enrolment).
+- View **recovery codes** when they are generated or regenerated (shown once — store them offline).
+- Review **active SecurePress sessions** and revoke individual sessions or all other sessions (the current browser session is preserved when revoking “all others”).
+
+### Login flow with 2FA
+
+1. User submits valid credentials on `wp-login.php`.
+2. `AuthenticationHardeningKernel` intercepts **before** WordPress issues cookies (`authenticate` filter at priority **30**).
+3. If the account has 2FA enabled, SecurePress creates a short-lived **pending challenge** (stored in transients), sends an email OTP immediately when that method is active, and redirects to  
+   `wp-login.php?action=sp_2fa&token=…`
+4. The user enters their TOTP/email code or a recovery code.
+5. On success, SecurePress calls `wp_set_auth_cookie()` and fires `wp_login` so audit logging and other plugins observe the same hook as a normal login.
+
+### Login lockout defaults
+
+Defined under `auth_hardening.lockout` in `config/plugin.php`:
+
+- **5** failed attempts within **900** seconds (15 minutes) → lock for **900** seconds (tracked separately for username + IP).
+
+### Session retention
+
+Old rows in `wp_securepress_sessions` are removed by the daily cron hook `securepress_sessions_prune`. Retention is controlled by `auth_hardening.sessions.retention_days` (default **90**).
+
+### Configuration keys (`auth_hardening`)
+
+See [Configuration reference](#configuration-reference) for the flattened table. Common toggles:
+
+```php
+// config/plugin.php — disable the entire subsystem
+'auth_hardening' => [
+    'enabled' => false,
+],
+
+// Keep 2FA UI available but skip suspicious-login emails during staging
+'auth_hardening' => [
+    'suspicion' => [
+        'enabled' => false,
+    ],
+],
+```
+
+### Troubleshooting quick fixes
+
+- **“Too many failed attempts”** — wait out the lockout window or temporarily raise `auth_hardening.lockout.max_attempts`.
+- **Email OTP never arrives** — verify SMTP/`wp_mail` works; check spam; ensure the user’s profile email is valid.
+- **Authenticator codes fail** — confirm the server clock is synchronised (NTP); TOTP allows ±30s drift via skew windows.
+- **Revoked sessions still work** — SecurePress calls `WP_Session_Tokens::destroy()` for the matching verifier token when revoking from **Account Security**. If tokens were issued outside WordPress (custom SSO), revoke there too.
+
+---
+
 ## Configuration reference
 
-`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*` and `audit_log.*`, which are intended to be configured from the admin UI / `update_option` (security headers) or `config/plugin.php` (audit log).
+`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*` and `audit_log.*`, which are intended to be configured from the admin UI / `update_option` (security headers) or `config/plugin.php` (audit log). **`auth_hardening.*`** is read from `config/plugin.php` only (no dedicated ENV wiring yet — extend `Config::load()` if you need one).
 
 | Config key | ENV variable | Default | Used by |
 |---|---|---|---|
@@ -905,6 +978,19 @@ Disabling at the listener level is preferred to leaving listeners on but ignorin
 | `audit_log.listeners.file_editor` | — | `true` | Built-in theme / plugin file editor usage |
 | `audit_log.listeners.woocommerce` | — | `true` | WooCommerce orders / payments / refunds (no-op if WC inactive) |
 | `audit_log.option_allowlist` | — | siteurl, home, admin_email, users_can_register, default_role, blogname, blogdescription, wp_user_roles, permalink_structure, template, stylesheet | List of options the `OptionsListener` watches — extend as needed |
+| `auth_hardening.enabled` | — | `true` | Master killswitch for login lockout, 2FA gate, sessions, suspicion alerts |
+| `auth_hardening.two_factor.issuer` | — | `SecurePress` | Issuer label embedded in `otpauth://` provisioning URIs |
+| `auth_hardening.two_factor.challenge_ttl_seconds` | — | `600` | Pending password→2FA window |
+| `auth_hardening.lockout.enabled` | — | `true` | Failed-login counter / temporary bans |
+| `auth_hardening.lockout.max_attempts` | — | `5` | Failures allowed inside the rolling window |
+| `auth_hardening.lockout.window_seconds` | — | `900` | Rolling counter window |
+| `auth_hardening.lockout.lock_seconds` | — | `900` | Lock duration once threshold exceeded |
+| `auth_hardening.sessions.enabled` | — | `true` | Persist SecurePress session rows + daily prune |
+| `auth_hardening.sessions.retention_days` | — | `90` | Session table pruning horizon |
+| `auth_hardening.suspicion.enabled` | — | `true` | Aggregate suspicion scoring after login |
+| `auth_hardening.suspicion.alert_threshold` | — | `50` | Minimum score before emailing “new device” |
+| `auth_hardening.suspicion.rules.new_device` | — | `true` | Compare device fingerprint against prior sessions |
+| `auth_hardening.notifications.enabled` | — | `true` | Reserved — gate future SMTP overrides |
 | (none) | `SECUREPRESS_URL_SECRET` | `wp_salt('auth')` | URL signing secret — **set this in production** |
 
 ### Recommended production setup

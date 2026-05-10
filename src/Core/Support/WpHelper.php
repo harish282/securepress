@@ -393,4 +393,146 @@ final class WpHelper
 
         header('Location: ' . $url);
     }
+
+    /**
+     * Reads a single user_meta entry, returning the empty string on absence.
+     *
+     * Always passes `single = true` because the auth-hardening callers store one logical
+     * value per key (JSON blobs); the multi-value variant of user_meta is not used here.
+     */
+    public static function getUserMeta(int $userId, string $key, mixed $default = ''): mixed
+    {
+        if ($userId <= 0 || !\function_exists('get_user_meta')) {
+            return $default;
+        }
+
+        $value = \call_user_func('get_user_meta', $userId, $key, true);
+        if ($value === '' || $value === false || $value === null) {
+            return $default;
+        }
+
+        return $value;
+    }
+
+    public static function updateUserMeta(int $userId, string $key, mixed $value): bool
+    {
+        if ($userId <= 0 || !\function_exists('update_user_meta')) {
+            return false;
+        }
+
+        return (bool) \call_user_func('update_user_meta', $userId, $key, $value);
+    }
+
+    public static function deleteUserMeta(int $userId, string $key): bool
+    {
+        if ($userId <= 0 || !\function_exists('delete_user_meta')) {
+            return false;
+        }
+
+        return (bool) \call_user_func('delete_user_meta', $userId, $key);
+    }
+
+    /**
+     * Sends mail through `wp_mail` with optional headers. Returns false if `wp_mail`
+     * is not defined (i.e., not in a WordPress runtime).
+     *
+     * @param array<int, string>|string $to
+     * @param array<int, string> $headers
+     */
+    public static function sendMail(array|string $to, string $subject, string $message, array $headers = []): bool
+    {
+        if (!\function_exists('wp_mail')) {
+            return false;
+        }
+
+        return (bool) \call_user_func('wp_mail', $to, $subject, $message, $headers);
+    }
+
+    public static function generatePassword(int $length = 12, bool $specialChars = true): string
+    {
+        if (\function_exists('wp_generate_password')) {
+            $value = \call_user_func('wp_generate_password', $length, $specialChars);
+
+            return is_string($value) ? $value : '';
+        }
+
+        $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        if ($specialChars) {
+            $alphabet .= '!@#$%^&*()_+-=';
+        }
+
+        $result = '';
+        $max = strlen($alphabet) - 1;
+        for ($i = 0; $i < $length; $i++) {
+            $result .= $alphabet[random_int(0, $max)];
+        }
+
+        return $result;
+    }
+
+    public static function setAuthCookie(int $userId, bool $remember = false): void
+    {
+        if (\function_exists('wp_set_auth_cookie')) {
+            \call_user_func('wp_set_auth_cookie', $userId, $remember);
+        }
+    }
+
+    /**
+     * Returns the WP_User-shaped object for the given identifier, or null.
+     *
+     * `field` matches the second argument to {@see get_user_by()}: `id`, `email`,
+     * `login`, or `slug`.
+     */
+    public static function getUserBy(string $field, mixed $value): ?object
+    {
+        if (!\function_exists('get_user_by')) {
+            return null;
+        }
+
+        $user = \call_user_func('get_user_by', $field, $value);
+
+        return is_object($user) ? $user : null;
+    }
+
+    public static function loginUrl(string $redirect = ''): string
+    {
+        if (\function_exists('wp_login_url')) {
+            return (string) \call_user_func('wp_login_url', $redirect);
+        }
+
+        return '/wp-login.php' . ($redirect !== '' ? '?redirect_to=' . rawurlencode($redirect) : '');
+    }
+
+    public static function siteUrl(string $path = ''): string
+    {
+        if (\function_exists('site_url')) {
+            return (string) \call_user_func('site_url', $path);
+        }
+
+        return '/' . ltrim($path, '/');
+    }
+
+    public static function blogName(): string
+    {
+        if (\function_exists('get_bloginfo')) {
+            $value = \call_user_func('get_bloginfo', 'name');
+            if (is_string($value) && $value !== '') {
+                return $value;
+            }
+        }
+
+        return 'WordPress';
+    }
+
+    /**
+     * Fires a WordPress action with the given arguments. Used by SecurePress to
+     * synthesise `wp_login` after a 2FA-verified login so other listeners (the audit
+     * logger, third-party plugins) see the same hook they would on a vanilla flow.
+     */
+    public static function doAction(string $hook, mixed ...$args): void
+    {
+        if (\function_exists('do_action')) {
+            \call_user_func_array('do_action', [$hook, ...$args]);
+        }
+    }
 }

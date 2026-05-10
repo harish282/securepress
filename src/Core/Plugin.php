@@ -6,6 +6,9 @@ namespace SecurePress\Core;
 
 use SecurePress\Admin\AuditLogPage;
 use SecurePress\Admin\SecurityHeadersSettingsPage;
+use SecurePress\Admin\UserSecurityProfilePage;
+use SecurePress\Auth\AuthenticationHardeningKernel;
+use SecurePress\Auth\TwoFactorChallengeController;
 use SecurePress\Core\Audit\AuditLogger;
 use SecurePress\Core\Audit\AuditLoggerInterface;
 use SecurePress\Core\Audit\AuditLogPruner;
@@ -19,6 +22,31 @@ use SecurePress\Core\Audit\Listeners\PluginListener;
 use SecurePress\Core\Audit\Listeners\UserRoleListener;
 use SecurePress\Core\Audit\Listeners\WooCommerceListener;
 use SecurePress\Core\Audit\WpdbAuditLogRepository;
+use SecurePress\Core\Auth\Lockout\LockoutStoreInterface;
+use SecurePress\Core\Auth\Lockout\LoginLockoutPolicy;
+use SecurePress\Core\Auth\Lockout\LoginLockoutService;
+use SecurePress\Core\Auth\Lockout\TransientLockoutStore;
+use SecurePress\Core\Auth\Notifications\AuthNotifier;
+use SecurePress\Core\Auth\Notifications\MailerInterface;
+use SecurePress\Core\Auth\Notifications\WpMailer;
+use SecurePress\Core\Auth\Sessions\WpSessionDestroyer;
+use SecurePress\Core\Auth\Sessions\SessionDestroyerInterface;
+use SecurePress\Core\Auth\Sessions\SessionFingerprinter;
+use SecurePress\Core\Auth\Sessions\SessionPruner;
+use SecurePress\Core\Auth\Sessions\SessionRepositoryInterface;
+use SecurePress\Core\Auth\Sessions\SessionSchema;
+use SecurePress\Core\Auth\Sessions\SessionService;
+use SecurePress\Core\Auth\Sessions\WpdbSessionRepository;
+use SecurePress\Core\Auth\SuspiciousLogin\Rules\NewDeviceRule;
+use SecurePress\Core\Auth\SuspiciousLogin\SuspicionDetector;
+use SecurePress\Core\Auth\TwoFactor\ChallengeStoreInterface;
+use SecurePress\Core\Auth\TwoFactor\EmailOtpProvider;
+use SecurePress\Core\Auth\TwoFactor\RecoveryCodeService;
+use SecurePress\Core\Auth\TwoFactor\TotpProvider;
+use SecurePress\Core\Auth\TwoFactor\TransientChallengeStore;
+use SecurePress\Core\Auth\TwoFactor\TwoFactorService;
+use SecurePress\Core\Auth\TwoFactor\TwoFactorUserRepositoryInterface;
+use SecurePress\Core\Auth\TwoFactor\UserMetaTwoFactorRepository;
 use SecurePress\Core\Config\Config;
 use SecurePress\Core\Headers\HeaderRegistryFactory;
 use SecurePress\Core\Headers\SecurityHeadersDispatcher;
@@ -76,6 +104,16 @@ final class Plugin
         $this->container->get(AuditLogSchema::class)->install();
         $this->registerAuditListeners();
         $this->container->get(AuditLogPruner::class)->register();
+
+        $this->container->get(SessionSchema::class)->install();
+        if ((bool) $this->container->get(Config::class)->get('auth_hardening.enabled', true)
+            && (bool) $this->container->get(Config::class)->get('auth_hardening.sessions.enabled', true)) {
+            $this->container->get(SessionPruner::class)->register();
+        }
+
+        if ((bool) $this->container->get(Config::class)->get('auth_hardening.enabled', true)) {
+            $this->container->get(AuthenticationHardeningKernel::class)->register();
+        }
 
         $this->registerAdminHooks();
     }
@@ -346,6 +384,169 @@ final class Plugin
                 $container->get(View::class),
             )
         );
+        $this->registerAuthHardeningServices();
+    }
+
+    private function registerAuthHardeningServices(): void
+    {
+        $this->container->singleton(
+            TotpProvider::class,
+            static fn (): TotpProvider => new TotpProvider()
+        );
+        $this->container->singleton(
+            EmailOtpProvider::class,
+            static fn (): EmailOtpProvider => new EmailOtpProvider()
+        );
+        $this->container->singleton(
+            RecoveryCodeService::class,
+            static fn (): RecoveryCodeService => new RecoveryCodeService()
+        );
+        $this->container->singleton(
+            TwoFactorUserRepositoryInterface::class,
+            static fn (): TwoFactorUserRepositoryInterface => new UserMetaTwoFactorRepository()
+        );
+        $this->container->singleton(
+            ChallengeStoreInterface::class,
+            static fn (): ChallengeStoreInterface => new TransientChallengeStore()
+        );
+        $this->container->singleton(
+            MailerInterface::class,
+            static fn (): MailerInterface => new WpMailer()
+        );
+        $this->container->singleton(
+            AuthNotifier::class,
+            static fn (Container $container): AuthNotifier => new AuthNotifier(
+                $container->get(MailerInterface::class),
+                $container->get(LoggerInterface::class),
+                WpHelper::blogName(),
+                WpHelper::siteUrl(),
+            )
+        );
+        $this->container->singleton(
+            TwoFactorService::class,
+            static fn (Container $container): TwoFactorService => new TwoFactorService(
+                $container->get(TwoFactorUserRepositoryInterface::class),
+                $container->get(ChallengeStoreInterface::class),
+                $container->get(TotpProvider::class),
+                $container->get(EmailOtpProvider::class),
+                $container->get(RecoveryCodeService::class),
+                $container->get(AuthNotifier::class),
+                $container->get(LoggerInterface::class),
+                (string) $container->get(Config::class)->get('auth_hardening.two_factor.issuer', 'SecurePress'),
+                (int) $container->get(Config::class)->get('auth_hardening.two_factor.challenge_ttl_seconds', TwoFactorService::CHALLENGE_TTL_SECONDS),
+            )
+        );
+        $this->container->singleton(
+            SessionSchema::class,
+            static fn (): SessionSchema => new SessionSchema()
+        );
+        $this->container->singleton(
+            SessionRepositoryInterface::class,
+            static fn (Container $container): SessionRepositoryInterface => new WpdbSessionRepository(
+                $container->get(SessionSchema::class)
+            )
+        );
+        $this->container->singleton(
+            SessionFingerprinter::class,
+            static fn (): SessionFingerprinter => new SessionFingerprinter()
+        );
+        $this->container->singleton(
+            SessionDestroyerInterface::class,
+            static fn (): SessionDestroyerInterface => new WpSessionDestroyer()
+        );
+        $this->container->singleton(
+            SessionService::class,
+            static fn (Container $container): SessionService => new SessionService(
+                $container->get(SessionRepositoryInterface::class),
+                $container->get(SessionFingerprinter::class),
+                $container->get(LoggerInterface::class),
+                $container->get(SessionDestroyerInterface::class),
+            )
+        );
+        $this->container->singleton(
+            LockoutStoreInterface::class,
+            static fn (): LockoutStoreInterface => new TransientLockoutStore()
+        );
+        $this->container->singleton(
+            LoginLockoutService::class,
+            static function (Container $container): LoginLockoutService {
+                $config = $container->get(Config::class);
+                $policy = LoginLockoutPolicy::fromArray([
+                    'enabled' => (bool) $config->get('auth_hardening.lockout.enabled', true),
+                    'max_attempts' => (int) $config->get('auth_hardening.lockout.max_attempts', 5),
+                    'window_seconds' => (int) $config->get('auth_hardening.lockout.window_seconds', 900),
+                    'lock_seconds' => (int) $config->get('auth_hardening.lockout.lock_seconds', 900),
+                ]);
+
+                return new LoginLockoutService(
+                    $container->get(LockoutStoreInterface::class),
+                    $policy
+                );
+            }
+        );
+        $this->container->singleton(
+            SuspicionDetector::class,
+            static function (Container $container): SuspicionDetector {
+                $config = $container->get(Config::class);
+                $rules = [];
+                if ((bool) $config->get('auth_hardening.suspicion.rules.new_device', true)) {
+                    $rules[] = new NewDeviceRule(
+                        $container->get(SessionRepositoryInterface::class),
+                        60,
+                    );
+                }
+
+                return new SuspicionDetector($rules);
+            }
+        );
+        $this->container->singleton(
+            TwoFactorChallengeController::class,
+            static fn (Container $container): TwoFactorChallengeController => new TwoFactorChallengeController(
+                $container->get(TwoFactorService::class),
+                $container->get(View::class),
+                $container->get(LoggerInterface::class),
+            )
+        );
+        $this->container->singleton(
+            AuthenticationHardeningKernel::class,
+            static function (Container $container): AuthenticationHardeningKernel {
+                $config = $container->get(Config::class);
+
+                return new AuthenticationHardeningKernel(
+                    $container->get(TwoFactorService::class),
+                    $container->get(LoginLockoutService::class),
+                    $container->get(SessionService::class),
+                    $container->get(SuspicionDetector::class),
+                    $container->get(SessionFingerprinter::class),
+                    $container->get(AuthNotifier::class),
+                    $container->get(TwoFactorChallengeController::class),
+                    $container->get(LoggerInterface::class),
+                    [
+                        'enabled' => (bool) $config->get('auth_hardening.enabled', true),
+                        'lockout_enabled' => (bool) $config->get('auth_hardening.lockout.enabled', true),
+                        'sessions_enabled' => (bool) $config->get('auth_hardening.sessions.enabled', true),
+                        'suspicion_enabled' => (bool) $config->get('auth_hardening.suspicion.enabled', true),
+                    ]
+                );
+            }
+        );
+        $this->container->singleton(
+            SessionPruner::class,
+            static fn (Container $container): SessionPruner => new SessionPruner(
+                $container->get(SessionRepositoryInterface::class),
+                $container->get(LoggerInterface::class),
+                (int) $container->get(Config::class)->get('auth_hardening.sessions.retention_days', 90),
+            )
+        );
+        $this->container->singleton(
+            UserSecurityProfilePage::class,
+            static fn (Container $container): UserSecurityProfilePage => new UserSecurityProfilePage(
+                $container->get(TwoFactorService::class),
+                $container->get(SessionService::class),
+                $container->get(View::class),
+                $container->get(LoggerInterface::class),
+            )
+        );
     }
 
     private function registerAuditListeners(): void
@@ -386,6 +587,9 @@ final class Plugin
         WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
         $this->container->get(SecurityHeadersSettingsPage::class)->register();
         $this->container->get(AuditLogPage::class)->register();
+        if ((bool) $this->container->get(Config::class)->get('auth_hardening.enabled', true)) {
+            $this->container->get(UserSecurityProfilePage::class)->register();
+        }
     }
 
     private function isMuLoaderInstalled(): bool
