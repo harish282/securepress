@@ -12,6 +12,8 @@ use SecurePress\Core\Middleware\MiddlewareInterface;
 use SecurePress\Core\Middleware\MiddlewareRegistry;
 use SecurePress\Core\Middleware\MiddlewareStack;
 use SecurePress\Facades\Security;
+use SecurePress\Sdk\Csrf\CsrfTokenManager;
+use SecurePress\Tests\Stubs\WpStubState;
 
 final class SecurityFacadeTest extends TestCase
 {
@@ -116,13 +118,32 @@ final class SecurityFacadeTest extends TestCase
         self::assertSame('missing-signature', $result->reason);
     }
 
-    public function test_verify_csrf_throws_until_implemented(): void
+    public function test_verify_csrf_round_trips_through_token_manager(): void
     {
+        WpStubState::reset();
         $container = $this->createMinimalContainer();
+        $container->singleton(CsrfTokenManager::class, static fn (): CsrfTokenManager => new CsrfTokenManager());
         Security::bootstrap($container);
 
-        $this->expectException(LogicException::class);
-        Security::verifyCsrf();
+        $token = Security::csrfToken('my_form');
+
+        self::assertTrue(Security::verifyCsrf($token, 'my_form'));
+        self::assertFalse(Security::verifyCsrf('garbage', 'my_form'));
+        self::assertFalse(Security::verifyCsrf('', 'my_form'));
+        self::assertSame(1, Security::csrfTick($token, 'my_form'));
+    }
+
+    public function test_csrf_field_renders_hidden_input(): void
+    {
+        WpStubState::reset();
+        $container = $this->createMinimalContainer();
+        $container->singleton(CsrfTokenManager::class, static fn (): CsrfTokenManager => new CsrfTokenManager());
+        Security::bootstrap($container);
+
+        $html = Security::csrfField('my_form');
+
+        self::assertStringContainsString('type="hidden"', $html);
+        self::assertStringContainsString('name="_wpnonce"', $html);
     }
 
     public function test_middleware_throws_when_class_exists_but_does_not_implement_middleware(): void

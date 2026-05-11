@@ -10,9 +10,10 @@ This guide shows what SecurePress does once you install and activate it, and how
 6. [Security headers](#security-headers)
 7. [Audit logging](#audit-logging)
 8. [Authentication hardening](#authentication-hardening)
-9. [Configuration reference](#configuration-reference)
-10. [Recipes / cookbook](#recipes--cookbook)
-11. [Troubleshooting](#troubleshooting)
+9. [Security SDK (developer API)](#security-sdk-developer-api)
+10. [Configuration reference](#configuration-reference)
+11. [Recipes / cookbook](#recipes--cookbook)
+12. [Troubleshooting](#troubleshooting)
 
 > **Convention.** All examples use the `SecurePress\Facades\Security` facade. Import it once at the top of your file:
 >
@@ -48,7 +49,7 @@ When you activate SecurePress (and optionally install the MU loader for earlier 
    - Runs the **sessions schema installer** (`wp_securepress_sessions`) when authentication hardening is enabled.
    - Schedules the **daily audit log pruner** WP cron event and, when sessions are enabled, the **daily session pruner** (`securepress_sessions_prune`).
    - Registers the **authentication hardening kernel** (login lockout, 2FA gate, session tracking, suspicious-login alerts) when `auth_hardening.enabled` is true.
-   - Registers admin hooks (notices, plugin row meta, **Settings → Security Headers** page, **Tools → Audit Logs** page, **Account Security** top-level menu when auth hardening is enabled).
+   - Registers admin hooks (notices, plugin row meta, **Settings → Security Headers** page, **Settings → Authentication** page, **Tools → Audit Logs** page, **Account Security** top-level menu when auth hardening is enabled).
 
 3. **Your code** registers middleware and protected routes during `init` or earlier:
    ```php
@@ -881,9 +882,24 @@ SecurePress adds an optional **authentication hardening** stack that layers on t
 | **Email alerts** | Sends plain-text notifications for OTP delivery, 2FA enable/disable, recovery-code use, forced lockouts, and **suspicious logins** (see below). |
 | **Suspicious login detection** | Scores logins using pluggable rules. The shipped **New device** rule compares the current fingerprint against prior active sessions; when the score reaches the threshold (default **50**), an informational email is sent. |
 
-### Admin UI: Account Security
+### Admin UI: Settings → Authentication
 
-When `auth_hardening.enabled` is `true`, every logged-in user sees **Account Security** in the WordPress admin sidebar (`read` capability).
+Site administrators (`manage_options`) configure the subsystem from **Settings → Authentication**. The page persists every value into a single autoloaded option (`securepress_auth_hardening`) using the WordPress Settings API, with the same nonce + capability protections WP applies to its own option pages. Available toggles:
+
+- **Authentication Hardening** — master killswitch. Disabling it stops registering the login lockout, 2FA gate, session tracking, and suspicion alerts on the next request. Existing 2FA enrolments remain in place; re-enabling restores enforcement immediately.
+- **Login lockout** — turn lockout on/off; configure max attempts (1–100), counting window (60–86400 s), and lock duration (60–86400 s).
+- **Sessions** — toggle session tracking and adjust retention (1–3650 days).
+- **Suspicious-login detection** — toggle the detector, set the alert threshold (0–200), and individually enable/disable the shipped rules (currently `new_device`).
+- **Two-factor authentication** — pick the issuer label that shows up inside authenticator apps; tune the password→2FA challenge TTL (60–3600 s).
+- **Email notifications** — global mute switch for all auth-hardening emails (OTP delivery, 2FA on/off, recovery-code use, lockout, suspicious-login). Useful for staging environments.
+
+Saved values *override* the matching `config/plugin.php` defaults and take effect on the next request — every consumer (the kernel, the lockout policy, the suspicion detector, the session pruner, the notifier, the 2FA service) resolves its values via `AuthHardeningOptions` at container-resolution time.
+
+> Programmatic access: `$plugin->container->get(\SecurePress\Core\Auth\AuthHardeningOptions::class)->all()` returns the fully merged shape, identical to what the page renders.
+
+### User UI: Account Security
+
+When the master switch is enabled, every logged-in user sees **Account Security** in the WordPress admin sidebar (`read` capability).
 
 From there users can:
 
@@ -913,10 +929,13 @@ Old rows in `wp_securepress_sessions` are removed by the daily cron hook `secure
 
 ### Configuration keys (`auth_hardening`)
 
-See [Configuration reference](#configuration-reference) for the flattened table. Common toggles:
+See [Configuration reference](#configuration-reference) for the flattened table. Two ways to override:
+
+1. **Settings → Authentication** (UI) — recommended for production. Persists into the `securepress_auth_hardening` option and overrides the file-level defaults.
+2. **`config/plugin.php`** — sets the *defaults* used when no admin override is stored. Useful for shipping environment-aware bundles (staging defaults differ from production).
 
 ```php
-// config/plugin.php — disable the entire subsystem
+// config/plugin.php — disable the entire subsystem at the code level (admin can flip back)
 'auth_hardening' => [
     'enabled' => false,
 ],
@@ -929,6 +948,19 @@ See [Configuration reference](#configuration-reference) for the flattened table.
 ],
 ```
 
+Reading the resolved (defaults + admin overrides) shape from PHP:
+
+```php
+use SecurePress\Core\Auth\AuthHardeningOptions;
+
+/** @var \SecurePress\Core\Plugin $plugin */
+$opts = $plugin->container->get(AuthHardeningOptions::class)->all();
+
+if ($opts['enabled'] && $opts['lockout']['enabled']) {
+    // …
+}
+```
+
 ### Troubleshooting quick fixes
 
 - **“Too many failed attempts”** — wait out the lockout window or temporarily raise `auth_hardening.lockout.max_attempts`.
@@ -938,9 +970,213 @@ See [Configuration reference](#configuration-reference) for the flattened table.
 
 ---
 
+## Security SDK (developer API)
+
+SecurePress isn't just a plugin — it's a developer toolkit. Every primitive (CSRF, rate limit, signed URLs, 2FA, sessions, lockout, audit) is exposed through one cohesive static facade: **`SecurePress\Facades\Security`**. Pulling protections from a single import means your code becomes idiomatic SecurePress code, and migrating off it later means rewriting a lot of call sites — which is exactly the kind of ecosystem stickiness "developer-first" is supposed to create.
+
+```php
+use SecurePress\Facades\Security;
+```
+
+The facade is bootstrapped automatically by `Plugin::register()`; third-party code should never call `Security::bootstrap()` manually.
+
+### Top-level shortcuts
+
+#### Rate limiting
+
+```php
+$result = Security::rateLimit('user:' . $userId, limit: 60, window: 60);
+if (!$result->allowed) {
+    wp_die('Too many requests', 'Too Many Requests', ['response' => 429]);
+}
+```
+
+For the common "deny or execute" case, use `throttle()`:
+
+```php
+use SecurePress\Sdk\Exceptions\RateLimitExceededException;
+
+try {
+    $report = Security::throttle('report.expensive', limit: 5, window: 60, callback: fn () => generateReport());
+} catch (RateLimitExceededException $e) {
+    header('Retry-After: ' . $e->retryAfter());
+    status_header(429);
+    exit;
+}
+```
+
+`Security::resetRateLimit('user:42')` clears the counter (useful for "unlock my account" admin actions or post-payment reconciliation).
+
+#### CSRF tokens
+
+```php
+$token = Security::csrfToken('export_form');
+
+echo Security::csrfField('export_form');
+
+if (!Security::verifyCsrf($_POST['_wpnonce'] ?? '', 'export_form')) {
+    wp_die('Bad CSRF token.', 'Forbidden', ['response' => 403]);
+}
+```
+
+`Security::csrfTick()` returns the underlying lifecycle integer (1 = fresh, 2 = within grace, 0 = invalid) if you need to differentiate "stale but accepted" from "fresh".
+
+#### Signed URLs
+
+```php
+$url = home_url(Security::signedUrl('/download', expires: 3600, params: ['file' => 'manual.pdf']));
+
+// One-time use (for password resets, magic links, invites):
+$reset = home_url(Security::signedUrl('/reset', expires: 1800, params: ['user' => $userId], oneTime: true));
+
+$result = Security::verifySignedUrl(); // verifies $_SERVER['REQUEST_URI']
+if (!$result->valid) {
+    wp_die($result->reason);
+}
+```
+
+### Fluent route builder
+
+The `route()` builder is the most ergonomic way to compose multiple guards. Each method appends a middleware to a pipeline scoped to that route, and `run()` executes the callback only if every guard passes:
+
+```php
+use SecurePress\Sdk\Exceptions\RouteGuardException;
+
+add_action('admin_post_my_export', function () {
+    try {
+        Security::route('/admin-post/my_export')
+            ->capability('manage_options')
+            ->csrf()
+            ->rateLimit(limit: 5, window: 60)
+            ->run(function () {
+                streamCsv(getMyData());
+            });
+    } catch (RouteGuardException $e) {
+        status_header($e->statusCode);
+        foreach ($e->headers as $name => $value) {
+            header("{$name}: {$value}");
+        }
+        wp_die($e->getMessage());
+    }
+});
+```
+
+Available guard methods:
+
+| Method | Guard | Failure status |
+|---|---|---|
+| `->capability(string $cap)` | WordPress `current_user_can($cap)` | `403` |
+| `->csrf(?array $actions = null)` | `CsrfProtectionMiddleware` | `403` |
+| `->rateLimit(?int $limit, ?int $window, ?string $key)` | `RateLimitMiddleware` | `429` (sets `Retry-After`) |
+| `->signedUrl(bool $oneTime = false)` | `SignedUrlMiddleware` | `403` / `410` |
+| `->withMiddleware(MiddlewareInterface $m)` | Your custom middleware | depends on middleware |
+
+`run(callable)` returns the callback's return value. `check()` runs the guards without invoking a callback and returns the final context array — useful when the protected work is conditional.
+
+### Sub-facades
+
+For the larger feature subsystems, the facade exposes instance-style sub-APIs. They wrap the underlying services with names tuned for developers; the underlying services are free to evolve as long as these surfaces hold.
+
+#### Two-factor
+
+```php
+if (Security::twoFactor()->isEnabledFor($user->ID)) {
+    // user has 2FA enabled
+}
+
+$codes = Security::twoFactor()->regenerateRecoveryCodes($user->ID);
+Security::twoFactor()->disable($user->ID, $user->user_email, $user->display_name);
+```
+
+#### Sessions
+
+```php
+foreach (Security::sessions()->activeFor($user->ID) as $session) {
+    echo $session->ip, ' — ', $session->userAgent, "\n";
+}
+
+Security::sessions()->revoke($user->ID, $sessionId);
+Security::sessions()->revokeAllExceptCurrent($user->ID, $currentSessionId);
+```
+
+#### Lockout
+
+Useful for custom REST/AJAX login endpoints that should share the same brute-force counters as `wp-login.php`:
+
+```php
+$api = Security::lockout();
+
+if ($api->isLocked($username, $ip)) {
+    return new WP_Error('locked', 'Too many failed attempts.', ['status' => 423]);
+}
+
+if (!password_verify($input, $hash)) {
+    $api->registerFailure($username, $ip);
+    return new WP_Error('invalid', 'Bad credentials.');
+}
+
+$api->clear($username, $ip);
+```
+
+#### Audit logging
+
+`Security::audit()` mirrors the static `AuditLog` facade as instance methods so everything routes through the same entry point:
+
+```php
+Security::audit()->info('cart.cleared', ['cart_id' => $id]);
+
+Security::audit()
+    ->for($user)
+    ->category('woocommerce')
+    ->action('refund.issued')
+    ->context(['amount' => $amount])
+    ->record();
+```
+
+### Events
+
+The facade ships a tiny in-process event bus for the SDK so plugins can react to SecurePress activity without learning the underlying hook names. Listeners run synchronously in registration order. Every fire is also bridged to `do_action('securepress.<event>', ...$args)` for WordPress interop.
+
+```php
+Security::on('login.failed', function (string $username, ?string $ip) {
+    error_log("Failed login for {$username} from {$ip}");
+});
+
+Security::fire('login.failed', $username, $ip);
+
+// The same event is observable from native WP hooks:
+add_action('securepress.login.failed', function ($username, $ip) {
+    // ...
+});
+```
+
+`Security::on()` returns an unsubscriber:
+
+```php
+$off = Security::on('cart.checkout', $listener);
+// later …
+$off();
+```
+
+### Introspection
+
+```php
+Security::version();                                  // "0.9.0"
+Security::isFeatureEnabled('auth_hardening');         // bool
+Security::isFeatureEnabled('auth_hardening.lockout'); // bool
+Security::isFeatureEnabled('security_headers');       // bool
+Security::isFeatureEnabled('audit_logging');          // bool
+```
+
+### Stability contract
+
+Everything documented under **Security SDK** is part of the stable public API. The underlying classes in `src/Core/*` and `src/Sdk/*` may evolve — depend on the facade methods, not the implementation classes.
+
+---
+
 ## Configuration reference
 
-`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*` and `audit_log.*`, which are intended to be configured from the admin UI / `update_option` (security headers) or `config/plugin.php` (audit log). **`auth_hardening.*`** is read from `config/plugin.php` only (no dedicated ENV wiring yet — extend `Config::load()` if you need one).
+`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*`, `audit_log.*`, and `auth_hardening.*`, which are intended to be configured from the admin UI (`Settings → Security Headers` / `Settings → Authentication`) or `config/plugin.php` (`audit_log.*`). Admin overrides are stored in autoloaded `wp_options` and merged on top of the file defaults; no ENV wiring is needed for those.
 
 | Config key | ENV variable | Default | Used by |
 |---|---|---|---|
@@ -1410,13 +1646,13 @@ The test bootstrap (`tests/bootstrap.php`) loads stubs for `wp_verify_nonce`, `w
 
 ## What's NOT in this build (yet)
 
-The current build provides the **primitives** (signer, limiter, CSRF middleware, signed-URL middleware, security headers manager, audit logger + viewer, secret/nonce stores, DI bindings, facades). Things still on the roadmap:
+The current build provides the **primitives** (signer, limiter, CSRF middleware, signed-URL middleware, security headers manager, audit logger + viewer, 2FA / session / lockout services, the developer SDK on `Security::` and `AuditLog::`, secret/nonce stores, DI bindings). Things still on the roadmap:
 
-- An HTTP **kernel** that automatically dispatches the middleware stack on every request matching a registered route — until then, integrate the pipeline manually as shown in the recipes above.
-- **2FA** flows
+- An HTTP **kernel** that automatically dispatches the global middleware stack on every request matching a registered route — until then, use the fluent `Security::route()->run(...)` builder to wire guards on a per-route basis.
 - **Bot/firewall** rules
-- A unified admin **dashboard** UI (currently each feature has its own page: Settings → Security Headers, Tools → Audit Logs)
+- A unified admin **dashboard** UI (currently each feature has its own page: Settings → Security Headers, Settings → Authentication, Tools → Audit Logs, Account Security)
 - An **audit log CSV / NDJSON exporter** for offline forensics
-- **WP-CLI** commands (`wp securepress audit:list`, `wp securepress audit:prune`)
+- **WP-CLI** commands (`wp securepress audit:list`, `wp securepress audit:prune`, `wp securepress 2fa:status <user>`)
+- **PHP 8 attribute-based** route protection (`#[ProtectedRoute(rate: 60, csrf: true)]`) — the manual `Security::route(...)->...->run(...)` builder is the supported approach today.
 
 See [`ROADMAP_AGILE.md`](../ROADMAP_AGILE.md) for the prioritized backlog.

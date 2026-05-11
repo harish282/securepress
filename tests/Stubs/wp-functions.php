@@ -157,6 +157,13 @@ if (!function_exists('add_action')) {
     }
 }
 
+if (!function_exists('current_user_can')) {
+    function current_user_can(string $capability): bool
+    {
+        return isset(WpStubState::$currentUserCapabilities[$capability]);
+    }
+}
+
 if (!function_exists('add_filter')) {
     function add_filter(string $hook, mixed $callback, int $priority = 10, int $acceptedArgs = 1): bool
     {

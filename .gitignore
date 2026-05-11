@@ -22,3 +22,4 @@ node_modules/
 Thumbs.db
 .idea/
 .vscode/
+.phpunit.result.cache

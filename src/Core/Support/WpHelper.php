@@ -6,14 +6,14 @@ namespace SecurePress\Core\Support;
 
 final class WpHelper
 {
-    public static function addAction(string $hook, array $callback, int $priority = 10, int $acceptedArgs = 1): void
+    public static function addAction(string $hook, callable $callback, int $priority = 10, int $acceptedArgs = 1): void
     {
         if (\function_exists('add_action')) {
             \call_user_func('add_action', $hook, $callback, $priority, $acceptedArgs);
         }
     }
 
-    public static function addFilter(string $hook, array $callback, int $priority = 10, int $acceptedArgs = 1): void
+    public static function addFilter(string $hook, callable $callback, int $priority = 10, int $acceptedArgs = 1): void
     {
         if (\function_exists('add_filter')) {
             \call_user_func('add_filter', $hook, $callback, $priority, $acceptedArgs);

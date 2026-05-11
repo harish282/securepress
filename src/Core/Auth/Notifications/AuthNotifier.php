@@ -26,6 +26,14 @@ final class AuthNotifier
         private readonly LoggerInterface $logger,
         private readonly string $siteName,
         private readonly string $siteUrl,
+        /**
+         * Master killswitch. When false, every public method short-circuits to `false`
+         * without invoking the mailer — used by the admin-side "Send security emails"
+         * toggle so staging environments don't fire real OTP / lockout emails. The
+         * decision is made at construction time so that call-sites stay declarative
+         * (no per-method "is notifications on?" checks).
+         */
+        private readonly bool $enabled = true,
     ) {
     }
 
@@ -158,6 +166,10 @@ TXT;
 
     private function dispatch(string $to, string $subject, string $body, string $template): bool
     {
+        if (!$this->enabled) {
+            return false;
+        }
+
         if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
             $this->logger->warning(sprintf('AuthNotifier: refusing to send "%s" to invalid address.', $template));
 

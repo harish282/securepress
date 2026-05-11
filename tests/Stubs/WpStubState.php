@@ -35,6 +35,9 @@ final class WpStubState
     /** @var array{ID:int,user_login:string,display_name:string}|null */
     public static ?array $currentUser = null;
 
+    /** @var array<string, true> Capability names the current user holds. */
+    public static array $currentUserCapabilities = [];
+
     /** @var array<string, array{timestamp:int,recurrence:string}> */
     public static array $scheduledEvents = [];
 
@@ -70,6 +73,7 @@ final class WpStubState
         self::$options = [];
         self::$currentUserId = 0;
         self::$currentUser = null;
+        self::$currentUserCapabilities = [];
         self::$scheduledEvents = [];
         self::$userMeta = [];
         self::$sentMail = [];
