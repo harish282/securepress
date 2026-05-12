@@ -7,6 +7,7 @@ namespace SecurePress\Tests\Unit\WooCommerce\Pipelines;
 use PHPUnit\Framework\TestCase;
 use SecurePress\WooCommerce\Detection\Decision;
 use SecurePress\WooCommerce\Detection\DetectionContext;
+use SecurePress\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
 use SecurePress\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
 use SecurePress\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
 use SecurePress\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware;
@@ -109,32 +110,33 @@ final class CheckoutPipelineTest extends TestCase
         self::assertTrue($r->blocked());
     }
 
-    public function test_behavior_middleware_flags_impossible_timing(): void
+    public function test_bot_middleware_denies_on_impossible_timing(): void
     {
-        $clock = new BehaviorClock('secret', fn (): int => 1000);
+        // BotCheckoutMiddleware now owns timing checks. A submission that
+        // arrives before the configured floor is an unambiguous bot tell, so
+        // the pipeline DENIES rather than CHALLENGES.
+        $now = 1000;
+        $clock = new BehaviorClock('secret', static function () use (&$now): int {
+            return $now;
+        });
         $clock->mark('tok-1');
-        // No time elapsed: 0 seconds — way below the 3 second floor.
-        $clock2 = new BehaviorClock('secret', fn (): int => 1001);
-        // Use the same transient store by re-using the underlying option/transient state.
-        // For this test, build a context with elapsed=0 by reusing the same start mark.
         $pipeline = new CheckoutPipeline([
-            new CheckoutBehaviorMiddleware($clock, minSecondsToSubmit: 5),
+            new BotCheckoutMiddleware($clock, minSecondsToSubmit: 5),
             new FraudScoreMiddleware(new FraudScoreService(30, 80)),
         ]);
 
-        $ctx = (new DetectionContext(DetectionContext::KIND_CHECKOUT, '203.0.113.1', 'ua'))
+        $ctx = (new DetectionContext(DetectionContext::KIND_CHECKOUT, '203.0.113.1', 'Mozilla/5.0'))
             ->withData('clock_token', 'tok-1');
 
         $result = $pipeline->run($ctx);
 
-        self::assertSame(Decision::CHALLENGE, $result->decision->outcome);
+        self::assertSame(Decision::DENY, $result->decision->outcome);
     }
 
     public function test_country_mismatch_flagged_by_behavior_middleware(): void
     {
-        $clock = new BehaviorClock('secret');
         $pipeline = new CheckoutPipeline([
-            new CheckoutBehaviorMiddleware($clock, minSecondsToSubmit: 0, countryMismatchWeight: 50),
+            new CheckoutBehaviorMiddleware(countryMismatchWeight: 50),
             new FraudScoreMiddleware(new FraudScoreService(40, 80)),
         ]);
 
@@ -165,9 +167,10 @@ final class CheckoutPipelineTest extends TestCase
 
         return new CheckoutPipeline([
             new VelocityDetectionMiddleware($store, 3, 8, 120),
+            new BotCheckoutMiddleware($clock, minSecondsToSubmit: 0),
             new DisposableEmailMiddleware(new DisposableEmailRegistry()),
             new CartSimilarityMiddleware(new CartFingerprinter(), $store),
-            new CheckoutBehaviorMiddleware($clock, minSecondsToSubmit: 3),
+            new CheckoutBehaviorMiddleware(),
             new FraudScoreMiddleware(new FraudScoreService(40, 80)),
         ]);
     }

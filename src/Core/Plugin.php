@@ -64,6 +64,7 @@ use SecurePress\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
 use SecurePress\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware;
 use SecurePress\WooCommerce\Middleware\Cart\CartVelocityMiddleware;
 use SecurePress\WooCommerce\Middleware\Cart\CouponAbuseMiddleware;
+use SecurePress\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
 use SecurePress\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
 use SecurePress\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
 use SecurePress\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware as CheckoutDisposableEmailMiddleware;
@@ -846,22 +847,40 @@ final class Plugin
                     (int) $c['fraud']['deny_threshold'],
                 );
 
+                $bot = is_array($c['bot'] ?? null) ? $c['bot'] : [];
+
                 return new CheckoutPipeline([
+                    // 1. Velocity — cheapest, short-circuits highest-volume abuse first.
                     new VelocityDetectionMiddleware(
                         $store,
                         (int) $c['velocity_soft'],
                         (int) $c['velocity_hard'],
                         (int) $c['velocity_window'],
                     ),
+                    // 2. Bot-shape — honeypot, scanner UA, impossible timing.
+                    // Runs early so unambiguous bot tells short-circuit before we
+                    // touch the disposable-email registry / cart fingerprinter.
+                    new BotCheckoutMiddleware(
+                        $container->get(BehaviorClock::class),
+                        honeypotField: (string) ($c['honeypot_field_name'] ?? 'securepress_hp'),
+                        minSecondsToSubmit: (int) ($c['min_seconds_to_submit'] ?? 3),
+                        extraScannerUas: is_array($bot['extra_scanner_uas'] ?? null) ? $bot['extra_scanner_uas'] : [],
+                        weightHoneypot: (int) ($bot['weight_honeypot'] ?? 200),
+                        weightScannerUa: (int) ($bot['weight_scanner_ua'] ?? 200),
+                        weightImpossibleTiming: (int) ($bot['weight_impossible_timing'] ?? 200),
+                        weightEmptyUa: (int) ($bot['weight_empty_ua'] ?? 35),
+                        weightMissingReferer: (int) ($bot['weight_missing_referer'] ?? 15),
+                    ),
+                    // 3. Disposable email — single hash-set lookup.
                     new CheckoutDisposableEmailMiddleware($container->get(DisposableEmailRegistry::class)),
+                    // 4. Cart similarity — transient round-trip.
                     new CartSimilarityMiddleware(
                         $container->get(CartFingerprinter::class),
                         $store,
                     ),
-                    new CheckoutBehaviorMiddleware(
-                        $container->get(BehaviorClock::class),
-                        (int) $c['min_seconds_to_submit'],
-                    ),
+                    // 5. Behavioural — country mismatch and similar order-level signals.
+                    new CheckoutBehaviorMiddleware(),
+                    // 6. Fraud score — terminator; converts accumulated signals into a Decision.
                     new FraudScoreMiddleware($scorer),
                 ]);
             }

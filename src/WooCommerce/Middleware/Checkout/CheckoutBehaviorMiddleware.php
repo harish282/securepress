@@ -8,53 +8,36 @@ use SecurePress\WooCommerce\Detection\Decision;
 use SecurePress\WooCommerce\Detection\DetectionContext;
 use SecurePress\WooCommerce\Detection\Signal;
 use SecurePress\WooCommerce\Middleware\WcMiddlewareInterface;
-use SecurePress\WooCommerce\Services\BehaviorClock;
 
 /**
- * Catches "impossibly fast" checkout submissions, plus billing/shipping anomalies.
+ * Catches **behavioural** anomalies at checkout — *not* bot-shape signals.
  *
- * Two checks:
+ * Bot-shape signals (honeypot, scanner UA, impossible timing) live in
+ * {@see BotCheckoutMiddleware} so the two concerns can be tuned independently.
+ * This middleware focuses on what the *order itself* looks like:
  *
- *  1. **Impossible timing** — if the kernel marked a clock token when the checkout
- *     page rendered and the submission arrives within {@see $minSecondsToSubmit}
- *     seconds, that's almost certainly automation. We emit a high-weight signal
- *     (not an outright deny — a real customer with autofill *can* be quick).
+ *  - **Billing / shipping country mismatch with `differ_shipping = false`.** A
+ *    common fraud pattern ships a brand-new billing address to a mule's
+ *    shipping country and "forgets" to tick the differ-shipping box. When the
+ *    two countries don't match but the form claims they should, that's worth
+ *    flagging.
  *
- *  2. **Billing/shipping country mismatch with `differ_shipping = false`** — A
- *     surprising number of fraud patterns ship a brand-new billing address to a
- *     mule's shipping country and "forget" to tick the differ-shipping box. When the
- *     two countries don't match but the form claims they should, that's worth
- *     flagging.
+ * Additional behavioural rules (high-value order, address pattern mismatch,
+ * card-number-in-name) can be added here without polluting the bot middleware.
  *
- * Configurable bits: timing threshold, weights for each sub-rule. Operators who
- * sell to a global audience can lower the country-mismatch weight if it produces
- * false positives.
+ * This middleware emits *signals* only — it never short-circuits. Final
+ * accept/challenge/deny is decided by {@see FraudScoreMiddleware} at the tail
+ * of the pipeline.
  */
 final class CheckoutBehaviorMiddleware implements WcMiddlewareInterface
 {
     public function __construct(
-        private readonly BehaviorClock $clock,
-        private readonly int $minSecondsToSubmit = 3,
-        private readonly int $timingWeight = 50,
         private readonly int $countryMismatchWeight = 20,
     ) {
     }
 
     public function handle(DetectionContext $context, callable $next): Decision
     {
-        $token = (string) $context->get('clock_token', '');
-        if ($token !== '') {
-            $elapsed = $this->clock->elapsedSeconds($token);
-            if ($elapsed !== null && $elapsed < $this->minSecondsToSubmit) {
-                $context = $context->withSignal(new Signal(
-                    rule: 'impossible_timing',
-                    weight: $this->timingWeight,
-                    reason: sprintf('Checkout submitted in %ds (under %ds floor).', $elapsed, $this->minSecondsToSubmit),
-                    meta: ['elapsed_seconds' => $elapsed, 'floor_seconds' => $this->minSecondsToSubmit],
-                ));
-            }
-        }
-
         $billingCountry = strtoupper((string) $context->get('billing_country', ''));
         $shippingCountry = strtoupper((string) $context->get('shipping_country', ''));
         $useShipping = (bool) $context->get('use_shipping', false);

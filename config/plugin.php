@@ -111,8 +111,22 @@ return [
             'velocity_soft' => 3,
             'velocity_hard' => 8,
             'velocity_window' => 120,
-            // CheckoutBehaviorMiddleware: floor under which a submission is "too fast".
+            // BotCheckoutMiddleware: floor under which a submission is "too fast",
+            // and the honeypot field name (must match the one rendered on the form).
             'min_seconds_to_submit' => 3,
+            'honeypot_field_name' => 'securepress_hp',
+            'bot' => [
+                // Extra User-Agent substrings to flag as scanners. The middleware
+                // already ships with sqlmap/nikto/wpscan/curl/wget/etc.
+                'extra_scanner_uas' => [],
+                // Weights for each bot signal. The 200-weight ones short-circuit
+                // with DENY; the lower ones only contribute to the fraud score.
+                'weight_honeypot' => 200,
+                'weight_scanner_ua' => 200,
+                'weight_impossible_timing' => 200,
+                'weight_empty_ua' => 35,
+                'weight_missing_referer' => 15,
+            ],
             // FraudScoreService thresholds (sum-of-signal-weights).
             'fraud' => [
                 'challenge_threshold' => 40,

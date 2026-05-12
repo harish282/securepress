@@ -122,6 +122,7 @@ final class WooCommerceProtectionOptions
         $api = is_array($raw['api'] ?? null) ? $raw['api'] : [];
         $cart = is_array($raw['cart'] ?? null) ? $raw['cart'] : [];
         $fraud = is_array($checkout['fraud'] ?? null) ? $checkout['fraud'] : [];
+        $bot = is_array($checkout['bot'] ?? null) ? $checkout['bot'] : [];
         $perRoute = is_array($api['per_route'] ?? null) ? $api['per_route'] : [];
 
         return [
@@ -132,6 +133,15 @@ final class WooCommerceProtectionOptions
                 'velocity_hard' => $this->intIn($checkout['velocity_hard'] ?? 8, 1, 9999),
                 'velocity_window' => $this->intIn($checkout['velocity_window'] ?? 120, 5, 86400),
                 'min_seconds_to_submit' => $this->intIn($checkout['min_seconds_to_submit'] ?? 3, 0, 3600),
+                'honeypot_field_name' => $this->string($checkout['honeypot_field_name'] ?? 'securepress_hp'),
+                'bot' => [
+                    'extra_scanner_uas' => $this->stringList($bot['extra_scanner_uas'] ?? []),
+                    'weight_honeypot' => $this->intIn($bot['weight_honeypot'] ?? 200, 0, 1000),
+                    'weight_scanner_ua' => $this->intIn($bot['weight_scanner_ua'] ?? 200, 0, 1000),
+                    'weight_impossible_timing' => $this->intIn($bot['weight_impossible_timing'] ?? 200, 0, 1000),
+                    'weight_empty_ua' => $this->intIn($bot['weight_empty_ua'] ?? 35, 0, 1000),
+                    'weight_missing_referer' => $this->intIn($bot['weight_missing_referer'] ?? 15, 0, 1000),
+                ],
                 'fraud' => [
                     'challenge_threshold' => $this->intIn($fraud['challenge_threshold'] ?? 40, 1, 1000),
                     'deny_threshold' => $this->intIn($fraud['deny_threshold'] ?? 80, 1, 1000),
@@ -211,5 +221,26 @@ final class WooCommerceProtectionOptions
         $value = is_string($value) ? trim($value) : '';
 
         return $value === '' ? 'securepress_hp' : $value;
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function stringList(mixed $value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+        $out = [];
+        foreach ($value as $entry) {
+            if (is_string($entry)) {
+                $trimmed = trim($entry);
+                if ($trimmed !== '') {
+                    $out[] = $trimmed;
+                }
+            }
+        }
+
+        return $out;
     }
 }
