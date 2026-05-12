@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace SecurePress\WooCommerce;
 
+use SecurePress\Core\Container;
 use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Logging\LoggerInterface;
 use SecurePress\Core\Logging\NullLogger;
+use SecurePress\Core\Support\RequestContext;
 use SecurePress\Core\Support\WpHelper;
 use SecurePress\Facades\AuditLog;
 use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
@@ -22,26 +24,35 @@ use SecurePress\WooCommerce\Storage\AbuseCounterStoreInterface;
 use Throwable;
 
 /**
- * Bootstraps the WooCommerce protection module and wires every pipeline into the
- * relevant WC / WP hook.
+ * Bootstraps WooCommerce protection.
  *
- * Lifecycle:
+ * Design goal #1: **build nothing you don't need**. The kernel receives only the
+ * three cheap services it cannot avoid (license, options, container) and
+ * lazy-resolves everything else — pipelines, the clock, the abuse-counter store —
+ * inside the hook callbacks. A request that never lands on a checkout submission
+ * never instantiates `CheckoutPipeline`, never builds its middleware, never
+ * resolves the `DisposableEmailRegistry`. The DI container's singleton cache
+ * means even if multiple hook handlers run on the same request the resolution
+ * cost is paid exactly once.
  *
- *  1. The plugin's main `boot()` instantiates this module unconditionally.
- *  2. `register()` checks (a) the Pro license is active and (b) WooCommerce is
- *     loaded. Either failing short-circuits the boot — we do NOT add any hooks
- *     when the module is dormant. Zero overhead for free / non-WC sites.
- *  3. With both checks passing, the kernel binds:
- *     - `woocommerce_checkout_process`           → CheckoutPipeline
- *     - `woocommerce_register_post`              → RegistrationPipeline
- *     - `woocommerce_add_to_cart_validation`     → CartPipeline (velocity)
- *     - `woocommerce_coupon_error`               → coupon-failure counter increment
- *     - `rest_pre_dispatch`                      → ApiPipeline for WC REST routes
- *     - `woocommerce_after_checkout_form` (etc.) → render clock token + honeypot
+ * Design goal #2: **register only relevant hooks**. The current request kind
+ * (admin / REST / ajax / cron / frontend) is decided via {@see RequestContext}
+ * before any hook is registered:
  *
- * Why a kernel and not a per-pipeline registration: WordPress hooks have edge cases
- * (priority ordering, multiple-args, removable callbacks) that we want to handle in
- * exactly one place. Pipelines stay pure — they only know how to evaluate a context.
+ *  - REST API hooks register via `rest_api_init`. That WordPress action only
+ *    fires during REST requests, so on non-REST requests `rest_pre_dispatch` is
+ *    never even added to the global filter table.
+ *  - Checkout / registration / cart hooks register only for "commerce-capable"
+ *    requests (frontend + ajax). Cron, CLI, admin-only, and REST requests skip
+ *    these entirely.
+ *  - The kernel itself is wired into `init` (not `plugins_loaded`) so on a
+ *    static-page request it isn't instantiated until WP is fully loaded — and
+ *    if {@see canRun()} bails (no license / WooCommerce not active) it is the
+ *    only object constructed before we short-circuit.
+ *
+ * Combined effect on a "browse the homepage" request: no pipelines, no
+ * middleware, no email registry, no clock, no counter store. Three tiny service
+ * resolutions and one `canRun()` check.
  */
 final class WooCommerceModule
 {
@@ -49,6 +60,7 @@ final class WooCommerceModule
     public const HOOK_REGISTER_POST = 'woocommerce_register_post';
     public const HOOK_ADD_TO_CART_VALIDATION = 'woocommerce_add_to_cart_validation';
     public const HOOK_COUPON_ERROR = 'woocommerce_coupon_error';
+    public const HOOK_REST_API_INIT = 'rest_api_init';
     public const HOOK_REST_PRE_DISPATCH = 'rest_pre_dispatch';
     public const HOOK_RENDER_CHECKOUT_TOKEN = 'woocommerce_after_checkout_form';
     public const HOOK_RENDER_REGISTER_TOKEN = 'woocommerce_register_form_end';
@@ -58,23 +70,16 @@ final class WooCommerceModule
     public function __construct(
         private readonly LicenseManager $license,
         private readonly WooCommerceProtectionOptions $options,
-        private readonly CheckoutPipeline $checkout,
-        private readonly RegistrationPipeline $registration,
-        private readonly ApiPipeline $api,
-        private readonly CartPipeline $cart,
-        private readonly BehaviorClock $clock,
-        private readonly AbuseCounterStoreInterface $counters,
-        private readonly LoggerInterface $logger = new NullLogger(),
+        private readonly Container $container,
     ) {
     }
 
     /**
-     * Wires the module into WooCommerce / WordPress hooks. Idempotent — safe to call
-     * once per request.
+     * Wires the module into WooCommerce / WordPress hooks based on the current
+     * request context. Idempotent — safe to call once per request.
      *
-     * Returns true if hooks were registered (Pro + WC available), false otherwise.
-     * Callers (the plugin boot, the SDK) use the boolean to decide whether to surface
-     * "module active" UI elements.
+     * Returns true if hooks were registered (Pro + WC available + relevant
+     * context), false otherwise.
      */
     public function register(): bool
     {
@@ -82,20 +87,31 @@ final class WooCommerceModule
             return false;
         }
 
-        if ($this->options->isCheckoutEnabled()) {
-            WpHelper::addAction(self::HOOK_CHECKOUT_PROCESS, [$this, 'onCheckoutProcess'], 1);
-            WpHelper::addAction(self::HOOK_RENDER_CHECKOUT_TOKEN, [$this, 'onRenderCheckoutToken'], 999);
+        $context = RequestContext::detect();
+
+        // REST-only hooks: defer to `rest_api_init` so we don't even land in the
+        // global filter table for non-REST requests.
+        if ($this->options->isApiEnabled() && ($context === RequestContext::REST || $context === RequestContext::FRONTEND || $context === RequestContext::AJAX)) {
+            // On REST requests we're either already past `rest_api_init` or it's
+            // about to fire — either way, attaching via `rest_api_init` is safe;
+            // WordPress will run the callback the first time the action fires.
+            WpHelper::addAction(self::HOOK_REST_API_INIT, [$this, 'registerRestHooks'], 5);
         }
-        if ($this->options->isRegistrationEnabled()) {
-            WpHelper::addAction(self::HOOK_REGISTER_POST, [$this, 'onRegisterPost'], 10, 3);
-            WpHelper::addAction(self::HOOK_RENDER_REGISTER_TOKEN, [$this, 'onRenderRegisterToken'], 999);
-        }
-        if ($this->options->isApiEnabled()) {
-            WpHelper::addFilter(self::HOOK_REST_PRE_DISPATCH, [$this, 'onRestPreDispatch'], 5, 3);
-        }
-        if ($this->options->isCartEnabled()) {
-            WpHelper::addFilter(self::HOOK_ADD_TO_CART_VALIDATION, [$this, 'onAddToCartValidation'], 10, 1);
-            WpHelper::addAction(self::HOOK_COUPON_ERROR, [$this, 'onCouponError'], 10, 2);
+
+        // Commerce hooks only register on requests where WC events can fire.
+        if (RequestContext::isCommerceCapable()) {
+            if ($this->options->isCheckoutEnabled()) {
+                WpHelper::addAction(self::HOOK_CHECKOUT_PROCESS, [$this, 'onCheckoutProcess'], 1);
+                WpHelper::addAction(self::HOOK_RENDER_CHECKOUT_TOKEN, [$this, 'onRenderCheckoutToken'], 999);
+            }
+            if ($this->options->isRegistrationEnabled()) {
+                WpHelper::addAction(self::HOOK_REGISTER_POST, [$this, 'onRegisterPost'], 10, 3);
+                WpHelper::addAction(self::HOOK_RENDER_REGISTER_TOKEN, [$this, 'onRenderRegisterToken'], 999);
+            }
+            if ($this->options->isCartEnabled()) {
+                WpHelper::addFilter(self::HOOK_ADD_TO_CART_VALIDATION, [$this, 'onAddToCartValidation'], 10, 1);
+                WpHelper::addAction(self::HOOK_COUPON_ERROR, [$this, 'onCouponError'], 10, 2);
+            }
         }
 
         return true;
@@ -104,33 +120,39 @@ final class WooCommerceModule
     /**
      * "Is the module allowed to run on this site?"
      *
-     * Two gates:
-     *  - Pro license active (this is a paid-tier feature);
-     *  - WooCommerce class loaded (we can't protect a store that isn't there).
-     *
-     * The license check is run lazily — `$license->isPro()` caches per-request, so
-     * repeated calls are cheap.
+     * The cheap checks run first — license status (cached after first call) and
+     * the `class_exists('WooCommerce', autoload: false)` test, which avoids the
+     * Composer autoloader entirely.
      */
     public function canRun(): bool
     {
         if (!$this->license->isPro()) {
             return false;
         }
-        if (!class_exists('WooCommerce', false) && !class_exists('WC_Cart', false)) {
-            return false;
-        }
 
-        return true;
+        return class_exists('WooCommerce', false) || class_exists('WC_Cart', false);
+    }
+
+    /**
+     * Internal: attaches `rest_pre_dispatch` once we're inside `rest_api_init`.
+     *
+     * Public because WordPress reflects on the callable; not part of the
+     * developer-facing surface.
+     */
+    public function registerRestHooks(): void
+    {
+        WpHelper::addFilter(self::HOOK_REST_PRE_DISPATCH, [$this, 'onRestPreDispatch'], 5, 3);
     }
 
     // ------------------------------------------------------------------
-    // Hook callbacks
+    // Hook callbacks — each lazy-resolves its pipeline on first invocation.
     // ------------------------------------------------------------------
 
     public function onCheckoutProcess(): void
     {
+        $pipeline = $this->container->get(CheckoutPipeline::class);
         $context = $this->buildCheckoutContext();
-        $result = $this->checkout->run($context);
+        $result = $pipeline->run($context);
         $this->applyDecision($result, fn (string $reason) => $this->emitWcError($reason));
         $this->record($result);
     }
@@ -142,8 +164,9 @@ final class WooCommerceModule
      */
     public function onRegisterPost(string $username, string $email, mixed $errors): void
     {
+        $pipeline = $this->container->get(RegistrationPipeline::class);
         $context = $this->buildRegistrationContext($username, $email);
-        $result = $this->registration->run($context);
+        $result = $pipeline->run($context);
 
         if ($result->blocked() && is_object($errors) && method_exists($errors, 'add')) {
             $errors->add('securepress_registration_blocked', $this->safeMessage($result->decision));
@@ -161,12 +184,14 @@ final class WooCommerceModule
         }
         $route = (string) $request->get_route();
         // Only police WooCommerce-related namespaces; let WP core, JWT auth, etc. through.
+        // This check is BEFORE pipeline resolution — non-WC REST calls don't pay any cost.
         if (!$this->isWooRoute($route)) {
             return $result;
         }
 
+        $pipeline = $this->container->get(ApiPipeline::class);
         $context = $this->buildApiContext($route);
-        $outcome = $this->api->run($context);
+        $outcome = $pipeline->run($context);
 
         if ($outcome->blocked()) {
             $this->record($outcome);
@@ -185,10 +210,11 @@ final class WooCommerceModule
     public function onAddToCartValidation(mixed $passed): mixed
     {
         if ($passed === false) {
+            // Another validator already failed; don't waste cycles on our pipeline.
             return $passed;
         }
-        $context = $this->buildCartContext();
-        $result = $this->cart->run($context);
+        $pipeline = $this->container->get(CartPipeline::class);
+        $result = $pipeline->run($this->buildCartContext());
         $this->record($result);
         if ($result->blocked()) {
             $this->emitWcNotice($this->safeMessage($result->decision));
@@ -201,23 +227,26 @@ final class WooCommerceModule
     /**
      * `woocommerce_coupon_error` fires on every failed coupon application. We
      * increment a per-IP counter so the CouponAbuseMiddleware can see how many
-     * failures occurred — see {@see CouponAbuseMiddleware}.
+     * failures occurred. Resolves the counter store on first hit only.
      */
     public function onCouponError(mixed $errMessage, mixed $errCode = null): void
     {
         unset($errMessage, $errCode);
         $ip = $this->detectIp();
-        if ($ip !== '') {
-            $this->counters->hit('coupon:ip:' . $ip, self::COUPON_COUNTER_TTL);
+        if ($ip === '') {
+            return;
         }
+        /** @var AbuseCounterStoreInterface $store */
+        $store = $this->container->get(AbuseCounterStoreInterface::class);
+        $store->hit('coupon:ip:' . $ip, self::COUPON_COUNTER_TTL);
     }
 
     public function onRenderCheckoutToken(): void
     {
-        $token = $this->clock->startToken();
-        $field = $this->options->all()['registration']['honeypot_field_name'] ?? 'securepress_hp';
+        $token = $this->clock()->startToken();
+        $field = (string) ($this->options->all()['registration']['honeypot_field_name'] ?? 'securepress_hp');
         echo '<input type="hidden" name="securepress_clock_token" value="' . WpHelper::escapeAttribute($token) . '" />';
-        echo '<input type="text" name="' . WpHelper::escapeAttribute((string) $field) . '" value="" autocomplete="off" tabindex="-1" '
+        echo '<input type="text" name="' . WpHelper::escapeAttribute($field) . '" value="" autocomplete="off" tabindex="-1" '
             . 'aria-hidden="true" style="position:absolute !important; left:-9999px !important; height:0; width:0; opacity:0;" />';
     }
 
@@ -263,7 +292,7 @@ final class WooCommerceModule
         $post = $this->postArray();
         $honeypotField = (string) ($this->options->all()['registration']['honeypot_field_name'] ?? 'securepress_hp');
         $token = (string) ($post['securepress_clock_token'] ?? '');
-        $elapsed = $token !== '' ? $this->clock->elapsedSeconds($token) : null;
+        $elapsed = $token !== '' ? $this->clock()->elapsedSeconds($token) : null;
 
         return new DetectionContext(
             kind: DetectionContext::KIND_REGISTRATION,
@@ -333,7 +362,7 @@ final class WooCommerceModule
     {
         try {
             if (!$result->blocked() && !$result->challenged() && $result->context->score === 0) {
-                return; // Avoid flooding the audit log with clean traffic.
+                return; // Skip clean traffic — keeps the audit log tidy.
             }
 
             $action = 'wc.' . $result->context->kind . '.' . $result->decision->outcome;
@@ -357,8 +386,27 @@ final class WooCommerceModule
                 ? AuditLog::warning($action, $context)
                 : AuditLog::info($action, $context);
         } catch (Throwable $e) {
-            $this->logger->warning('WC protection audit log failed: ' . $e->getMessage());
+            $this->logger()->warning('WC protection audit log failed: ' . $e->getMessage());
         }
+    }
+
+    // ------------------------------------------------------------------
+    // Lazy resolvers for the lightweight side-services. They're tiny but
+    // still skipped on requests that never hit a relevant hook.
+    // ------------------------------------------------------------------
+
+    private function clock(): BehaviorClock
+    {
+        return $this->container->get(BehaviorClock::class);
+    }
+
+    private function logger(): LoggerInterface
+    {
+        if (!$this->container->has(LoggerInterface::class)) {
+            return new NullLogger();
+        }
+
+        return $this->container->get(LoggerInterface::class);
     }
 
     // ------------------------------------------------------------------

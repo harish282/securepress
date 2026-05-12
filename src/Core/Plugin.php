@@ -175,10 +175,20 @@ final class Plugin
             $this->container->get(IntegrityScheduler::class)->register();
         }
 
-        // WooCommerce Protection (Pro-only). The module's `register()` is a no-op
-        // when the license isn't active or WooCommerce isn't loaded, so we can call
-        // it unconditionally here.
-        $this->container->get(WooCommerceModule::class)->register();
+        // WooCommerce Protection (Pro-only). Deferred to `init` so:
+        //  - The kernel itself isn't instantiated on activation / wp-cron / etc.
+        //  - WooCommerce has finished loading by the time we check `canRun()`.
+        //  - The request context (REST / admin / ajax / frontend) is decidable.
+        // The kernel internally short-circuits when there's no Pro license or
+        // WooCommerce isn't active, so no commerce-specific work happens on
+        // free or non-WC installs.
+        WpHelper::addAction(
+            'init',
+            function (): void {
+                $this->container->get(WooCommerceModule::class)->register();
+            },
+            5
+        );
 
         $this->registerAdminHooks();
     }
@@ -932,16 +942,14 @@ final class Plugin
 
         $this->container->singleton(
             WooCommerceModule::class,
+            // The kernel takes only the three cheap services it always needs.
+            // Pipelines, clock, counter store, and logger are lazy-resolved
+            // inside the hook callbacks via the container so a request that
+            // never lands on a checkout / cart / REST hook builds none of them.
             static fn (Container $container): WooCommerceModule => new WooCommerceModule(
                 $container->get(LicenseManager::class),
                 $container->get(WooCommerceProtectionOptions::class),
-                $container->get(CheckoutPipeline::class),
-                $container->get(RegistrationPipeline::class),
-                $container->get(ApiPipeline::class),
-                $container->get(CartPipeline::class),
-                $container->get(BehaviorClock::class),
-                $container->get(AbuseCounterStoreInterface::class),
-                $container->get(LoggerInterface::class),
+                $container,
             )
         );
 
@@ -990,23 +998,30 @@ final class Plugin
 
         WpHelper::addAction('admin_notices', [$this, 'renderMuLoaderNotice']);
         WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
-        $this->container->get(SecurityHeadersSettingsPage::class)->register();
-        $this->container->get(AuditLogPage::class)->register();
-        $this->container->get(FileIntegrityPage::class)->register();
-        $this->container->get(LicensePage::class)->register();
-        // The WC settings page is registered unconditionally so admins can discover
-        // the feature even on Free. The page itself renders an upgrade prompt when
-        // the license isn't active.
-        $this->container->get(WooCommerceProtectionPage::class)->register();
 
-        // The Authentication settings page is registered unconditionally — admins need
-        // a way to re-enable hardening after toggling it off, so the page must remain
-        // reachable even when the master switch is currently `false`.
-        $this->container->get(AuthHardeningSettingsPage::class)->register();
+        // Admin pages: lazy-resolved on the *first* `admin_menu` invocation rather
+        // than eagerly on every admin pageview. WordPress fires `admin_menu` once
+        // per admin request anyway, so this defers the construction (Options +
+        // View + LicenseManager etc.) to the moment it's actually used.
+        WpHelper::addAction('admin_menu', function (): void {
+            $this->container->get(SecurityHeadersSettingsPage::class)->register();
+            $this->container->get(AuditLogPage::class)->register();
+            $this->container->get(FileIntegrityPage::class)->register();
+            $this->container->get(LicensePage::class)->register();
+            // The WC settings page is registered unconditionally so admins can
+            // discover the feature even on Free. The page itself renders an
+            // upgrade prompt when the license isn't active.
+            $this->container->get(WooCommerceProtectionPage::class)->register();
 
-        if ($this->container->get(AuthHardeningOptions::class)->isEnabled()) {
-            $this->container->get(UserSecurityProfilePage::class)->register();
-        }
+            // The Authentication settings page is registered unconditionally —
+            // admins need a way to re-enable hardening after toggling it off, so
+            // the page must remain reachable even when the master switch is off.
+            $this->container->get(AuthHardeningSettingsPage::class)->register();
+
+            if ($this->container->get(AuthHardeningOptions::class)->isEnabled()) {
+                $this->container->get(UserSecurityProfilePage::class)->register();
+            }
+        }, 1);
     }
 
     private function isMuLoaderInstalled(): bool

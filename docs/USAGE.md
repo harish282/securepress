@@ -1272,12 +1272,24 @@ if (Security::woo()->isAvailable()) {
 
 ### Performance characteristics
 
-Every pipeline middleware is written to be **cheap enough to run on the request hot path**:
+The module is engineered so a request that doesn't touch any commerce event pays as close to zero cost as possible.
+
+**Lazy construction.** The kernel (`WooCommerceModule`) is built *once* per request and receives only three small services in its constructor: the `LicenseManager`, the options resolver, and the DI container. Pipelines, middleware, the disposable-email registry, the cart fingerprinter, the abuse-counter store, and the behaviour clock are **lazy-resolved on the first hook that actually fires**. A request that never hits `woocommerce_checkout_process` never constructs `CheckoutPipeline`, never builds its five middleware, never instantiates the disposable-domain registry.
+
+**Conditional hook registration.** The kernel inspects `\SecurePress\Core\Support\RequestContext` before adding any callbacks:
+
+- REST hooks (`rest_pre_dispatch`) attach via `rest_api_init`, which only fires during REST requests — so on a plain page view the WC API filter is never even added to WordPress's global filter table.
+- Commerce hooks (`woocommerce_checkout_process`, `woocommerce_register_post`, `woocommerce_add_to_cart_validation`, `woocommerce_coupon_error`) only attach on "commerce-capable" requests (frontend + AJAX). Cron, CLI, REST-only, and admin-only requests skip these entirely.
+- Module bootstrap is deferred to the `init` action (priority 5), so on activation, deactivation, and wp-cron paths the kernel doesn't get instantiated at all.
+
+**Cheap inner loops.** When a hook *does* fire:
 
 - Counters live in **WordPress transients** (object-cache aware). One read + one write per middleware on the worst-case path.
 - The disposable-email registry is an **in-memory hash set** — O(1) lookup, no DB.
 - The cart fingerprint is **SHA-256 truncated to 16 hex chars** of a sorted, normalised product list — microseconds per cart.
-- The whole module **does not register hooks** unless Pro is licensed AND WooCommerce is loaded. There's literally nothing to skip past on free installs.
+- Transient names are **HMAC-scoped** so raw IPs and emails never become option-table keys.
+
+**Pro / WC gate.** The whole module short-circuits when Pro isn't licensed OR WooCommerce isn't loaded. On free or non-WC installs there is **literally nothing to skip past** — the kernel's `register()` returns false on its first conditional and never touches the hook table.
 
 ### Extension points
 
