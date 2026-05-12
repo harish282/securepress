@@ -11,9 +11,12 @@ This guide shows what SecurePress does once you install and activate it, and how
 7. [Audit logging](#audit-logging)
 8. [Authentication hardening](#authentication-hardening)
 9. [Security SDK (developer API)](#security-sdk-developer-api)
-10. [Configuration reference](#configuration-reference)
-11. [Recipes / cookbook](#recipes--cookbook)
-12. [Troubleshooting](#troubleshooting)
+10. [File integrity monitoring (Pro)](#file-integrity-monitoring-pro)
+11. [WooCommerce protection (Pro)](#woocommerce-protection-pro)
+12. [Licensing & Pro features](#licensing--pro-features)
+13. [Configuration reference](#configuration-reference)
+14. [Recipes / cookbook](#recipes--cookbook)
+15. [Troubleshooting](#troubleshooting)
 
 > **Convention.** All examples use the `SecurePress\Facades\Security` facade. Import it once at the top of your file:
 >
@@ -1174,6 +1177,172 @@ Everything documented under **Security SDK** is part of the stable public API. T
 
 ---
 
+## File integrity monitoring (Pro)
+
+(See the *File integrity monitoring* admin page under **Tools → File Integrity** once Pro is active. This section covers the Pro-gated additions in passing — the bulk of the FIM documentation lives in `docs/INTEGRITY.md` if you maintain that separately.)
+
+---
+
+## WooCommerce protection (Pro)
+
+The WooCommerce protection module is a **Pro-tier feature** focused on behavioural abuse prevention for stores: fake checkouts, registration spam, REST API abuse, and cart abuse. It runs only when:
+
+1. an active Pro license is configured (`Settings → SecurePress License`), AND
+2. WooCommerce is active on the site.
+
+When either is missing, the module wires up **zero** hooks — there's no overhead on free installs or non-store sites.
+
+### What it does
+
+| Pipeline | WordPress / WooCommerce hook | What it protects |
+| --- | --- | --- |
+| `CheckoutPipeline` | `woocommerce_checkout_process` | Velocity, disposable emails, impossible timing, repeated identical carts, billing/shipping mismatch |
+| `RegistrationPipeline` | `woocommerce_register_post` | Honeypot, per-IP throttle, disposable email denial |
+| `ApiPipeline` | `rest_pre_dispatch` (WC namespaces only) | Per-route rate limiting, scanner UA detection, suspicious-request scoring |
+| `CartPipeline` | `woocommerce_add_to_cart_validation` + `woocommerce_coupon_error` | Add-to-cart velocity, coupon brute-force detection |
+
+Each pipeline returns one of three outcomes: **accept**, **challenge** (logged + signal, no block), **deny** (logged, user shown a generic error).
+
+Decisions are emitted into the audit log under the actions:
+
+- `wc.checkout.deny` / `wc.checkout.challenge`
+- `wc.registration.deny`
+- `wc.api.deny`
+- `wc.cart.deny`
+
+so you can review them under **Tools → Audit Logs**.
+
+### Configuring from the admin UI
+
+`Settings → WooCommerce Protection` exposes:
+
+- **Module master switch** (single toggle to disable everything).
+- **Checkout**: velocity soft/hard thresholds + window, minimum-seconds-to-submit, fraud-score challenge/deny thresholds.
+- **Registration**: per-IP rate limit + window, disposable-email denial, honeypot field name, minimum-seconds-to-submit.
+- **API**: default per-IP limit + window, allow-list for authenticated requests, scanner-UA blocking.
+- **Cart**: cart velocity (soft/hard) + window, coupon-failure thresholds (soft/hard).
+
+Per-route API limits don't have a UI — set them in `config/plugin.php` (`woocommerce_protection.api.per_route`).
+
+### Calling pipelines from your own code (SDK)
+
+For headless / custom checkout flows that don't fire the canonical WooCommerce hooks, evaluate a context yourself:
+
+```php
+use SecurePress\Facades\Security;
+use SecurePress\WooCommerce\Detection\DetectionContext;
+use SecurePress\WooCommerce\Detection\Decision;
+
+$context = new DetectionContext(
+    kind:        DetectionContext::KIND_CHECKOUT,
+    ip:          $_SERVER['REMOTE_ADDR'] ?? '',
+    userAgent:   $_SERVER['HTTP_USER_AGENT'] ?? '',
+    email:       'customer@example.com',
+    userId:      get_current_user_id() ?: null,
+    data:        [
+        'cart_items'      => $items,                     // [{product_id, variation_id?, quantity}]
+        'billing_country' => 'US',
+        'shipping_country'=> 'US',
+        'use_shipping'    => true,
+    ],
+);
+
+$result = Security::woo()->checkout($context);
+
+if ($result->blocked()) {
+    wp_send_json_error(['error' => 'request_blocked'], 429);
+}
+```
+
+The same surface exists for the other pipelines:
+
+```php
+Security::woo()->registration($context);
+Security::woo()->api($context);
+Security::woo()->cart($context);
+```
+
+You can also branch on availability without instantiating a context:
+
+```php
+if (Security::woo()->isAvailable()) {
+    // Show "Protected by SecurePress" admin badge, etc.
+}
+```
+
+### Performance characteristics
+
+Every pipeline middleware is written to be **cheap enough to run on the request hot path**:
+
+- Counters live in **WordPress transients** (object-cache aware). One read + one write per middleware on the worst-case path.
+- The disposable-email registry is an **in-memory hash set** — O(1) lookup, no DB.
+- The cart fingerprint is **SHA-256 truncated to 16 hex chars** of a sorted, normalised product list — microseconds per cart.
+- The whole module **does not register hooks** unless Pro is licensed AND WooCommerce is loaded. There's literally nothing to skip past on free installs.
+
+### Extension points
+
+- `securepress.disposable_email_domains` (filter, returns `string[]`) — extend the disposable-domain list at runtime.
+- `securepress.disposable_email_allowed_domains` (filter, returns `string[]`) — mark specific domains as never-disposable.
+- `securepress.is_pro` (filter, returns `bool`) — programmatic Pro toggle (handy for tests).
+
+---
+
+## Licensing & Pro features
+
+SecurePress ships as a **single plugin** with a Pro tier unlocked by an offline license key. There is no separate "Pro" plugin to install.
+
+### What's in Pro
+
+- **WooCommerce Protection** (this guide's previous section).
+
+Free tier still gets the full middleware framework, CSRF, rate limiting, signed URLs, security headers, audit logging, authentication hardening, file integrity monitoring, and the developer SDK.
+
+### How licenses are issued
+
+The default validator is **offline HMAC**: keys look like `SP-PRO-1714780800-1746316800-3f6d1c2e9f6d1c2e` and embed the tier, issuance timestamp, expiry timestamp, and a truncated HMAC-SHA256 signature.
+
+The vendor signs keys with a shared secret (configured via `licensing.secret` in `config/plugin.php` or, recommended, the `SECUREPRESS_LICENSE_SECRET` environment variable). No outbound network call is required to validate — your install can be air-gapped and still authenticate the key correctly.
+
+### Entering a license
+
+Go to **Settings → SecurePress License**, paste the key, hit **Save license**. The page shows:
+
+- Active / Expired / Invalid / None state.
+- Tier (`pro`, `agency`, …).
+- Expiry date (if any).
+- A masked preview of the saved key.
+
+Alternative configuration sources (resolved in this order, first match wins):
+
+1. `wp_option('securepress_pro_license')` — what the Settings page writes to.
+2. `SECUREPRESS_PRO_LICENSE` environment variable.
+3. `SECUREPRESS_PRO_LICENSE` PHP constant.
+4. `apply_filters('securepress.pro_license', '')` — programmatic override (extensions, tests).
+
+### Checking Pro status from your code
+
+```php
+use SecurePress\Facades\Security;
+
+if (Security::isPro()) {
+    // Pro-only behaviour.
+}
+
+$status = Security::licenseStatus();
+echo $status->state;       // 'active' | 'expired' | 'invalid' | 'none'
+echo $status->tier;        // 'pro' | 'agency' | 'free'
+echo $status->daysRemaining(); // int|null
+```
+
+A per-feature check is also available:
+
+```php
+Security::isFeatureEnabled('woocommerce_protection'); // true on Pro
+Security::isFeatureEnabled('pro');                    // alias
+```
+
+---
+
 ## Configuration reference
 
 `config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*`, `audit_log.*`, and `auth_hardening.*`, which are intended to be configured from the admin UI (`Settings → Security Headers` / `Settings → Authentication`) or `config/plugin.php` (`audit_log.*`). Admin overrides are stored in autoloaded `wp_options` and merged on top of the file defaults; no ENV wiring is needed for those.
@@ -1204,6 +1373,33 @@ Everything documented under **Security SDK** is part of the stable public API. T
 | `security_headers.permissions_policy.enabled` | — | `true` | Permissions-Policy dispatcher / middleware |
 | `security_headers.permissions_policy.policy` | — | conservative deny-list | comma-separated `feature=(allowlist)` |
 | `security_headers.x_content_type_options.enabled` | — | `true` | emits `nosniff` |
+| `licensing.secret` | `SECUREPRESS_LICENSE_SECRET` | `change-me-in-production` | HMAC secret for `LocalLicenseValidator` |
+| `woocommerce_protection.enabled` | — | `true` | Module master switch (Pro-gated) |
+| `woocommerce_protection.checkout.enabled` | — | `true` | Fake checkout protection |
+| `woocommerce_protection.checkout.velocity_soft` | — | `3` | Per-IP/email soft velocity threshold |
+| `woocommerce_protection.checkout.velocity_hard` | — | `8` | Per-IP/email hard velocity threshold |
+| `woocommerce_protection.checkout.velocity_window` | — | `120` | Velocity window (seconds) |
+| `woocommerce_protection.checkout.min_seconds_to_submit` | — | `3` | Impossible-timing floor (seconds) |
+| `woocommerce_protection.checkout.fraud.challenge_threshold` | — | `40` | Fraud-score challenge cutoff |
+| `woocommerce_protection.checkout.fraud.deny_threshold` | — | `80` | Fraud-score deny cutoff |
+| `woocommerce_protection.registration.enabled` | — | `true` | Registration spam protection |
+| `woocommerce_protection.registration.rate_limit` | — | `5` | Max registrations per IP per window |
+| `woocommerce_protection.registration.window` | — | `600` | Registration window (seconds) |
+| `woocommerce_protection.registration.deny_disposable_emails` | — | `true` | Hard-deny disposable email domains |
+| `woocommerce_protection.registration.honeypot_field_name` | — | `securepress_hp` | Hidden honeypot field name |
+| `woocommerce_protection.registration.min_seconds_to_submit` | — | `2` | Honeypot-timing floor (seconds) |
+| `woocommerce_protection.api.enabled` | — | `true` | WC REST API abuse protection |
+| `woocommerce_protection.api.default_limit` | — | `60` | Per-IP default RPS limit |
+| `woocommerce_protection.api.default_window` | — | `60` | API rate window (seconds) |
+| `woocommerce_protection.api.pass_when_authenticated` | — | `true` | Skip checks for logged-in callers |
+| `woocommerce_protection.api.deny_on_scanner_ua` | — | `true` | Block known scanner User-Agents |
+| `woocommerce_protection.api.per_route` | — | `[]` | Per-route overrides `{prefix:{limit,window}}` |
+| `woocommerce_protection.cart.enabled` | — | `true` | Cart abuse detection |
+| `woocommerce_protection.cart.velocity_soft` | — | `20` | Cart soft velocity threshold |
+| `woocommerce_protection.cart.velocity_hard` | — | `60` | Cart hard velocity threshold |
+| `woocommerce_protection.cart.window` | — | `60` | Cart window (seconds) |
+| `woocommerce_protection.cart.coupon_soft` | — | `4` | Coupon failures soft threshold |
+| `woocommerce_protection.cart.coupon_hard` | — | `10` | Coupon failures hard threshold |
 | `audit_log.enabled` | — | `true` | Master killswitch for audit logging |
 | `audit_log.retention_days` | — | `90` | Days of audit history kept; `0` = forever |
 | `audit_log.mirror_to_file_logger` | — | `false` | Mirror every event to `storage/logs/securepress.log` |

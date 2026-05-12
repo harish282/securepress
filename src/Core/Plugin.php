@@ -6,6 +6,8 @@ namespace SecurePress\Core;
 
 use SecurePress\Admin\AuditLogPage;
 use SecurePress\Admin\AuthHardeningSettingsPage;
+use SecurePress\Admin\FileIntegrityPage;
+use SecurePress\Admin\LicensePage;
 use SecurePress\Admin\SecurityHeadersSettingsPage;
 use SecurePress\Admin\UserSecurityProfilePage;
 use SecurePress\Auth\AuthenticationHardeningKernel;
@@ -53,6 +55,54 @@ use SecurePress\Core\Config\Config;
 use SecurePress\Core\Headers\HeaderRegistryFactory;
 use SecurePress\Core\Headers\SecurityHeadersDispatcher;
 use SecurePress\Core\Headers\SecurityHeadersOptions;
+use SecurePress\Core\Licensing\LicenseManager;
+use SecurePress\Core\Licensing\LicenseValidatorInterface;
+use SecurePress\Core\Licensing\LocalLicenseValidator;
+use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
+use SecurePress\WooCommerce\Admin\WooCommerceProtectionPage;
+use SecurePress\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
+use SecurePress\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware;
+use SecurePress\WooCommerce\Middleware\Cart\CartVelocityMiddleware;
+use SecurePress\WooCommerce\Middleware\Cart\CouponAbuseMiddleware;
+use SecurePress\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
+use SecurePress\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
+use SecurePress\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware as CheckoutDisposableEmailMiddleware;
+use SecurePress\WooCommerce\Middleware\Checkout\FraudScoreMiddleware;
+use SecurePress\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware;
+use SecurePress\WooCommerce\Middleware\Registration\HoneypotMiddleware;
+use SecurePress\WooCommerce\Middleware\Registration\RegistrationDisposableEmailMiddleware;
+use SecurePress\WooCommerce\Middleware\Registration\RegistrationRateLimitMiddleware;
+use SecurePress\WooCommerce\Pipelines\ApiPipeline;
+use SecurePress\WooCommerce\Pipelines\CartPipeline;
+use SecurePress\WooCommerce\Pipelines\CheckoutPipeline;
+use SecurePress\WooCommerce\Pipelines\RegistrationPipeline;
+use SecurePress\WooCommerce\Services\BehaviorClock;
+use SecurePress\WooCommerce\Services\CartFingerprinter;
+use SecurePress\WooCommerce\Services\DisposableEmailRegistry;
+use SecurePress\WooCommerce\Services\FraudScoreService;
+use SecurePress\WooCommerce\Storage\AbuseCounterStoreInterface;
+use SecurePress\WooCommerce\Storage\TransientAbuseCounterStore;
+use SecurePress\WooCommerce\WooCommerceModule;
+use SecurePress\Core\Integrity\Checksums\ChecksumProviderInterface;
+use SecurePress\Core\Integrity\Checksums\WpOrgChecksumProvider;
+use SecurePress\Core\Integrity\FindingRepositoryInterface;
+use SecurePress\Core\Integrity\Heuristics\EvalBase64Heuristic;
+use SecurePress\Core\Integrity\Heuristics\HeuristicInterface;
+use SecurePress\Core\Integrity\Heuristics\ObfuscatedCallableHeuristic;
+use SecurePress\Core\Integrity\Heuristics\PregReplaceEvalHeuristic;
+use SecurePress\Core\Integrity\Heuristics\ShellExecHeuristic;
+use SecurePress\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
+use SecurePress\Core\Integrity\IntegrityOptions;
+use SecurePress\Core\Integrity\IntegrityScheduler;
+use SecurePress\Core\Integrity\IntegritySchema;
+use SecurePress\Core\Integrity\IntegrityService;
+use SecurePress\Core\Integrity\ManifestBuilder;
+use SecurePress\Core\Integrity\ManifestRepositoryInterface;
+use SecurePress\Core\Integrity\Scanners\CoreFilesScanner;
+use SecurePress\Core\Integrity\Scanners\ManifestDiffScanner;
+use SecurePress\Core\Integrity\Scanners\SuspiciousPhpScanner;
+use SecurePress\Core\Integrity\WpdbFindingRepository;
+use SecurePress\Core\Integrity\WpdbManifestRepository;
 use SecurePress\Core\Logging\FileLogger;
 use SecurePress\Core\Logging\LoggerInterface;
 use SecurePress\Core\Logging\NullLogger;
@@ -118,6 +168,17 @@ final class Plugin
         if ($authOptions['enabled'] ?? true) {
             $this->container->get(AuthenticationHardeningKernel::class)->register();
         }
+
+        $integrityOptions = $this->container->get(IntegrityOptions::class);
+        if ($integrityOptions->isEnabled()) {
+            $this->container->get(IntegritySchema::class)->install();
+            $this->container->get(IntegrityScheduler::class)->register();
+        }
+
+        // WooCommerce Protection (Pro-only). The module's `register()` is a no-op
+        // when the license isn't active or WooCommerce isn't loaded, so we can call
+        // it unconditionally here.
+        $this->container->get(WooCommerceModule::class)->register();
 
         $this->registerAdminHooks();
     }
@@ -345,6 +406,9 @@ final class Plugin
                 (int) $container->get(Config::class)->get('audit_log.retention_days', 90),
             )
         );
+        $this->registerIntegrityServices();
+        $this->registerLicensingServices();
+        $this->registerWooCommerceServices();
         $this->container->singleton(
             AuthListener::class,
             static fn (Container $container): AuthListener => new AuthListener(
@@ -582,6 +646,314 @@ final class Plugin
         );
     }
 
+    private function registerIntegrityServices(): void
+    {
+        $this->container->singleton(
+            IntegrityOptions::class,
+            static fn (Container $container): IntegrityOptions => new IntegrityOptions(
+                $container->get(Config::class)
+            )
+        );
+        $this->container->singleton(
+            IntegritySchema::class,
+            static fn (): IntegritySchema => new IntegritySchema()
+        );
+        $this->container->singleton(
+            ManifestRepositoryInterface::class,
+            static fn (Container $container): ManifestRepositoryInterface => new WpdbManifestRepository(
+                $container->get(IntegritySchema::class)
+            )
+        );
+        $this->container->singleton(
+            FindingRepositoryInterface::class,
+            static fn (Container $container): FindingRepositoryInterface => new WpdbFindingRepository(
+                $container->get(IntegritySchema::class)
+            )
+        );
+        $this->container->singleton(
+            ManifestBuilder::class,
+            static fn (): ManifestBuilder => new ManifestBuilder()
+        );
+        $this->container->singleton(
+            ChecksumProviderInterface::class,
+            static fn (Container $container): ChecksumProviderInterface => new WpOrgChecksumProvider(
+                $container->get(LoggerInterface::class)
+            )
+        );
+
+        // Heuristics — bound individually so application code can swap one out for a
+        // custom rule without touching the container wiring of the others.
+        $this->container->singleton(EvalBase64Heuristic::class, static fn (): EvalBase64Heuristic => new EvalBase64Heuristic());
+        $this->container->singleton(PregReplaceEvalHeuristic::class, static fn (): PregReplaceEvalHeuristic => new PregReplaceEvalHeuristic());
+        $this->container->singleton(ObfuscatedCallableHeuristic::class, static fn (): ObfuscatedCallableHeuristic => new ObfuscatedCallableHeuristic());
+        $this->container->singleton(WebshellSignatureHeuristic::class, static fn (): WebshellSignatureHeuristic => new WebshellSignatureHeuristic());
+        $this->container->singleton(ShellExecHeuristic::class, static fn (): ShellExecHeuristic => new ShellExecHeuristic());
+
+        $this->container->singleton(
+            IntegrityService::class,
+            function (Container $container): IntegrityService {
+                $service = new IntegrityService(
+                    $container->get(FindingRepositoryInterface::class),
+                    $container->get(LoggerInterface::class)
+                );
+
+                $heuristics = [
+                    $container->get(EvalBase64Heuristic::class),
+                    $container->get(PregReplaceEvalHeuristic::class),
+                    $container->get(ObfuscatedCallableHeuristic::class),
+                    $container->get(WebshellSignatureHeuristic::class),
+                    $container->get(ShellExecHeuristic::class),
+                ];
+
+                $options = $container->get(IntegrityOptions::class)->all();
+                $builder = $container->get(ManifestBuilder::class);
+                $manifests = $container->get(ManifestRepositoryInterface::class);
+
+                // Core: WP.org checksum comparison.
+                if ($options['scan_core'] ?? true) {
+                    $service->registerScanner(new CoreFilesScanner(
+                        $container->get(ChecksumProviderInterface::class),
+                        \defined('ABSPATH') ? (string) \constant('ABSPATH') : '',
+                        WpHelper::wpVersion(),
+                        'en_US'
+                    ));
+                }
+
+                // Plugins: live tree vs stored baseline + suspicious PHP heuristics.
+                if (($options['scan_plugins'] ?? true) && \defined('WP_PLUGIN_DIR')) {
+                    $pluginDir = (string) \constant('WP_PLUGIN_DIR');
+                    $service->registerScanner(new ManifestDiffScanner('plugins', $pluginDir, $builder, $manifests));
+                    $service->registerScanner(new SuspiciousPhpScanner('plugins', $pluginDir, $heuristics));
+                }
+
+                // Themes: opt-in because legitimate theme editing produces a lot of noise.
+                if (($options['scan_themes'] ?? false) && \function_exists('get_theme_root')) {
+                    $themesDir = (string) \call_user_func('get_theme_root');
+                    $service->registerScanner(new ManifestDiffScanner('themes', $themesDir, $builder, $manifests));
+                    $service->registerScanner(new SuspiciousPhpScanner('themes', $themesDir, $heuristics));
+                }
+
+                // Uploads: critical scope — PHP files in uploads are always suspicious.
+                if ($options['scan_uploads'] ?? true) {
+                    $uploads = WpHelper::uploadsDir();
+                    if ($uploads !== '') {
+                        $service->registerScanner(new SuspiciousPhpScanner(
+                            'uploads',
+                            $uploads,
+                            $heuristics,
+                            null,
+                            2 * 1024 * 1024,
+                            true
+                        ));
+                    }
+                }
+
+                return $service;
+            }
+        );
+
+        $this->container->singleton(
+            IntegrityScheduler::class,
+            static fn (Container $container): IntegrityScheduler => new IntegrityScheduler(
+                $container->get(IntegrityService::class),
+                $container->get(IntegrityOptions::class),
+                $container->get(LoggerInterface::class),
+            )
+        );
+
+        $this->container->singleton(
+            FileIntegrityPage::class,
+            static fn (Container $container): FileIntegrityPage => new FileIntegrityPage(
+                $container->get(FindingRepositoryInterface::class),
+                $container->get(IntegrityScheduler::class),
+                $container->get(IntegrityService::class),
+                $container->get(ManifestRepositoryInterface::class),
+                $container->get(View::class),
+            )
+        );
+    }
+
+    private function registerLicensingServices(): void
+    {
+        $this->container->singleton(
+            LicenseValidatorInterface::class,
+            static fn (Container $container): LicenseValidatorInterface => new LocalLicenseValidator(
+                (string) $container->get(Config::class)->get('licensing.secret', 'change-me-in-production')
+            )
+        );
+        $this->container->singleton(
+            LicenseManager::class,
+            static fn (Container $container): LicenseManager => new LicenseManager(
+                $container->get(LicenseValidatorInterface::class)
+            )
+        );
+        $this->container->singleton(
+            LicensePage::class,
+            static fn (Container $container): LicensePage => new LicensePage(
+                $container->get(LicenseManager::class)
+            )
+        );
+    }
+
+    private function registerWooCommerceServices(): void
+    {
+        $this->container->singleton(
+            WooCommerceProtectionOptions::class,
+            static fn (Container $container): WooCommerceProtectionOptions => new WooCommerceProtectionOptions(
+                $container->get(Config::class)
+            )
+        );
+        $this->container->singleton(
+            AbuseCounterStoreInterface::class,
+            static fn (Container $container): AbuseCounterStoreInterface => new TransientAbuseCounterStore(
+                (string) $container->get(Config::class)->get('licensing.secret', 'change-me-in-production')
+            )
+        );
+        $this->container->singleton(
+            DisposableEmailRegistry::class,
+            static fn (): DisposableEmailRegistry => new DisposableEmailRegistry()
+        );
+        $this->container->singleton(
+            CartFingerprinter::class,
+            static fn (): CartFingerprinter => new CartFingerprinter()
+        );
+        $this->container->singleton(
+            BehaviorClock::class,
+            static fn (Container $container): BehaviorClock => new BehaviorClock(
+                (string) $container->get(Config::class)->get('licensing.secret', 'change-me-in-production')
+            )
+        );
+
+        // Pipelines are built lazily so they read the latest options on each boot.
+        $this->container->singleton(
+            CheckoutPipeline::class,
+            static function (Container $container): CheckoutPipeline {
+                $values = $container->get(WooCommerceProtectionOptions::class)->all();
+                $c = $values['checkout'];
+                $store = $container->get(AbuseCounterStoreInterface::class);
+                $scorer = new FraudScoreService(
+                    (int) $c['fraud']['challenge_threshold'],
+                    (int) $c['fraud']['deny_threshold'],
+                );
+
+                return new CheckoutPipeline([
+                    new VelocityDetectionMiddleware(
+                        $store,
+                        (int) $c['velocity_soft'],
+                        (int) $c['velocity_hard'],
+                        (int) $c['velocity_window'],
+                    ),
+                    new CheckoutDisposableEmailMiddleware($container->get(DisposableEmailRegistry::class)),
+                    new CartSimilarityMiddleware(
+                        $container->get(CartFingerprinter::class),
+                        $store,
+                    ),
+                    new CheckoutBehaviorMiddleware(
+                        $container->get(BehaviorClock::class),
+                        (int) $c['min_seconds_to_submit'],
+                    ),
+                    new FraudScoreMiddleware($scorer),
+                ]);
+            }
+        );
+
+        $this->container->singleton(
+            RegistrationPipeline::class,
+            static function (Container $container): RegistrationPipeline {
+                $values = $container->get(WooCommerceProtectionOptions::class)->all();
+                $r = $values['registration'];
+                $store = $container->get(AbuseCounterStoreInterface::class);
+
+                return new RegistrationPipeline([
+                    new HoneypotMiddleware(
+                        (string) $r['honeypot_field_name'],
+                        (int) $r['min_seconds_to_submit'],
+                    ),
+                    new RegistrationRateLimitMiddleware(
+                        $store,
+                        (int) $r['rate_limit'],
+                        (int) $r['window'],
+                    ),
+                    new RegistrationDisposableEmailMiddleware(
+                        $container->get(DisposableEmailRegistry::class),
+                        (bool) $r['deny_disposable_emails'],
+                    ),
+                ]);
+            }
+        );
+
+        $this->container->singleton(
+            ApiPipeline::class,
+            static function (Container $container): ApiPipeline {
+                $values = $container->get(WooCommerceProtectionOptions::class)->all();
+                $a = $values['api'];
+                $store = $container->get(AbuseCounterStoreInterface::class);
+
+                return new ApiPipeline([
+                    new SuspiciousRequestMiddleware(
+                        [],
+                        40,
+                        200,
+                        (bool) $a['deny_on_scanner_ua'],
+                        (bool) $a['pass_when_authenticated'],
+                    ),
+                    new ApiRateLimitMiddleware(
+                        $store,
+                        is_array($a['per_route'] ?? null) ? $a['per_route'] : [],
+                        (int) $a['default_limit'],
+                        (int) $a['default_window'],
+                    ),
+                ]);
+            }
+        );
+
+        $this->container->singleton(
+            CartPipeline::class,
+            static function (Container $container): CartPipeline {
+                $values = $container->get(WooCommerceProtectionOptions::class)->all();
+                $c = $values['cart'];
+                $store = $container->get(AbuseCounterStoreInterface::class);
+
+                return new CartPipeline([
+                    new CartVelocityMiddleware(
+                        $store,
+                        (int) $c['velocity_soft'],
+                        (int) $c['velocity_hard'],
+                        (int) $c['window'],
+                    ),
+                    new CouponAbuseMiddleware(
+                        $store,
+                        (int) $c['coupon_soft'],
+                        (int) $c['coupon_hard'],
+                    ),
+                ]);
+            }
+        );
+
+        $this->container->singleton(
+            WooCommerceModule::class,
+            static fn (Container $container): WooCommerceModule => new WooCommerceModule(
+                $container->get(LicenseManager::class),
+                $container->get(WooCommerceProtectionOptions::class),
+                $container->get(CheckoutPipeline::class),
+                $container->get(RegistrationPipeline::class),
+                $container->get(ApiPipeline::class),
+                $container->get(CartPipeline::class),
+                $container->get(BehaviorClock::class),
+                $container->get(AbuseCounterStoreInterface::class),
+                $container->get(LoggerInterface::class),
+            )
+        );
+
+        $this->container->singleton(
+            WooCommerceProtectionPage::class,
+            static fn (Container $container): WooCommerceProtectionPage => new WooCommerceProtectionPage(
+                $container->get(WooCommerceProtectionOptions::class),
+                $container->get(LicenseManager::class),
+            )
+        );
+    }
+
     private function registerAuditListeners(): void
     {
         $config = $this->container->get(Config::class);
@@ -620,6 +992,12 @@ final class Plugin
         WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
         $this->container->get(SecurityHeadersSettingsPage::class)->register();
         $this->container->get(AuditLogPage::class)->register();
+        $this->container->get(FileIntegrityPage::class)->register();
+        $this->container->get(LicensePage::class)->register();
+        // The WC settings page is registered unconditionally so admins can discover
+        // the feature even on Free. The page itself renders an upgrade prompt when
+        // the license isn't active.
+        $this->container->get(WooCommerceProtectionPage::class)->register();
 
         // The Authentication settings page is registered unconditionally — admins need
         // a way to re-enable hardening after toggling it off, so the page must remain

@@ -159,6 +159,80 @@ final class WpHelper
     }
 
     /**
+     * Performs a GET request against `$url` via `wp_remote_get()` and returns the response
+     * body, or `null` when the request errored / returned a non-200 status.
+     *
+     * Used by the integrity-monitoring checksum provider. Routed through the helper
+     * (rather than calling `wp_remote_get` directly) so tests can stub the network call
+     * via {@see \SecurePress\Tests\Stubs\WpStubState}.
+     */
+    public static function remoteGet(string $url, int $timeoutSeconds = 10): ?string
+    {
+        if (!\function_exists('wp_remote_get')) {
+            return null;
+        }
+
+        $response = \call_user_func('wp_remote_get', $url, ['timeout' => $timeoutSeconds]);
+        if (!is_array($response)) {
+            return null;
+        }
+        if (\function_exists('is_wp_error') && \call_user_func('is_wp_error', $response)) {
+            return null;
+        }
+
+        $code = 0;
+        if (\function_exists('wp_remote_retrieve_response_code')) {
+            $code = (int) \call_user_func('wp_remote_retrieve_response_code', $response);
+        } elseif (is_array($response['response'] ?? null) && isset($response['response']['code'])) {
+            $code = (int) $response['response']['code'];
+        }
+
+        if ($code !== 0 && ($code < 200 || $code >= 300)) {
+            return null;
+        }
+
+        if (\function_exists('wp_remote_retrieve_body')) {
+            $body = \call_user_func('wp_remote_retrieve_body', $response);
+
+            return is_string($body) ? $body : null;
+        }
+
+        $body = $response['body'] ?? null;
+
+        return is_string($body) ? $body : null;
+    }
+
+    /**
+     * Returns the running WordPress version (the `$wp_version` global). Falls back to
+     * an empty string when called outside a WP request — callers should treat the empty
+     * string as "unknown, skip version-aware behaviour".
+     */
+    public static function wpVersion(): string
+    {
+        $version = $GLOBALS['wp_version'] ?? null;
+
+        return is_string($version) ? $version : '';
+    }
+
+    /**
+     * Returns the absolute filesystem path of `wp-content/uploads`. Empty string when
+     * the helper function is unavailable.
+     */
+    public static function uploadsDir(): string
+    {
+        if (!\function_exists('wp_upload_dir')) {
+            return '';
+        }
+        $info = \call_user_func('wp_upload_dir');
+        if (!is_array($info)) {
+            return '';
+        }
+        $base = $info['basedir'] ?? '';
+
+        return is_string($base) ? $base : '';
+    }
+
+    /**
      * Returns the client IP from `REMOTE_ADDR` only.
      *
      * Forwarded headers (`X-Forwarded-For`, `CF-Connecting-IP`, etc.) are intentionally NOT

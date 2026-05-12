@@ -11,6 +11,7 @@ use SecurePress\Core\Config\Config;
 use SecurePress\Core\Container;
 use SecurePress\Core\Headers\SecurityHeadersOptions;
 use SecurePress\Core\Http\RouteGuardRegistry;
+use SecurePress\Core\Integrity\IntegrityOptions;
 use SecurePress\Core\Middleware\MiddlewareInterface;
 use SecurePress\Core\Middleware\MiddlewareRegistry;
 use SecurePress\Core\Middleware\MiddlewareStack;
@@ -24,7 +25,11 @@ use SecurePress\Sdk\AuditApi;
 use SecurePress\Sdk\Csrf\CsrfTokenManager;
 use SecurePress\Sdk\Events\EventDispatcher;
 use SecurePress\Sdk\Exceptions\RateLimitExceededException;
+use SecurePress\Core\Licensing\LicenseManager;
+use SecurePress\Core\Licensing\LicenseStatus;
+use SecurePress\Sdk\IntegrityApi;
 use SecurePress\Sdk\LockoutApi;
+use SecurePress\Sdk\WooCommerceApi;
 use SecurePress\Sdk\Routing\RouteBuilder;
 use SecurePress\Sdk\SessionApi;
 use SecurePress\Sdk\TwoFactorApi;
@@ -72,6 +77,8 @@ final class Security
     private static ?SessionApi $sessionApi = null;
     private static ?LockoutApi $lockoutApi = null;
     private static ?AuditApi $auditApi = null;
+    private static ?IntegrityApi $integrityApi = null;
+    private static ?WooCommerceApi $wooApi = null;
 
     public static function bootstrap(Container $container): void
     {
@@ -80,6 +87,8 @@ final class Security
         self::$sessionApi = null;
         self::$lockoutApi = null;
         self::$auditApi = null;
+        self::$integrityApi = null;
+        self::$wooApi = null;
     }
 
     public static function version(): string
@@ -299,6 +308,42 @@ final class Security
         return self::$auditApi ??= new AuditApi(self::container());
     }
 
+    public static function integrity(): IntegrityApi
+    {
+        return self::$integrityApi ??= new IntegrityApi(self::container());
+    }
+
+    public static function woo(): WooCommerceApi
+    {
+        return self::$wooApi ??= new WooCommerceApi(self::container());
+    }
+
+    /**
+     * True if the current install has an active Pro license.
+     *
+     * Cheap to call (resolves through `LicenseManager`'s per-request cache).
+     * Plugins / extensions can use this to gate their own Pro-only UI:
+     *
+     *     if (Security::isPro()) { ... }
+     */
+    public static function isPro(): bool
+    {
+        if (!self::container()->has(LicenseManager::class)) {
+            return false;
+        }
+
+        return self::container()->get(LicenseManager::class)->isPro();
+    }
+
+    public static function licenseStatus(): LicenseStatus
+    {
+        if (!self::container()->has(LicenseManager::class)) {
+            return LicenseStatus::none();
+        }
+
+        return self::container()->get(LicenseManager::class)->status();
+    }
+
     public static function events(): EventDispatcher
     {
         return self::container()->get(EventDispatcher::class);
@@ -390,6 +435,17 @@ final class Security
 
         if ($feature === 'audit_logging') {
             return (bool) self::container()->get(Config::class)->get('audit_log.enabled', false);
+        }
+
+        if ($feature === 'file_integrity') {
+            if (!self::container()->has(IntegrityOptions::class)) {
+                return false;
+            }
+            return self::container()->get(IntegrityOptions::class)->isEnabled();
+        }
+
+        if ($feature === 'woocommerce_protection' || $feature === 'woo' || $feature === 'pro') {
+            return self::isPro();
         }
 
         return false;

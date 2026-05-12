@@ -92,6 +92,100 @@ return [
             'enabled' => true,
         ],
     ],
+    'licensing' => [
+        // The HMAC secret used to verify offline-issued license keys.
+        // In production, override via the SECUREPRESS_LICENSE_SECRET env var so the
+        // secret never lands in repo or backups.
+        'secret' => 'change-me-in-production',
+    ],
+
+    'woocommerce_protection' => [
+        // Module master switch. Even on Pro installs you can flip this to disable
+        // every WC pipeline atomically.
+        'enabled' => true,
+
+        'checkout' => [
+            'enabled' => true,
+            // VelocityDetectionMiddleware:
+            // Soft = signal; hard = block. Window in seconds.
+            'velocity_soft' => 3,
+            'velocity_hard' => 8,
+            'velocity_window' => 120,
+            // CheckoutBehaviorMiddleware: floor under which a submission is "too fast".
+            'min_seconds_to_submit' => 3,
+            // FraudScoreService thresholds (sum-of-signal-weights).
+            'fraud' => [
+                'challenge_threshold' => 40,
+                'deny_threshold' => 80,
+            ],
+        ],
+
+        'registration' => [
+            'enabled' => true,
+            // RegistrationRateLimitMiddleware: per-IP fixed window.
+            'rate_limit' => 5,
+            'window' => 600,
+            // Hard-deny disposable email domains on registration.
+            'deny_disposable_emails' => true,
+            // HoneypotMiddleware: hidden field name + min seconds to submit.
+            'honeypot_field_name' => 'securepress_hp',
+            'min_seconds_to_submit' => 2,
+        ],
+
+        'api' => [
+            'enabled' => true,
+            // ApiRateLimitMiddleware defaults — used when a route has no per-route override.
+            'default_limit' => 60,
+            'default_window' => 60,
+            // SuspiciousRequestMiddleware behaviour.
+            'pass_when_authenticated' => true,
+            'deny_on_scanner_ua' => true,
+            // Per-route overrides: route prefix → { limit, window }. Examples:
+            //   '/wc/store/cart' => ['limit' => 120, 'window' => 60],
+            //   '/wc/v3/customers' => ['limit' => 20, 'window' => 60],
+            'per_route' => [],
+        ],
+
+        'cart' => [
+            'enabled' => true,
+            // CartVelocityMiddleware soft/hard thresholds + window.
+            'velocity_soft' => 20,
+            'velocity_hard' => 60,
+            'window' => 60,
+            // CouponAbuseMiddleware thresholds (failed attempts).
+            'coupon_soft' => 4,
+            'coupon_hard' => 10,
+        ],
+    ],
+
+    'integrity' => [
+        // Master switch for file-integrity monitoring (scanners, scheduler, admin page).
+        'enabled' => true,
+
+        // Per-scope toggles. Themes default off because legitimate developers edit them
+        // constantly; uploads default on because PHP files there are always suspicious.
+        'scan_core' => true,
+        'scan_plugins' => true,
+        'scan_themes' => false,
+        'scan_uploads' => true,
+
+        'cron' => [
+            'enabled' => true,
+            // 'hourly' | 'twicedaily' | 'daily'. Anything else falls back to 'daily'.
+            'recurrence' => 'daily',
+        ],
+
+        'notifications' => [
+            'enabled' => true,
+            // Only email when at least one finding at or above this severity appeared.
+            'min_severity' => 'high',
+            // Email recipients. Defaults to the WordPress admin email when empty.
+            'recipients' => [],
+        ],
+
+        // Findings older than this are pruned by the daily cron. 0 disables pruning.
+        'retention_days' => 60,
+    ],
     'security_headers' => [
         'hsts' => [
             'enabled' => false,
