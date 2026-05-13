@@ -210,6 +210,39 @@ final class Plugin
         ]);
     }
 
+    /**
+     * Surfaces a dismissible admin notice when the file logger can't write to
+     * its configured path. We rely on the boot-time `info()` call in
+     * {@see boot()} having already triggered the logger's lazy bootstrap, so
+     * by the time `admin_notices` fires the error state is decided.
+     *
+     * Only `manage_options` users see this — log paths can hint at host
+     * directory structure, which we don't want surfaced to lower-privileged
+     * admins.
+     */
+    public function renderLoggerNotice(): void
+    {
+        if (!WpHelper::currentUserCan('manage_options')) {
+            return;
+        }
+
+        if (!$this->container->has(LoggerInterface::class)) {
+            return;
+        }
+        $logger = $this->container->get(LoggerInterface::class);
+        if (!$logger instanceof FileLogger) {
+            return;
+        }
+        $error = $logger->lastError();
+        if ($error === null || $error === '') {
+            return;
+        }
+
+        echo '<div class="notice notice-warning is-dismissible"><p><strong>SecurePress logging:</strong> '
+            . WpHelper::escapeHtml($error)
+            . '</p></div>';
+    }
+
     public function renderMuLoaderNotice(): void
     {
         if (!WpHelper::currentUserCan('manage_options')) {
@@ -1016,6 +1049,7 @@ final class Plugin
         }
 
         WpHelper::addAction('admin_notices', [$this, 'renderMuLoaderNotice']);
+        WpHelper::addAction('admin_notices', [$this, 'renderLoggerNotice']);
         WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
 
         // Admin pages: lazy-resolved on the *first* `admin_menu` invocation rather
