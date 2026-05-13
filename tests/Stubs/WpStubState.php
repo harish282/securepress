@@ -44,6 +44,23 @@ final class WpStubState
     /** @var array<int, array<string, mixed>> */
     public static array $userMeta = [];
 
+    /**
+     * Registered action callbacks, keyed by hook name. Each entry is a list of
+     * `{callback, priority, accepted_args}` triples in registration order.
+     *
+     * @var array<string, list<array{callback: mixed, priority: int, accepted_args: int}>>
+     */
+    public static array $registeredActions = [];
+
+    /**
+     * Registered filter callbacks, keyed by hook name. Same shape as
+     * {@see $registeredActions} — filters and actions share the WordPress
+     * internal hook table, and tests sometimes need to confirm both.
+     *
+     * @var array<string, list<array{callback: mixed, priority: int, accepted_args: int}>>
+     */
+    public static array $registeredFilters = [];
+
     /** @var list<array{to:array|string,subject:string,message:string,headers:array}> */
     public static array $sentMail = [];
 
@@ -82,7 +99,64 @@ final class WpStubState
         self::$authCookies = [];
         self::$blogName = 'Test Site';
         self::$siteUrl = 'https://example.test';
+        self::$registeredActions = [];
+        self::$registeredFilters = [];
         self::$createCounter = 0;
+    }
+
+    /**
+     * Records that `add_action()` was called. Used by the wp-functions.php
+     * stub so tests can inspect which callbacks would have been registered in
+     * a real WordPress runtime.
+     */
+    public static function recordAction(string $hook, mixed $callback, int $priority, int $acceptedArgs): void
+    {
+        self::$registeredActions[$hook] ??= [];
+        self::$registeredActions[$hook][] = [
+            'callback' => $callback,
+            'priority' => $priority,
+            'accepted_args' => $acceptedArgs,
+        ];
+    }
+
+    public static function recordFilter(string $hook, mixed $callback, int $priority, int $acceptedArgs): void
+    {
+        self::$registeredFilters[$hook] ??= [];
+        self::$registeredFilters[$hook][] = [
+            'callback' => $callback,
+            'priority' => $priority,
+            'accepted_args' => $acceptedArgs,
+        ];
+    }
+
+    /**
+     * True when at least one callback has been registered against the given
+     * action hook in the current test scope.
+     */
+    public static function hasAction(string $hook): bool
+    {
+        return !empty(self::$registeredActions[$hook]);
+    }
+
+    /**
+     * Fires every callback registered against `$hook` in priority order, the
+     * same way WordPress's `do_action()` would. Tests use this to simulate
+     * the WordPress lifecycle without needing a real wp-load.php.
+     */
+    public static function dispatchAction(string $hook, mixed ...$args): void
+    {
+        $callbacks = self::$registeredActions[$hook] ?? [];
+        if ($callbacks === []) {
+            return;
+        }
+        usort(
+            $callbacks,
+            static fn (array $a, array $b): int => $a['priority'] <=> $b['priority']
+        );
+        foreach ($callbacks as $entry) {
+            $sliced = array_slice($args, 0, max(0, $entry['accepted_args']));
+            \call_user_func_array($entry['callback'], $sliced);
+        }
     }
 
     public static function setUserMeta(int $userId, string $key, mixed $value): void

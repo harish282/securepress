@@ -151,7 +151,7 @@ if (!function_exists('wp_clear_scheduled_hook')) {
 if (!function_exists('add_action')) {
     function add_action(string $hook, mixed $callback, int $priority = 10, int $acceptedArgs = 1): bool
     {
-        unset($hook, $callback, $priority, $acceptedArgs);
+        WpStubState::recordAction($hook, $callback, $priority, $acceptedArgs);
 
         return true;
     }
@@ -167,7 +167,7 @@ if (!function_exists('current_user_can')) {
 if (!function_exists('add_filter')) {
     function add_filter(string $hook, mixed $callback, int $priority = 10, int $acceptedArgs = 1): bool
     {
-        unset($hook, $callback, $priority, $acceptedArgs);
+        WpStubState::recordFilter($hook, $callback, $priority, $acceptedArgs);
 
         return true;
     }

@@ -128,6 +128,7 @@ use SecurePress\Middleware\SignedUrlMiddleware;
 use SecurePress\Sdk\Csrf\CsrfTokenManager;
 use SecurePress\Sdk\Events\EventDispatcher;
 use SecurePress\Core\Requirements\SystemRequirementsChecker;
+use SecurePress\Core\Support\RequestContext;
 use SecurePress\Core\Support\WpHelper;
 use SecurePress\Core\View\View;
 use SecurePress\Facades\AuditLog;
@@ -1072,14 +1073,34 @@ final class Plugin
         // itself does this internally at priority 0.
         $this->container->get(SecurePressMenuPage::class)->register();
 
-        // Admin pages: lazy-resolved on the *first* `admin_menu` invocation rather
-        // than eagerly on every admin pageview. WordPress fires `admin_menu` once
-        // per admin request anyway, so this defers the construction (Options +
-        // View + LicenseManager etc.) to the moment it's actually used. Every
-        // page below registers itself as a submenu of `SecurePressMenuPage`'s
-        // parent slug, so they all sit under the single "Secure Press" entry in
-        // the WordPress sidebar.
-        WpHelper::addAction('admin_menu', function (): void {
+        // Admin pages are deferred to `init` — NOT `admin_menu`, NOT
+        // `admin_init` — because of how WordPress's two admin entry points
+        // sequence their hooks:
+        //
+        //   wp-admin/admin.php (every normal admin page view):
+        //     1. require wp-admin/menu.php  → fires `admin_menu`
+        //     2. do_action('admin_init')                 ← AFTER admin_menu
+        //
+        //   wp-admin/admin-post.php (form submissions for Prune/Clear/Save):
+        //     1. do_action('admin_init')
+        //     2. do_action("admin_post_{$action}")
+        //     - NEVER fires `admin_menu`.
+        //
+        // So no single hook between admin_menu and admin_init works for both
+        // entry points. The earliest hook that fires reliably BEFORE both is
+        // `init` (from wp-settings.php, line ~742 in core), which runs as
+        // part of wp-load.php and therefore precedes wp-admin/admin.php's
+        // menu-rendering AND admin-post.php's action dispatch.
+        //
+        // The outer is_admin() gate above ensures this hook is only added
+        // for admin requests; the inner RequestContext::isAjax() check skips
+        // admin-ajax.php to preserve the lazy-loading intent (no page
+        // construction on every AJAX call).
+        WpHelper::addAction('init', function (): void {
+            if (RequestContext::isAjax()) {
+                return;
+            }
+
             $this->container->get(AuthHardeningSettingsPage::class)->register();
             $this->container->get(SecurityHeadersSettingsPage::class)->register();
             $this->container->get(FileIntegrityPage::class)->register();
