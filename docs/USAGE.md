@@ -52,7 +52,7 @@ When you activate SecurePress (and optionally install the MU loader for earlier 
    - Runs the **sessions schema installer** (`wp_securepress_sessions`) when authentication hardening is enabled.
    - Schedules the **daily audit log pruner** WP cron event and, when sessions are enabled, the **daily session pruner** (`securepress_sessions_prune`).
    - Registers the **authentication hardening kernel** (login lockout, 2FA gate, session tracking, suspicious-login alerts) when `auth_hardening.enabled` is true.
-   - Registers admin hooks (notices, plugin row meta, **Settings → Security Headers** page, **Settings → Authentication** page, **Tools → Audit Logs** page, **Account Security** top-level menu when auth hardening is enabled).
+   - Registers admin hooks (notices, plugin row meta, the top-level **Secure Press** menu with submenus for Dashboard, Authentication, Security Headers, File Integrity, Audit Logs, WooCommerce Protection, and License, plus the user-facing **Account Security** top-level menu when auth hardening is enabled).
 
 3. **Your code** registers middleware and protected routes during `init` or earlier:
    ```php
@@ -494,7 +494,7 @@ The Security Headers Manager lets administrators emit a curated set of HTTP secu
 After activating the plugin, log in as an administrator and visit:
 
 ```
-Settings → Security Headers
+Secure Press → Security Headers
 ```
 
 You'll see one section per supported header:
@@ -683,7 +683,7 @@ Events that don't fit a built-in listener can be recorded via the `AuditLog` fac
 Once the plugin is active, log in as an administrator and visit:
 
 ```
-Tools → Audit Logs
+Secure Press → Audit Logs
 ```
 
 The page shows a paginated, filterable list with one row per event:
@@ -885,9 +885,9 @@ SecurePress adds an optional **authentication hardening** stack that layers on t
 | **Email alerts** | Sends plain-text notifications for OTP delivery, 2FA enable/disable, recovery-code use, forced lockouts, and **suspicious logins** (see below). |
 | **Suspicious login detection** | Scores logins using pluggable rules. The shipped **New device** rule compares the current fingerprint against prior active sessions; when the score reaches the threshold (default **50**), an informational email is sent. |
 
-### Admin UI: Settings → Authentication
+### Admin UI: Secure Press → Authentication
 
-Site administrators (`manage_options`) configure the subsystem from **Settings → Authentication**. The page persists every value into a single autoloaded option (`securepress_auth_hardening`) using the WordPress Settings API, with the same nonce + capability protections WP applies to its own option pages. Available toggles:
+Site administrators (`manage_options`) configure the subsystem from **Secure Press → Authentication**. The page persists every value into a single autoloaded option (`securepress_auth_hardening`) using the WordPress Settings API, with the same nonce + capability protections WP applies to its own option pages. Available toggles:
 
 - **Authentication Hardening** — master killswitch. Disabling it stops registering the login lockout, 2FA gate, session tracking, and suspicion alerts on the next request. Existing 2FA enrolments remain in place; re-enabling restores enforcement immediately.
 - **Login lockout** — turn lockout on/off; configure max attempts (1–100), counting window (60–86400 s), and lock duration (60–86400 s).
@@ -934,7 +934,7 @@ Old rows in `wp_securepress_sessions` are removed by the daily cron hook `secure
 
 See [Configuration reference](#configuration-reference) for the flattened table. Two ways to override:
 
-1. **Settings → Authentication** (UI) — recommended for production. Persists into the `securepress_auth_hardening` option and overrides the file-level defaults.
+1. **Secure Press → Authentication** (UI) — recommended for production. Persists into the `securepress_auth_hardening` option and overrides the file-level defaults.
 2. **`config/plugin.php`** — sets the *defaults* used when no admin override is stored. Useful for shipping environment-aware bundles (staging defaults differ from production).
 
 ```php
@@ -1179,7 +1179,7 @@ Everything documented under **Security SDK** is part of the stable public API. T
 
 ## File integrity monitoring (Pro)
 
-(See the *File integrity monitoring* admin page under **Tools → File Integrity** once Pro is active. This section covers the Pro-gated additions in passing — the bulk of the FIM documentation lives in `docs/INTEGRITY.md` if you maintain that separately.)
+(See the *File integrity monitoring* admin page under **Secure Press → File Integrity** once Pro is active. This section covers the Pro-gated additions in passing — the bulk of the FIM documentation lives in `docs/INTEGRITY.md` if you maintain that separately.)
 
 ---
 
@@ -1187,7 +1187,7 @@ Everything documented under **Security SDK** is part of the stable public API. T
 
 The WooCommerce protection module is a **Pro-tier feature** focused on behavioural abuse prevention for stores: fake checkouts, registration spam, REST API abuse, and cart abuse. It runs only when:
 
-1. an active Pro license is configured (`Settings → SecurePress License`), AND
+1. an active Pro license is configured (`Secure Press → License`), AND
 2. WooCommerce is active on the site.
 
 When either is missing, the module wires up **zero** hooks — there's no overhead on free installs or non-store sites.
@@ -1210,11 +1210,11 @@ Decisions are emitted into the audit log under the actions:
 - `wc.api.deny`
 - `wc.cart.deny`
 
-so you can review them under **Tools → Audit Logs**.
+so you can review them under **Secure Press → Audit Logs**.
 
 ### Configuring from the admin UI
 
-`Settings → WooCommerce Protection` exposes:
+`Secure Press → WooCommerce Protection` exposes:
 
 - **Module master switch** (single toggle to disable everything).
 - **Checkout**: velocity soft/hard thresholds + window, minimum-seconds-to-submit, fraud-score challenge/deny thresholds.
@@ -1317,7 +1317,7 @@ The vendor signs keys with a shared secret (configured via `licensing.secret` in
 
 ### Entering a license
 
-Go to **Settings → SecurePress License**, paste the key, hit **Save license**. The page shows:
+Go to **Secure Press → License**, paste the key, hit **Save license**. The page shows:
 
 - Active / Expired / Invalid / None state.
 - Tier (`pro`, `agency`, …).
@@ -1357,7 +1357,7 @@ Security::isFeatureEnabled('pro');                    // alias
 
 ## Configuration reference
 
-`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*`, `audit_log.*`, and `auth_hardening.*`, which are intended to be configured from the admin UI (`Settings → Security Headers` / `Settings → Authentication`) or `config/plugin.php` (`audit_log.*`). Admin overrides are stored in autoloaded `wp_options` and merged on top of the file defaults; no ENV wiring is needed for those.
+`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*`, `audit_log.*`, and `auth_hardening.*`, which are intended to be configured from the admin UI (`Secure Press → Security Headers` / `Secure Press → Authentication`) or `config/plugin.php` (`audit_log.*`). Admin overrides are stored in autoloaded `wp_options` and merged on top of the file defaults; no ENV wiring is needed for those.
 
 | Config key | ENV variable | Default | Used by |
 |---|---|---|---|
@@ -1648,7 +1648,7 @@ add_action('rest_api_init', static function (): void {
 });
 ```
 
-Once your reports are quiet for a day or two, log into **Settings → Security Headers** and untick "Report-Only mode" to start enforcing.
+Once your reports are quiet for a day or two, log into **Secure Press → Security Headers** and untick "Report-Only mode" to start enforcing.
 
 ### Recipe: alert on critical audit events
 
@@ -1796,7 +1796,7 @@ If you toggled `preload`: there is no easy escape — see <https://hstspreload.o
 Make sure:
 
 1. The plugin is actually active (it's a no-op while inactive).
-2. The header is enabled in **Settings → Security Headers** and saved.
+2. The header is enabled in **Secure Press → Security Headers** and saved.
 3. The page hits `send_headers` — most WP requests do, but `wp-cron.php` and a few admin AJAX endpoints can short-circuit before that point.
 4. No higher-priority `send_headers` hook (or a downstream proxy / CDN) is stripping the header. The dispatcher hooks at priority `1`, so most plugin-set headers will run after it; if something replaces a header you're trying to set, increase `Priority` or set the header at a different layer (Apache `Header set`, nginx `add_header`).
 
@@ -1827,7 +1827,7 @@ Each failed login is one row; with brute-force traffic this can run to thousands
 
 ### `notice` for high-volume events drowns out important entries
 
-Use the level filter in **Tools → Audit Logs** to focus on `warning` / `critical` only. For programmatic SIEM exports, the `audit_log.mirror_to_file_logger` mode lets you tail `storage/logs/securepress.log` and grep for the level prefix.
+Use the level filter in **Secure Press → Audit Logs** to focus on `warning` / `critical` only. For programmatic SIEM exports, the `audit_log.mirror_to_file_logger` mode lets you tail `storage/logs/securepress.log` and grep for the level prefix.
 
 ### Pruner cron isn't running
 
@@ -1858,7 +1858,7 @@ The current build provides the **primitives** (signer, limiter, CSRF middleware,
 
 - An HTTP **kernel** that automatically dispatches the global middleware stack on every request matching a registered route — until then, use the fluent `Security::route()->run(...)` builder to wire guards on a per-route basis.
 - **Bot/firewall** rules
-- A unified admin **dashboard** UI (currently each feature has its own page: Settings → Security Headers, Settings → Authentication, Tools → Audit Logs, Account Security)
+- A richer admin **dashboard** UI with charts and trend lines (the current dashboard at **Secure Press → Dashboard** shows status badges only)
 - An **audit log CSV / NDJSON exporter** for offline forensics
 - **WP-CLI** commands (`wp securepress audit:list`, `wp securepress audit:prune`, `wp securepress 2fa:status <user>`)
 - **PHP 8 attribute-based** route protection (`#[ProtectedRoute(rate: 60, csrf: true)]`) — the manual `Security::route(...)->...->run(...)` builder is the supported approach today.

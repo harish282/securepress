@@ -57,7 +57,8 @@ final class AuthHardeningSettingsPage
 
     public function addMenu(): void
     {
-        WpHelper::addOptionsPage(
+        WpHelper::addSubmenuPage(
+            SecurePressMenuPage::PARENT_SLUG,
             'SecurePress Authentication',
             'Authentication',
             'manage_options',

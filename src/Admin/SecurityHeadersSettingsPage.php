@@ -58,7 +58,8 @@ final class SecurityHeadersSettingsPage
 
     public function addMenu(): void
     {
-        WpHelper::addOptionsPage(
+        WpHelper::addSubmenuPage(
+            SecurePressMenuPage::PARENT_SLUG,
             'SecurePress Security Headers',
             'Security Headers',
             'manage_options',

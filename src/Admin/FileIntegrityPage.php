@@ -55,7 +55,8 @@ final class FileIntegrityPage
 
     public function addMenu(): void
     {
-        WpHelper::addManagementPage(
+        WpHelper::addSubmenuPage(
+            SecurePressMenuPage::PARENT_SLUG,
             'SecurePress File Integrity',
             'File Integrity',
             'manage_options',
@@ -194,7 +195,7 @@ final class FileIntegrityPage
      */
     private function redirect(array $extraQuery): void
     {
-        $base = WpHelper::adminUrl('tools.php');
+        $base = WpHelper::adminUrl('admin.php');
         $args = ['page' => self::PAGE_SLUG] + $extraQuery;
         $url = $base . '?' . http_build_query($args);
 

@@ -21,7 +21,7 @@ use SecurePress\Core\Support\WpHelper;
  * @var AuditEvent|null  $detail
  */
 
-$pageBase = WpHelper::adminUrl('tools.php?page=' . $pageSlug);
+$pageBase = WpHelper::adminUrl('admin.php?page=' . $pageSlug);
 $nonceField = static function (string $action): string {
     if (\function_exists('wp_nonce_field')) {
         ob_start();
@@ -45,7 +45,7 @@ $buildLink = static function (array $params) use ($pageBase, $query): string {
     ];
     $merged = array_filter(array_replace($defaults, $params), static fn ($v): bool => $v !== null && $v !== '');
 
-    return WpHelper::escapeUrl(WpHelper::adminUrl('tools.php') . '?' . http_build_query($merged));
+    return WpHelper::escapeUrl(WpHelper::adminUrl('admin.php') . '?' . http_build_query($merged));
 };
 
 $levelClass = static function (string $level): string {

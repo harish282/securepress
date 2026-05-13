@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SecurePress\WooCommerce\Admin;
 
+use SecurePress\Admin\LicensePage;
+use SecurePress\Admin\SecurePressMenuPage;
 use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Support\WpHelper;
@@ -40,7 +42,8 @@ final class WooCommerceProtectionPage
 
     public function addMenu(): void
     {
-        WpHelper::addOptionsPage(
+        WpHelper::addSubmenuPage(
+            SecurePressMenuPage::PARENT_SLUG,
             'SecurePress WooCommerce Protection',
             'WooCommerce Protection',
             'manage_options',
@@ -111,7 +114,7 @@ final class WooCommerceProtectionPage
         $reason = $status->reason !== '' ? $status->reason : 'No active Pro license.';
         echo '<div class="notice notice-warning inline" style="margin-bottom:1em;"><p>'
             . '<strong>' . WpHelper::escapeHtml($reason) . '</strong> '
-            . 'Configure a license on the <a href="' . WpHelper::escapeUrl(WpHelper::adminUrl('options-general.php?page=securepress-license')) . '">License</a> page.</p></div>';
+            . 'Configure a license on the <a href="' . WpHelper::escapeUrl(SecurePressMenuPage::submenuUrl(LicensePage::PAGE_SLUG)) . '">License</a> page.</p></div>';
     }
 
     private function renderUpgradePrompt(): void

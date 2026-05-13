@@ -424,6 +424,51 @@ final class WpHelper
         }
     }
 
+    /**
+     * Registers a WordPress top-level admin menu page.
+     *
+     * Mirrors {@see add_menu_page()} so callers can stay decoupled from the global WP
+     * function (which is undefined during unit tests). The signature intentionally
+     * matches WP's argument order — passing through everything but the rarely-used
+     * `$function` parameter, which we always derive from `$callback`.
+     */
+    public static function addMenuPage(
+        string $pageTitle,
+        string $menuTitle,
+        string $capability,
+        string $menuSlug,
+        callable $callback,
+        string $iconUrl = '',
+        ?int $position = null,
+    ): void {
+        if (\function_exists('add_menu_page')) {
+            \call_user_func('add_menu_page', $pageTitle, $menuTitle, $capability, $menuSlug, $callback, $iconUrl, $position);
+        }
+    }
+
+    /**
+     * Registers a child admin menu page beneath an existing top-level menu.
+     *
+     * `$parentSlug` must already have been registered via {@see addMenuPage()} (or be
+     * a core WP slug like `tools.php`). Passing the same value for `$parentSlug` and
+     * `$menuSlug` is the standard way to override the auto-created first submenu's
+     * label — used by {@see \SecurePress\Admin\SecurePressMenuPage} to rename the
+     * landing item from "Secure Press" to "Dashboard".
+     */
+    public static function addSubmenuPage(
+        string $parentSlug,
+        string $pageTitle,
+        string $menuTitle,
+        string $capability,
+        string $menuSlug,
+        callable $callback,
+        ?int $position = null,
+    ): void {
+        if (\function_exists('add_submenu_page')) {
+            \call_user_func('add_submenu_page', $parentSlug, $pageTitle, $menuTitle, $capability, $menuSlug, $callback, $position);
+        }
+    }
+
     public static function scheduleEvent(int $timestamp, string $recurrence, string $hook): bool
     {
         if (!\function_exists('wp_next_scheduled') || !\function_exists('wp_schedule_event')) {

@@ -8,6 +8,7 @@ use SecurePress\Admin\AuditLogPage;
 use SecurePress\Admin\AuthHardeningSettingsPage;
 use SecurePress\Admin\FileIntegrityPage;
 use SecurePress\Admin\LicensePage;
+use SecurePress\Admin\SecurePressMenuPage;
 use SecurePress\Admin\SecurityHeadersSettingsPage;
 use SecurePress\Admin\UserSecurityProfilePage;
 use SecurePress\Auth\AuthenticationHardeningKernel;
@@ -837,6 +838,18 @@ final class Plugin
                 $container->get(LicenseManager::class)
             )
         );
+        $this->container->singleton(
+            SecurePressMenuPage::class,
+            static fn (Container $container): SecurePressMenuPage => new SecurePressMenuPage(
+                $container->get(LicenseManager::class),
+                $container->get(AuthHardeningOptions::class),
+                $container->get(SecurityHeadersOptions::class),
+                $container->get(IntegrityOptions::class),
+                $container->get(FindingRepositoryInterface::class),
+                $container->get(AuditLogRepositoryInterface::class),
+                $container->get(View::class),
+            )
+        );
     }
 
     private function registerWooCommerceServices(): void
@@ -1052,25 +1065,38 @@ final class Plugin
         WpHelper::addAction('admin_notices', [$this, 'renderLoggerNotice']);
         WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
 
+        // The top-level "Secure Press" menu owns the parent slug every submenu
+        // page below hangs off. It must be registered first — WP drops submenu
+        // entries whose `parent_slug` doesn't yet exist — so we hook into
+        // `admin_menu` outside of the priority-1 submenu callback. The page
+        // itself does this internally at priority 0.
+        $this->container->get(SecurePressMenuPage::class)->register();
+
         // Admin pages: lazy-resolved on the *first* `admin_menu` invocation rather
         // than eagerly on every admin pageview. WordPress fires `admin_menu` once
         // per admin request anyway, so this defers the construction (Options +
-        // View + LicenseManager etc.) to the moment it's actually used.
+        // View + LicenseManager etc.) to the moment it's actually used. Every
+        // page below registers itself as a submenu of `SecurePressMenuPage`'s
+        // parent slug, so they all sit under the single "Secure Press" entry in
+        // the WordPress sidebar.
         WpHelper::addAction('admin_menu', function (): void {
+            $this->container->get(AuthHardeningSettingsPage::class)->register();
             $this->container->get(SecurityHeadersSettingsPage::class)->register();
-            $this->container->get(AuditLogPage::class)->register();
             $this->container->get(FileIntegrityPage::class)->register();
-            $this->container->get(LicensePage::class)->register();
+            $this->container->get(AuditLogPage::class)->register();
             // The WC settings page is registered unconditionally so admins can
             // discover the feature even on Free. The page itself renders an
             // upgrade prompt when the license isn't active.
             $this->container->get(WooCommerceProtectionPage::class)->register();
+            // License lives at the bottom of the menu — admins rarely need it
+            // after initial setup, and burying it reduces the chance of
+            // accidentally clearing a working key.
+            $this->container->get(LicensePage::class)->register();
 
-            // The Authentication settings page is registered unconditionally —
-            // admins need a way to re-enable hardening after toggling it off, so
-            // the page must remain reachable even when the master switch is off.
-            $this->container->get(AuthHardeningSettingsPage::class)->register();
-
+            // Account Security stays as its own top-level menu (separate from
+            // the SecurePress parent menu above): it's gated by the `read`
+            // capability so every logged-in user can manage their own 2FA, while
+            // the SecurePress parent menu requires `manage_options`.
             if ($this->container->get(AuthHardeningOptions::class)->isEnabled()) {
                 $this->container->get(UserSecurityProfilePage::class)->register();
             }

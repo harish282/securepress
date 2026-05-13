@@ -44,9 +44,10 @@ final class LicensePage
 
     public function addMenu(): void
     {
-        WpHelper::addOptionsPage(
+        WpHelper::addSubmenuPage(
+            SecurePressMenuPage::PARENT_SLUG,
             'SecurePress License',
-            'SecurePress License',
+            'License',
             'manage_options',
             self::PAGE_SLUG,
             [$this, 'renderPage']
@@ -158,7 +159,7 @@ final class LicensePage
 
     private function redirect(string $message): void
     {
-        $base = WpHelper::adminUrl('options-general.php');
+        $base = WpHelper::adminUrl('admin.php');
         $url = $base . '?' . http_build_query([
             'page' => self::PAGE_SLUG,
             self::STATUS_QUERY_KEY => $message,
