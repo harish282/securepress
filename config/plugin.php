@@ -201,6 +201,11 @@ return [
         'retention_days' => 60,
     ],
     'security_headers' => [
+        // Master switch for the entire feature. When false, no header is emitted
+        // regardless of the per-header `enabled` flags. Lets the SecurePress
+        // dashboard turn the whole module off in one click without zeroing the
+        // per-header config (which an admin may want to keep for later).
+        'enabled' => true,
         'hsts' => [
             'enabled' => false,
             'max_age' => 31536000,

@@ -29,6 +29,14 @@ final class SecurityHeadersSettingsPage
 
     public const OPTION_GROUP = 'securepress_security_headers_group';
 
+    /**
+     * Section that hosts the master `enabled` toggle. Comes first on the page
+     * so admins immediately see whether the feature is on, and so the same
+     * variable the dashboard's feature-toggle form writes is also editable
+     * here — preventing the two views from desyncing.
+     */
+    public const SECTION_MASTER = 'securepress_section_master';
+
     public const SECTION_HSTS = 'securepress_section_hsts';
 
     public const SECTION_CSP = 'securepress_section_csp';
@@ -75,6 +83,20 @@ final class SecurityHeadersSettingsPage
             SecurityHeadersOptions::OPTION_NAME,
             ['sanitize_callback' => [$this->options, 'sanitize']]
         );
+
+        // Master switch FIRST so it's the most prominent control on the page —
+        // and so the page form submits the same `enabled` key the dashboard's
+        // feature-toggle form writes to. Without this, partial submissions
+        // would silently re-enable the master each time an admin saved a
+        // sub-section here (the historic source of "dashboard says off but
+        // headers are still being sent").
+        WpHelper::addSettingsSection(
+            self::SECTION_MASTER,
+            'Security Headers',
+            [$this, 'renderMasterSectionIntro'],
+            self::PAGE_SLUG
+        );
+        WpHelper::addSettingsField('master_enabled', 'Emit security headers', [$this, 'renderMasterEnabled'], self::PAGE_SLUG, self::SECTION_MASTER);
 
         WpHelper::addSettingsSection(
             self::SECTION_HSTS,
@@ -144,7 +166,28 @@ final class SecurityHeadersSettingsPage
         $this->view->render('admin.settings.security-headers', [
             'pageSlug' => self::PAGE_SLUG,
             'optionGroup' => self::OPTION_GROUP,
+            'masterEnabled' => $this->options->isEnabled(),
         ]);
+    }
+
+    public function renderMasterSectionIntro(): void
+    {
+        echo '<p>Master switch for the entire feature. When off, no header below is emitted regardless of its per-section toggle &mdash; useful when you want to pause everything without losing your per-header configuration. The same toggle is mirrored on the <strong>SecurePress</strong> dashboard.</p>';
+    }
+
+    public function renderMasterEnabled(): void
+    {
+        // Top-level key (no group), so this can't go through renderCheckbox()
+        // which assumes a nested `[group][key]` shape. The hidden 0 + checked
+        // 1 pattern is the standard WP-checkbox workaround so unchecking
+        // submits a 0 rather than the field disappearing entirely.
+        $checked = $this->masterValue() ? ' checked' : '';
+        $name = sprintf('%s[enabled]', SecurityHeadersOptions::OPTION_NAME);
+        printf(
+            '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Send all enabled security headers on every response</label>',
+            WpHelper::escapeAttribute($name),
+            $checked
+        );
     }
 
     public function renderHstsSectionIntro(): void
@@ -311,5 +354,18 @@ final class SecurityHeadersSettingsPage
         }
 
         return $this->cachedOptions[$group][$key] ?? null;
+    }
+
+    /**
+     * Resolves the top-level master `enabled` flag without going through
+     * valueOf(), which is shaped for nested `[group][key]` paths.
+     */
+    private function masterValue(): bool
+    {
+        if ($this->cachedOptions === null) {
+            $this->cachedOptions = $this->options->all();
+        }
+
+        return (bool) ($this->cachedOptions['enabled'] ?? true);
     }
 }

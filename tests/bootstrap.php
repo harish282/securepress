@@ -13,4 +13,11 @@ require_once SECUREPRESS_SRC_PATH . '/Core/Support/Autoloader.php';
 
 \SecurePress\Core\Support\Autoloader::register();
 
+// Signals admin_post handlers / page redirectors that they're running inside
+// a unit test, so they record the redirect target on {@see \SecurePress\Tests\Stubs\WpStubState}
+// instead of exit()-ing the process.
+if (!defined('SECUREPRESS_TESTING')) {
+    define('SECUREPRESS_TESTING', true);
+}
+
 require_once __DIR__ . '/Stubs/wp-functions.php';

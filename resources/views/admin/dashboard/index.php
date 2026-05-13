@@ -2,16 +2,20 @@
 
 declare(strict_types=1);
 
+use SecurePress\Admin\FeatureDescriptor;
 use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Support\WpHelper;
 
 /**
- * @var array{isPro:bool,status:LicenseStatus}      $license
- * @var array{enabled:bool}                          $auth
- * @var array{enabledCount:int,totalCount:int}      $headers
- * @var array{enabled:bool,openFindings:int}        $integrity
- * @var array{totalEvents:int}                       $audit
+ * @var array{isPro:bool,status:LicenseStatus}                              $license
+ * @var array{enabled:bool}                                                  $auth
+ * @var array{enabledCount:int,totalCount:int,masterEnabled:bool}           $headers
+ * @var array{enabled:bool,openFindings:int}                                 $integrity
+ * @var array{totalEvents:int}                                               $audit
+ * @var array{list:list<FeatureDescriptor>,isPro:bool,formAction:string,nonceAction:string,actionName:string} $features
+ * @var string|null                                                          $status
  * @var array{authentication:string,headers:string,integrity:string,auditLog:string,license:string} $links
+ * @var array{isInstalled:bool,expectedPath:string,expectedDirectory:string,loaderFilename:string,downloadAction:string,downloadUrl:string} $muLoader
  */
 
 $badge = static function (bool $ok, string $okLabel, string $offLabel): string {
@@ -38,6 +42,17 @@ $card = static function (string $title, string $statusHtml, string $bodyHtml, st
         . '</div>';
 };
 
+$nonceField = static function (string $action): string {
+    if (\function_exists('wp_nonce_field')) {
+        ob_start();
+        \call_user_func('wp_nonce_field', $action);
+
+        return (string) ob_get_clean();
+    }
+
+    return '';
+};
+
 $licenseStatus = $license['status'];
 $licenseLabel = match ($licenseStatus->state) {
     LicenseStatus::STATE_ACTIVE => 'Active (' . $licenseStatus->tier . ')',
@@ -46,12 +61,127 @@ $licenseLabel = match ($licenseStatus->state) {
     default => 'Not configured',
 };
 
+// Parse the redirect status flag (set by handleSaveFeatures). Shape is
+// "saved:N" where N is the number of toggles that actually changed. We
+// keep the parser tolerant — an unrecognised flag just renders nothing.
+$savedCount = null;
+if (is_string($status) && str_starts_with($status, 'saved:')) {
+    $candidate = substr($status, strlen('saved:'));
+    if (ctype_digit($candidate)) {
+        $savedCount = (int) $candidate;
+    }
+}
+
 ?>
 <div class="wrap">
     <h1>Secure Press</h1>
-    <p class="description">Status overview for every SecurePress subsystem. Click any tile to manage that area in detail.</p>
+    <p class="description">Status overview for every SecurePress subsystem. Toggle a feature on or off below, or click any tile to manage that area in detail.</p>
 
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:18px;">
+    <?php if (!$muLoader['isInstalled']): ?>
+        <div style="background:#fff;border:1px solid #f0b849;border-left:4px solid #f0b849;border-radius:6px;padding:18px 22px;margin-top:16px;">
+            <h2 style="margin:0 0 6px;font-size:15px;color:#7a5400;">
+                MU loader not installed &mdash; SecurePress is loading later than it could
+            </h2>
+            <p style="margin:0 0 12px;color:#50575e;">
+                <strong>Why this matters:</strong>
+                WordPress loads must-use plugins (<code>wp-content/mu-plugins/</code>) <em>before</em> regular plugins, themes, and the request router. Installing the SecurePress MU loader lets us inspect incoming requests, rate-limit traffic, and apply security headers at the earliest possible point in the WordPress lifecycle &mdash; catching malicious traffic that would otherwise reach plugin code first.
+            </p>
+            <p style="margin:0 0 14px;color:#50575e;">
+                <strong>How to install (under a minute):</strong>
+            </p>
+            <ol style="margin:0 0 14px 22px;color:#50575e;line-height:1.7;">
+                <li>Click <strong>Download MU loader (.zip)</strong> below.</li>
+                <li>Extract the archive. You'll get one file: <code><?= WpHelper::escapeHtml($muLoader['loaderFilename']) ?></code>.</li>
+                <li>Upload it (via SFTP, your host's File Manager, or <code>wp cli</code>) to:<br>
+                    <code style="display:inline-block;margin-top:4px;padding:4px 8px;background:#f6f7f7;border-radius:3px;"><?= WpHelper::escapeHtml($muLoader['expectedDirectory']) ?>/</code><br>
+                    If the <code>mu-plugins</code> folder doesn't exist, create it &mdash; WordPress will pick it up automatically.</li>
+                <li>Reload this page. The callout will disappear once SecurePress detects the loader.</li>
+            </ol>
+            <form method="post"
+                  action="<?= WpHelper::escapeUrl($muLoader['downloadUrl']) ?>"
+                  style="display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <input type="hidden" name="action" value="<?= WpHelper::escapeAttribute($muLoader['downloadAction']) ?>">
+                <?= $nonceField($muLoader['downloadAction']) ?>
+                <button type="submit" class="button button-primary">
+                    Download MU loader (.zip)
+                </button>
+                <span style="color:#50575e;font-size:12px;">
+                    Contents: <code><?= WpHelper::escapeHtml($muLoader['loaderFilename']) ?></code> + <code>INSTALL.txt</code>.
+                </span>
+            </form>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($savedCount !== null): ?>
+        <div class="notice notice-success is-dismissible">
+            <p>
+                <?php if ($savedCount === 0): ?>
+                    No feature changes to apply &mdash; everything is already in the requested state.
+                <?php else: ?>
+                    <strong><?= (int) $savedCount ?></strong>
+                    feature<?= $savedCount === 1 ? '' : 's' ?>
+                    updated.
+                <?php endif; ?>
+            </p>
+        </div>
+    <?php endif; ?>
+
+    <h2 style="margin-top:24px;">Feature toggles</h2>
+    <p class="description">Turn entire SecurePress modules on or off in one click. Detailed per-module settings stay on each module's dedicated page &mdash; this only flips the master switch.</p>
+
+    <form method="post" action="<?= WpHelper::escapeUrl($features['formAction']) ?>"
+          style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:20px;margin-top:8px;">
+        <input type="hidden" name="action" value="<?= WpHelper::escapeAttribute($features['actionName']) ?>">
+        <?= $nonceField($features['nonceAction']) ?>
+
+        <table class="form-table" role="presentation" style="margin-top:0;">
+            <tbody>
+            <?php foreach ($features['list'] as $feature): ?>
+                <?php
+                $isOn = $feature->isEnabled();
+                // Pro-gated features stay clickable in the UI — flipping them
+                // pre-configures the desired state. The module's own bootstrap
+                // decides whether to actually run based on the license. The
+                // visible "Pro" badge sets expectations without being a hard
+                // block, matching the WC settings page convention.
+                $proBadge = $feature->isPro
+                    ? ' <span style="display:inline-block;background:#1d2327;color:#fff;font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:3px;vertical-align:middle;">PRO</span>'
+                    : '';
+                ?>
+                <tr>
+                    <th scope="row" style="padding-left:0;">
+                        <label for="securepress_feature_<?= WpHelper::escapeAttribute($feature->key) ?>" style="display:block;">
+                            <strong><?= WpHelper::escapeHtml($feature->label) ?></strong><?= $proBadge ?>
+                        </label>
+                    </th>
+                    <td>
+                        <label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;">
+                            <input type="checkbox"
+                                   id="securepress_feature_<?= WpHelper::escapeAttribute($feature->key) ?>"
+                                   name="features[<?= WpHelper::escapeAttribute($feature->key) ?>]"
+                                   value="1"
+                                   <?= $isOn ? 'checked' : '' ?>>
+                            <span><?= WpHelper::escapeHtml($feature->description) ?></span>
+                        </label>
+                        <?php if ($feature->isPro && !$features['isPro']): ?>
+                            <p class="description" style="margin-top:6px;">
+                                Pro license required for this feature to take effect.
+                                <a href="<?= WpHelper::escapeUrl($links['license']) ?>">Activate Pro</a>.
+                            </p>
+                        <?php endif; ?>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+
+        <p>
+            <button type="submit" class="button button-primary">Save feature toggles</button>
+        </p>
+    </form>
+
+    <h2 style="margin-top:32px;">Status overview</h2>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:8px;">
         <?= $card(
             'Authentication',
             $badge($auth['enabled'], 'On', 'Off'),
@@ -62,7 +192,9 @@ $licenseLabel = match ($licenseStatus->state) {
 
         <?= $card(
             'Security Headers',
-            $badge($headers['enabledCount'] > 0, $headers['enabledCount'] . ' of ' . $headers['totalCount'] . ' on', 'All off'),
+            $headers['masterEnabled']
+                ? $badge($headers['enabledCount'] > 0, $headers['enabledCount'] . ' of ' . $headers['totalCount'] . ' on', 'All off')
+                : $badge(false, 'On', 'Off'),
             'HSTS, CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy, and X-Content-Type-Options.',
             $links['headers'],
             'Configure headers',

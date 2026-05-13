@@ -67,6 +67,18 @@ final class IntegrityOptions
     }
 
     /**
+     * Flips just the master `enabled` flag, preserving every other integrity
+     * setting (cron, scope toggles, notifications). Used by the centralized
+     * SecurePress dashboard.
+     */
+    public function setEnabled(bool $enabled): void
+    {
+        $current = $this->all();
+        $current['enabled'] = $enabled;
+        WpHelper::updateOption(self::OPTION_NAME, $current);
+    }
+
+    /**
      * @param mixed $input
      * @return array<string, mixed>
      */

@@ -83,6 +83,17 @@ final class WooCommerceProtectionOptions
         return (bool) ($this->all()['enabled'] ?? true);
     }
 
+    /**
+     * Flips just the master `enabled` flag, preserving every per-pipeline
+     * setting. Used by the centralized SecurePress dashboard.
+     */
+    public function setEnabled(bool $enabled): void
+    {
+        $current = $this->all();
+        $current['enabled'] = $enabled;
+        WpHelper::updateOption(self::OPTION_NAME, $current);
+    }
+
     public function isCheckoutEnabled(): bool
     {
         return $this->isEnabled() && (bool) ($this->all()['checkout']['enabled'] ?? true);

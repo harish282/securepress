@@ -6,8 +6,11 @@ namespace SecurePress\Core;
 
 use SecurePress\Admin\AuditLogPage;
 use SecurePress\Admin\AuthHardeningSettingsPage;
+use SecurePress\Admin\FeatureRegistry;
 use SecurePress\Admin\FileIntegrityPage;
 use SecurePress\Admin\LicensePage;
+use SecurePress\Admin\MuLoaderDownloadController;
+use SecurePress\Admin\MuLoaderStatus;
 use SecurePress\Admin\SecurePressMenuPage;
 use SecurePress\Admin\SecurityHeadersSettingsPage;
 use SecurePress\Admin\UserSecurityProfilePage;
@@ -15,6 +18,7 @@ use SecurePress\Auth\AuthenticationHardeningKernel;
 use SecurePress\Auth\TwoFactorChallengeController;
 use SecurePress\Core\Audit\AuditLogger;
 use SecurePress\Core\Audit\AuditLoggerInterface;
+use SecurePress\Core\Audit\AuditLogOptions;
 use SecurePress\Core\Audit\AuditLogPruner;
 use SecurePress\Core\Audit\AuditLogRepositoryInterface;
 use SecurePress\Core\Audit\AuditLogSchema;
@@ -251,7 +255,8 @@ final class Plugin
             return;
         }
 
-        if ($this->isMuLoaderInstalled()) {
+        $status = $this->container->get(MuLoaderStatus::class);
+        if ($status->isInstalled()) {
             return;
         }
 
@@ -260,13 +265,11 @@ final class Plugin
             return;
         }
 
-        $expectedPath = $this->getMuLoaderPath();
-        $templatePath = SECUREPRESS_MU_LOADER_TEMPLATE_PATH;
         $guidePath = SECUREPRESS_PATH . '/docs/MU_LOADER_INSTALL.md';
 
         $this->container->get(View::class)->render('admin.notices.mu-loader-missing', [
-            'templatePath' => $templatePath,
-            'expectedPath' => $expectedPath,
+            'templatePath' => $status->templatePath(),
+            'expectedPath' => $status->expectedPath(),
             'guidePath' => $guidePath,
         ]);
     }
@@ -284,7 +287,7 @@ final class Plugin
             return $pluginMeta;
         }
 
-        $pluginMeta[] = $this->isMuLoaderInstalled()
+        $pluginMeta[] = $this->container->get(MuLoaderStatus::class)->isInstalled()
             ? '<span style="color:#2e7d32;font-weight:600;">MU Loader: Installed</span>'
             : '<span style="color:#b45309;font-weight:600;">MU Loader: Missing</span>';
 
@@ -436,12 +439,23 @@ final class Plugin
             )
         );
         $this->container->singleton(
+            AuditLogOptions::class,
+            static fn (Container $container): AuditLogOptions => new AuditLogOptions(
+                $container->get(Config::class)
+            )
+        );
+        // The audit logger and pruner now resolve their `enabled`/retention
+        // values from AuditLogOptions, which overlays a wp_option on top of
+        // config/plugin.php. That makes the SecurePress dashboard toggle
+        // (which writes only that option) effective immediately on the next
+        // request without any cache flush or plugin reactivation.
+        $this->container->singleton(
             AuditLoggerInterface::class,
             static fn (Container $container): AuditLoggerInterface => new AuditLogger(
                 $container->get(AuditLogRepositoryInterface::class),
                 $container->get(LoggerInterface::class),
-                (bool) $container->get(Config::class)->get('audit_log.enabled', true),
-                (bool) $container->get(Config::class)->get('audit_log.mirror_to_file_logger', false),
+                $container->get(AuditLogOptions::class)->isEnabled(),
+                $container->get(AuditLogOptions::class)->mirrorToFileLogger(),
             )
         );
         $this->container->singleton(
@@ -449,7 +463,7 @@ final class Plugin
             static fn (Container $container): AuditLogPruner => new AuditLogPruner(
                 $container->get(AuditLogRepositoryInterface::class),
                 $container->get(LoggerInterface::class),
-                (int) $container->get(Config::class)->get('audit_log.retention_days', 90),
+                $container->get(AuditLogOptions::class)->retentionDays(),
             )
         );
         $this->registerIntegrityServices();
@@ -840,6 +854,17 @@ final class Plugin
             )
         );
         $this->container->singleton(
+            FeatureRegistry::class,
+            static fn (Container $container): FeatureRegistry => new FeatureRegistry(
+                $container->get(AuditLogOptions::class),
+                $container->get(AuthHardeningOptions::class),
+                $container->get(SecurityHeadersOptions::class),
+                $container->get(IntegrityOptions::class),
+                $container->get(WooCommerceProtectionOptions::class),
+                $container->get(LicenseManager::class),
+            )
+        );
+        $this->container->singleton(
             SecurePressMenuPage::class,
             static fn (Container $container): SecurePressMenuPage => new SecurePressMenuPage(
                 $container->get(LicenseManager::class),
@@ -848,7 +873,24 @@ final class Plugin
                 $container->get(IntegrityOptions::class),
                 $container->get(FindingRepositoryInterface::class),
                 $container->get(AuditLogRepositoryInterface::class),
+                $container->get(FeatureRegistry::class),
+                $container->get(MuLoaderStatus::class),
                 $container->get(View::class),
+            )
+        );
+
+        // MuLoaderStatus is a stateless value object — share one instance so
+        // every consumer (the plugins-screen notice, the dashboard callout,
+        // and the row-meta filter) reports identical state within a request.
+        $this->container->singleton(
+            MuLoaderStatus::class,
+            static fn (): MuLoaderStatus => new MuLoaderStatus()
+        );
+
+        $this->container->singleton(
+            MuLoaderDownloadController::class,
+            static fn (Container $container): MuLoaderDownloadController => new MuLoaderDownloadController(
+                $container->get(MuLoaderStatus::class)
             )
         );
     }
@@ -1073,6 +1115,12 @@ final class Plugin
         // itself does this internally at priority 0.
         $this->container->get(SecurePressMenuPage::class)->register();
 
+        // The MU loader zip-download controller registers an admin_post_*
+        // hook only (no menu page), so it can live right next to the
+        // dashboard menu registration — same lifecycle, same admin-post.php
+        // entry point.
+        $this->container->get(MuLoaderDownloadController::class)->register();
+
         // Admin pages are deferred to `init` — NOT `admin_menu`, NOT
         // `admin_init` — because of how WordPress's two admin entry points
         // sequence their hooks:
@@ -1122,20 +1170,6 @@ final class Plugin
                 $this->container->get(UserSecurityProfilePage::class)->register();
             }
         }, 1);
-    }
-
-    private function isMuLoaderInstalled(): bool
-    {
-        return is_readable($this->getMuLoaderPath());
-    }
-
-    private function getMuLoaderPath(): string
-    {
-        $muDirectory = \defined('WPMU_PLUGIN_DIR')
-            ? (string) \constant('WPMU_PLUGIN_DIR')
-            : \dirname(SECUREPRESS_PATH) . '/mu-plugins';
-
-        return rtrim($muDirectory, '/') . '/' . SECUREPRESS_MU_LOADER_FILENAME;
     }
 
 }

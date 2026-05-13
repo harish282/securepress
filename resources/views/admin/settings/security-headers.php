@@ -7,11 +7,27 @@ use SecurePress\Core\Support\WpHelper;
 /**
  * @var string $pageSlug
  * @var string $optionGroup
+ * @var bool $masterEnabled
  */
 ?>
 <div class="wrap">
     <h1>SecurePress Security Headers</h1>
     <p>Toggle the headers you want SecurePress to emit on every WordPress response. Defaults are conservative — review carefully before enabling HSTS or CSP.</p>
+
+    <?php if (!$masterEnabled): ?>
+        <div class="notice notice-warning">
+            <p>
+                <strong>Security headers are currently off.</strong>
+                The master switch below (also available on the
+                <a href="<?= WpHelper::escapeAttribute(
+                    \function_exists('admin_url')
+                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . \SecurePress\Admin\SecurePressMenuPage::PARENT_SLUG)
+                        : '#'
+                ) ?>">SecurePress dashboard</a>)
+                is disabled, so none of the headers configured here will be emitted on responses. Re-enable it and click <em>Save Changes</em> to resume.
+            </p>
+        </div>
+    <?php endif; ?>
 
     <form method="post" action="options.php">
         <?php

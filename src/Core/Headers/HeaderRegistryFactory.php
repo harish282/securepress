@@ -20,6 +20,16 @@ final class HeaderRegistryFactory
     public function make(): HeaderRegistry
     {
         $registry = new HeaderRegistry();
+
+        // The master switch wins. When it's off we return an empty registry so
+        // the dispatcher emits nothing — far cheaper than constructing each
+        // header object only to never emit it. The per-header `enabled` flags
+        // stay intact in storage so flipping the master back on restores the
+        // previous configuration as-is.
+        if (!$this->options->isEnabled()) {
+            return $registry;
+        }
+
         $config = $this->options->all();
 
         $registry->register(new HstsHeader(

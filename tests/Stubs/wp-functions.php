@@ -157,6 +157,32 @@ if (!function_exists('add_action')) {
     }
 }
 
+if (!function_exists('wp_die')) {
+    function wp_die(string $message = '', string $title = '', array|int $args = []): void
+    {
+        WpStubState::recordWpDie($message, $title, is_array($args) ? $args : []);
+    }
+}
+
+if (!function_exists('wp_safe_redirect')) {
+    function wp_safe_redirect(string $url, int $status = 302): bool
+    {
+        WpStubState::recordRedirect($url);
+        unset($status);
+
+        return true;
+    }
+}
+
+if (!function_exists('wp_nonce_field')) {
+    function wp_nonce_field(string $action, string $name = '_wpnonce'): string
+    {
+        echo '<input type="hidden" name="' . $name . '" value="nonce_' . $action . '">';
+
+        return '';
+    }
+}
+
 if (!function_exists('current_user_can')) {
     function current_user_can(string $capability): bool
     {
@@ -262,5 +288,52 @@ if (!function_exists('get_bloginfo')) {
     function get_bloginfo(string $key = 'name'): string
     {
         return $key === 'name' ? WpStubState::$blogName : '';
+    }
+}
+
+if (!function_exists('register_setting')) {
+    function register_setting(string $optionGroup, string $optionName, array $args = []): void
+    {
+        WpStubState::$registeredOptions[$optionName] = [
+            'group' => $optionGroup,
+            'args' => $args,
+        ];
+    }
+}
+
+if (!function_exists('add_settings_section')) {
+    function add_settings_section(string $id, string $title, callable $callback, string $page): void
+    {
+        WpStubState::$settingsSections[$id] = [
+            'title' => $title,
+            'callback' => $callback,
+            'page' => $page,
+        ];
+    }
+}
+
+if (!function_exists('add_settings_field')) {
+    function add_settings_field(string $id, string $title, callable $callback, string $page, string $section = 'default'): void
+    {
+        WpStubState::$settingsFields[$id] = [
+            'title' => $title,
+            'callback' => $callback,
+            'page' => $page,
+            'section' => $section,
+        ];
+    }
+}
+
+if (!function_exists('admin_url')) {
+    function admin_url(string $path = ''): string
+    {
+        return WpStubState::$siteUrl . '/wp-admin/' . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('home_url')) {
+    function home_url(string $path = ''): string
+    {
+        return WpStubState::$siteUrl . '/' . ltrim($path, '/');
     }
 }

@@ -79,6 +79,18 @@ final class AuthHardeningOptions
     }
 
     /**
+     * Flips just the master `enabled` flag, preserving every other auth
+     * setting. Used by the centralized SecurePress dashboard so admins don't
+     * have to dig into the full settings page to disable the module.
+     */
+    public function setEnabled(bool $enabled): void
+    {
+        $current = $this->all();
+        $current['enabled'] = $enabled;
+        WpHelper::updateOption(self::OPTION_NAME, $current);
+    }
+
+    /**
      * Sanitises the raw POST payload from the Settings page into the canonical shape.
      * Used as the `register_setting()` sanitize callback.
      *

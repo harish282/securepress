@@ -18,6 +18,8 @@ use SecurePress\Core\Support\WpHelper;
  * Storage shape (single autoloaded option):
  *
  *     [
+ *         'enabled' => bool,                  // master switch — when false no header
+ *                                             //  is emitted regardless of per-header flags
  *         'hsts' => [
  *             'enabled'             => bool,
  *             'max_age'             => int,
@@ -34,6 +36,11 @@ use SecurePress\Core\Support\WpHelper;
  *         'permissions_policy'  => ['enabled' => bool, 'policy' => string],
  *         'x_content_type_options' => ['enabled' => bool],
  *     ]
+ *
+ * The master `enabled` flag was added so the centralized SecurePress dashboard can
+ * turn the entire feature off in one click without zeroing out the per-header
+ * sub-config (which would force the admin to re-pick CSP / HSTS values when they
+ * later turn it back on).
  */
 final class SecurityHeadersOptions
 {
@@ -45,7 +52,7 @@ final class SecurityHeadersOptions
     }
 
     /**
-     * @return array<string, array<string, mixed>>
+     * @return array<string, mixed>
      */
     public function all(): array
     {
@@ -62,12 +69,41 @@ final class SecurityHeadersOptions
     }
 
     /**
+     * True when the security-headers feature is on as a whole. The master
+     * flag short-circuits emission in {@see HeaderRegistryFactory} so the
+     * dispatcher emits nothing when the dashboard toggles it off — even if
+     * individual headers still have `enabled => true` underneath.
+     */
+    public function isEnabled(): bool
+    {
+        return (bool) ($this->all()['enabled'] ?? true);
+    }
+
+    /**
+     * Flips just the master `enabled` flag, preserving every per-header
+     * sub-setting. Used by the centralized SecurePress dashboard.
+     */
+    public function setEnabled(bool $enabled): void
+    {
+        $current = $this->all();
+        $current['enabled'] = $enabled;
+        WpHelper::updateOption(self::OPTION_NAME, $current);
+    }
+
+    /**
      * Sanitizes the raw POSTed array from the Settings page into the canonical storage shape.
      *
      * Used as the `register_setting()` sanitize callback.
      *
+     * Submissions are merged on top of the currently-stored configuration so
+     * keys that aren't in the POST (e.g. the master `enabled` flag, written
+     * by the dashboard's feature-toggle form) are preserved instead of
+     * resetting to their config-level defaults. Two pages — the dashboard and
+     * this settings page — write to the same wp_option, and a partial save
+     * from either one must never silently overwrite the other's state.
+     *
      * @param mixed $input
-     * @return array<string, array<string, mixed>>
+     * @return array<string, mixed>
      */
     public function sanitize(mixed $input): array
     {
@@ -75,12 +111,20 @@ final class SecurityHeadersOptions
             $input = [];
         }
 
-        return $this->normalize($input);
+        // Read-and-merge: start from whatever's currently effective (config
+        // defaults overlaid with the stored wp_option), then layer the
+        // submitted form fields on top. This is what makes both the
+        // dashboard's master toggle and the per-header toggles co-exist
+        // safely on the same option.
+        $current = $this->all();
+        $merged = array_replace_recursive($current, $input);
+
+        return $this->normalize($merged);
     }
 
     /**
      * @param array<string, mixed> $raw
-     * @return array<string, array<string, mixed>>
+     * @return array<string, mixed>
      */
     private function normalize(array $raw): array
     {
@@ -92,6 +136,7 @@ final class SecurityHeadersOptions
         $xcto = is_array($raw['x_content_type_options'] ?? null) ? $raw['x_content_type_options'] : [];
 
         return [
+            'enabled' => $this->toBool($raw['enabled'] ?? true),
             'hsts' => [
                 'enabled' => $this->toBool($hsts['enabled'] ?? false),
                 'max_age' => max(0, (int) ($hsts['max_age'] ?? 31_536_000)),

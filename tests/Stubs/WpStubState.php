@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SecurePress\Tests\Stubs;
 
+use SecurePress\Tests\Stubs\WpDieException;
+
 /**
  * Mutable state backing the WordPress function stubs in tests/Stubs/wp-functions.php.
  *
@@ -61,6 +63,50 @@ final class WpStubState
      */
     public static array $registeredFilters = [];
 
+    /**
+     * URLs passed to {@see \SecurePress\Core\Support\WpHelper::safeRedirect()}
+     * during the current test scope. We capture instead of redirecting so
+     * admin_post handler tests can assert the destination.
+     *
+     * @var list<string>
+     */
+    public static array $redirects = [];
+
+    /**
+     * Calls captured from `wp_die()` so admin_post handlers' guard branches
+     * (insufficient capability / failed nonce) can be unit-tested without the
+     * process terminating.
+     *
+     * @var list<array{message: string, title: string, args: array}>
+     */
+    public static array $wpDieCalls = [];
+
+    /**
+     * Sections registered via `add_settings_section()`. Keyed by section id so
+     * tests can assert that a specific section (e.g. the new master toggle
+     * section) was registered against the expected page.
+     *
+     * @var array<string, array{title: string, callback: callable, page: string}>
+     */
+    public static array $settingsSections = [];
+
+    /**
+     * Fields registered via `add_settings_field()`. Same shape as
+     * {@see $settingsSections}, plus the section the field belongs to.
+     *
+     * @var array<string, array{title: string, callback: callable, page: string, section: string}>
+     */
+    public static array $settingsFields = [];
+
+    /**
+     * Options registered via `register_setting()`. Keyed by option name so
+     * tests can confirm a single canonical name backs both the dashboard and
+     * the dedicated settings page.
+     *
+     * @var array<string, array{group: string, args: array}>
+     */
+    public static array $registeredOptions = [];
+
     /** @var list<array{to:array|string,subject:string,message:string,headers:array}> */
     public static array $sentMail = [];
 
@@ -101,7 +147,33 @@ final class WpStubState
         self::$siteUrl = 'https://example.test';
         self::$registeredActions = [];
         self::$registeredFilters = [];
+        self::$redirects = [];
+        self::$wpDieCalls = [];
+        self::$settingsSections = [];
+        self::$settingsFields = [];
+        self::$registeredOptions = [];
         self::$createCounter = 0;
+    }
+
+    /**
+     * Throwable raised by the `wp_die` stub. Captured in
+     * {@see $wpDieCalls} too, but throwing means the calling handler aborts
+     * the same way it would in production (where wp_die exits the process).
+     */
+    public static function recordWpDie(string $message, string $title, array $args): void
+    {
+        self::$wpDieCalls[] = [
+            'message' => $message,
+            'title' => $title,
+            'args' => $args,
+        ];
+
+        throw new WpDieException($message);
+    }
+
+    public static function recordRedirect(string $url): void
+    {
+        self::$redirects[] = $url;
     }
 
     /**
