@@ -167,6 +167,35 @@ final class RateLimitMiddlewareTest extends TestCase
         self::assertSame(1, $afterWindow['rate_limit']['hits']);
     }
 
+    public function test_disabled_middleware_bypasses_limiter_and_passes_through_to_next(): void
+    {
+        // limit=1 would normally short-circuit on the second request; with
+        // the master switch off both calls must reach `$next` unchanged.
+        $middleware = $this->makeMiddleware(limit: 1, window: 60, enabled: false);
+
+        $next = static fn (array $ctx): array => $ctx + ['next_was_called' => true];
+
+        $first = $middleware->handle(['request' => ['ip' => '203.0.113.99']], $next);
+        $second = $middleware->handle(['request' => ['ip' => '203.0.113.99']], $next);
+
+        self::assertTrue($first['next_was_called']);
+        self::assertTrue($second['next_was_called']);
+
+        // Both requests are annotated so downstream readers can still see
+        // the limit + bucket without having to know about the bypass path.
+        self::assertTrue($first['rate_limit']['allowed']);
+        self::assertTrue($first['rate_limit']['bypassed']);
+        self::assertSame(1, $first['rate_limit']['limit']);
+        self::assertSame(0, $first['rate_limit']['hits']);
+        self::assertSame(1, $first['rate_limit']['remaining']);
+        self::assertSame('ip:203.0.113.99', $first['rate_limit']['key']);
+
+        // Same on the second call — no hit counter incremented in the
+        // limiter store.
+        self::assertSame(0, $second['rate_limit']['hits']);
+        self::assertArrayNotHasKey('halted', $second);
+    }
+
     public function test_zero_or_negative_constructor_values_are_normalized(): void
     {
         $middleware = $this->makeMiddleware(limit: 0, window: 0);
@@ -186,6 +215,7 @@ final class RateLimitMiddlewareTest extends TestCase
         int $limit = RateLimitMiddleware::DEFAULT_LIMIT,
         int $window = RateLimitMiddleware::DEFAULT_WINDOW,
         ?Closure $keyResolver = null,
+        bool $enabled = true,
     ): RateLimitMiddleware {
         $limiter = new RateLimiter(new ArrayStore($this->clock));
 
@@ -195,6 +225,7 @@ final class RateLimitMiddlewareTest extends TestCase
             limit: $limit,
             window: $window,
             keyResolver: $keyResolver,
+            enabled: $enabled,
         );
     }
 }

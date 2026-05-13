@@ -16,6 +16,7 @@ use SecurePress\Core\Integrity\IntegrityOptions;
 use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Licensing\LicenseValidatorInterface;
+use SecurePress\Core\RateLimit\RateLimitOptions;
 use SecurePress\Tests\Stubs\WpDieException;
 use SecurePress\Tests\Stubs\WpStubState;
 use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
@@ -74,6 +75,7 @@ final class SecurePressMenuPageTest extends TestCase
         $_POST['features'] = [
             'auth_hardening' => '1',
             'security_headers' => '1',
+            'rate_limit' => '1',
             'file_integrity' => '1',
             // audit_log omitted → unchecked.
             'woocommerce_protection' => '1',
@@ -102,6 +104,7 @@ final class SecurePressMenuPageTest extends TestCase
         $_POST['features'] = [
             'auth_hardening' => '1',
             'security_headers' => '1',
+            'rate_limit' => '1',
             'file_integrity' => '1',
             'audit_log' => '1',
             'woocommerce_protection' => '1',
@@ -187,6 +190,7 @@ final class SecurePressMenuPageTest extends TestCase
             new SecurityHeadersOptions($config),
             new IntegrityOptions($config),
             new WooCommerceProtectionOptions($config),
+            new RateLimitOptions($config),
             new LicenseManager($validator),
         );
 

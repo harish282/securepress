@@ -14,6 +14,7 @@ use SecurePress\Core\Integrity\IntegrityOptions;
 use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Licensing\LicenseValidatorInterface;
+use SecurePress\Core\RateLimit\RateLimitOptions;
 use SecurePress\Core\Support\WpHelper;
 use SecurePress\Tests\Stubs\WpStubState;
 use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
@@ -53,6 +54,7 @@ final class FeatureRegistryTest extends TestCase
             [
                 'auth_hardening',
                 'security_headers',
+                'rate_limit',
                 'file_integrity',
                 'audit_log',
                 'woocommerce_protection',
@@ -107,6 +109,7 @@ final class FeatureRegistryTest extends TestCase
         $changed = $registry->apply([
             'auth_hardening' => true,
             'security_headers' => true,
+            'rate_limit' => true,
             'file_integrity' => true,
             'audit_log' => true,
             'woocommerce_protection' => true,
@@ -169,6 +172,7 @@ final class FeatureRegistryTest extends TestCase
             new SecurityHeadersOptions($config),
             new IntegrityOptions($config),
             new WooCommerceProtectionOptions($config),
+            new RateLimitOptions($config),
             new LicenseManager($validator),
         );
     }

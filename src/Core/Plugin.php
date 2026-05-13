@@ -11,6 +11,7 @@ use SecurePress\Admin\FileIntegrityPage;
 use SecurePress\Admin\LicensePage;
 use SecurePress\Admin\MuLoaderDownloadController;
 use SecurePress\Admin\MuLoaderStatus;
+use SecurePress\Admin\RateLimitSettingsPage;
 use SecurePress\Admin\SecurePressMenuPage;
 use SecurePress\Admin\SecurityHeadersSettingsPage;
 use SecurePress\Admin\UserSecurityProfilePage;
@@ -118,6 +119,7 @@ use SecurePress\Core\Middleware\MiddlewarePipeline;
 use SecurePress\Core\Middleware\MiddlewareRegistry;
 use SecurePress\Core\Middleware\MiddlewareStack;
 use SecurePress\Core\RateLimit\RateLimiter;
+use SecurePress\Core\RateLimit\RateLimitOptions;
 use SecurePress\Core\RateLimit\RateLimitStoreInterface;
 use SecurePress\Core\RateLimit\TransientStore;
 use SecurePress\Core\Url\NonceStoreInterface;
@@ -366,14 +368,31 @@ final class Plugin
                 $container->get(RateLimitStoreInterface::class)
             )
         );
+        // RateLimitOptions merges config/plugin.php defaults with whatever
+        // admins persisted via the dedicated Rate Limiting settings page or
+        // the dashboard's master toggle. Routing the middleware factory
+        // through it means a save on either UI takes effect on the next
+        // request, with no plugin restart required.
+        $this->container->singleton(
+            RateLimitOptions::class,
+            static fn (Container $container): RateLimitOptions => new RateLimitOptions(
+                $container->get(Config::class)
+            )
+        );
         $this->container->singleton(
             RateLimitMiddleware::class,
-            static fn (Container $container): RateLimitMiddleware => new RateLimitMiddleware(
-                $container->get(RateLimiter::class),
-                $container->get(LoggerInterface::class),
-                (int) $container->get(Config::class)->get('rate_limit.limit', RateLimitMiddleware::DEFAULT_LIMIT),
-                (int) $container->get(Config::class)->get('rate_limit.window', RateLimitMiddleware::DEFAULT_WINDOW)
-            )
+            static function (Container $container): RateLimitMiddleware {
+                $options = $container->get(RateLimitOptions::class);
+
+                return new RateLimitMiddleware(
+                    limiter: $container->get(RateLimiter::class),
+                    logger: $container->get(LoggerInterface::class),
+                    limit: $options->limit(),
+                    window: $options->window(),
+                    keyResolver: null,
+                    enabled: $options->isEnabled(),
+                );
+            }
         );
         $this->container->singleton(
             SecretProviderInterface::class,
@@ -425,6 +444,13 @@ final class Plugin
             SecurityHeadersSettingsPage::class,
             static fn (Container $container): SecurityHeadersSettingsPage => new SecurityHeadersSettingsPage(
                 $container->get(SecurityHeadersOptions::class),
+                $container->get(View::class)
+            )
+        );
+        $this->container->singleton(
+            RateLimitSettingsPage::class,
+            static fn (Container $container): RateLimitSettingsPage => new RateLimitSettingsPage(
+                $container->get(RateLimitOptions::class),
                 $container->get(View::class)
             )
         );
@@ -861,6 +887,7 @@ final class Plugin
                 $container->get(SecurityHeadersOptions::class),
                 $container->get(IntegrityOptions::class),
                 $container->get(WooCommerceProtectionOptions::class),
+                $container->get(RateLimitOptions::class),
                 $container->get(LicenseManager::class),
             )
         );
@@ -1151,6 +1178,7 @@ final class Plugin
 
             $this->container->get(AuthHardeningSettingsPage::class)->register();
             $this->container->get(SecurityHeadersSettingsPage::class)->register();
+            $this->container->get(RateLimitSettingsPage::class)->register();
             $this->container->get(FileIntegrityPage::class)->register();
             $this->container->get(AuditLogPage::class)->register();
             // The WC settings page is registered unconditionally so admins can

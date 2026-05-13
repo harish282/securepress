@@ -34,12 +34,21 @@ final class RateLimitMiddleware implements MiddlewareInterface
     private readonly LoggerInterface $logger;
     private readonly int $limit;
     private readonly int $window;
+    private readonly bool $enabled;
 
     /** @var (Closure(array<string, mixed>): string)|null */
     private readonly ?Closure $keyResolver;
 
     /**
      * @param (Closure(array<string, mixed>): string)|null $keyResolver
+     * @param bool $enabled When false, the middleware passes the request
+     *                      straight through to `$next` without touching the
+     *                      limiter store. The context still gets a
+     *                      `rate_limit` annotation so downstream code that
+     *                      reads it doesn't have to special-case the
+     *                      disabled state. Defaults to `true` so existing
+     *                      callers (RouteBuilder, tests) keep their old
+     *                      behaviour.
      */
     public function __construct(
         RateLimiter $limiter,
@@ -47,16 +56,37 @@ final class RateLimitMiddleware implements MiddlewareInterface
         int $limit = self::DEFAULT_LIMIT,
         int $window = self::DEFAULT_WINDOW,
         ?Closure $keyResolver = null,
+        bool $enabled = true,
     ) {
         $this->limiter = $limiter;
         $this->logger = $logger ?? new NullLogger();
         $this->limit = max(1, $limit);
         $this->window = max(1, $window);
         $this->keyResolver = $keyResolver;
+        $this->enabled = $enabled;
     }
 
     public function handle(array $context, callable $next): array
     {
+        if (!$this->enabled) {
+            // Annotate the context so anything reading `$context['rate_limit']`
+            // can still reason about whether the limiter ran (e.g. response
+            // headers / SDK introspection) without having to know about the
+            // bypass mechanism. `bypassed = true` makes the off state
+            // explicit instead of relying on the key being absent.
+            $context['rate_limit'] = [
+                'allowed' => true,
+                'bypassed' => true,
+                'key' => $this->resolveKey($context),
+                'limit' => $this->limit,
+                'hits' => 0,
+                'remaining' => $this->limit,
+                'retry_after' => 0,
+            ];
+
+            return $next($context);
+        }
+
         $key = $this->resolveKey($context);
         $result = $this->limiter->attempt($key, $this->limit, $this->window);
 

@@ -18,6 +18,11 @@ return [
         'file' => 'securepress.log',
     ],
     'rate_limit' => [
+        // Master switch. Mirrored on the SecurePress dashboard's feature
+        // toggle list and the dedicated Rate Limiting settings page.
+        'enabled' => true,
+        // Requests allowed per `window` seconds, per bucket
+        // (per-user when authenticated, per-IP otherwise).
         'limit' => 60,
         'window' => 60,
     ],

@@ -9,6 +9,7 @@ use SecurePress\Core\Auth\AuthHardeningOptions;
 use SecurePress\Core\Headers\SecurityHeadersOptions;
 use SecurePress\Core\Integrity\IntegrityOptions;
 use SecurePress\Core\Licensing\LicenseManager;
+use SecurePress\Core\RateLimit\RateLimitOptions;
 use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
@@ -61,6 +62,7 @@ final class FeatureRegistry
         SecurityHeadersOptions $securityHeaders,
         IntegrityOptions $integrity,
         WooCommerceProtectionOptions $wcProtection,
+        RateLimitOptions $rateLimit,
         private readonly LicenseManager $license,
     ) {
         // Closures (not arrow fns) for the setters because arrow fns implicitly
@@ -86,6 +88,16 @@ final class FeatureRegistry
                 isEnabled: static fn (): bool => $securityHeaders->isEnabled(),
                 setEnabled: static function (bool $on) use ($securityHeaders): void {
                     $securityHeaders->setEnabled($on);
+                },
+                isPro: false,
+            ),
+            new FeatureDescriptor(
+                key: 'rate_limit',
+                label: 'Rate Limiting',
+                description: 'Global per-user / per-IP request throttling with HTTP 429 responses and standard Retry-After / X-RateLimit headers.',
+                isEnabled: static fn (): bool => $rateLimit->isEnabled(),
+                setEnabled: static function (bool $on) use ($rateLimit): void {
+                    $rateLimit->setEnabled($on);
                 },
                 isPro: false,
             ),
