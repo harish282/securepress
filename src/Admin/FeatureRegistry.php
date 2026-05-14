@@ -106,7 +106,7 @@ final class FeatureRegistry
             new FeatureDescriptor(
                 key: 'url_disguise',
                 label: 'URL disguise',
-                description: 'Optional custom paths for the login screen and (optionally) admin PHP URLs instead of wp-login.php / wp-admin.',
+                description: 'Optional custom path for the login screen instead of wp-login.php.',
                 isEnabled: static fn (): bool => $urlDisguise->isEnabled(),
                 setEnabled: static function (bool $on) use ($urlDisguise): void {
                     $urlDisguise->setEnabled($on);

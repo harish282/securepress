@@ -11,12 +11,11 @@ use SecurePress\Core\Support\WpHelper;
  * @var bool $masterEnabled
  * @var bool $isActive
  * @var string $loginSlug
- * @var string $adminSlug
  */
 ?>
 <div class="wrap">
     <h1>SecurePress URL disguise</h1>
-    <p>Replace the predictable <code>wp-login.php</code> URL with your own path, and optionally serve admin PHP entry points under a second custom prefix.</p>
+    <p>Replace the predictable <code>wp-login.php</code> URL with your own path. The admin area continues to use <code>/wp-admin/</code>.</p>
 
     <?php if ($masterEnabled && !$isActive): ?>
         <div class="notice notice-warning">
@@ -32,7 +31,7 @@ use SecurePress\Core\Support\WpHelper;
         <div class="notice notice-warning">
             <p>
                 <strong>The master switch is off.</strong>
-                You can edit slugs below, but rewrites and redirects stay disabled until you enable URL disguise here or on the
+                You can edit the slug below, but rewrites and redirects stay disabled until you enable URL disguise here or on the
                 <a href="<?= WpHelper::escapeAttribute(
                     \function_exists('admin_url')
                         ? (string) \call_user_func('admin_url', 'admin.php?page=' . SecurePressMenuPage::PARENT_SLUG)
@@ -47,10 +46,6 @@ use SecurePress\Core\Support\WpHelper;
             <p>
                 <strong>Login URL:</strong>
                 <code><?= WpHelper::escapeHtml(WpHelper::homeUrl('/' . $loginSlug . '/')) ?></code>
-                <?php if ($adminSlug !== ''): ?>
-                    <br><strong>Admin prefix:</strong>
-                    <code><?= WpHelper::escapeHtml(WpHelper::homeUrl('/' . $adminSlug . '/')) ?></code>
-                <?php endif; ?>
             </p>
         </div>
     <?php endif; ?>
@@ -71,6 +66,6 @@ use SecurePress\Core\Support\WpHelper;
 
     <hr>
     <p class="description">
-        Bookmark your custom login URL before blocking <code>wp-login.php</code> (blocked requests return 404, not a redirect). With an admin slug, the default <code>/wp-admin/</code> entry can be blocked the same way; deeper <code>/wp-admin/</code> URLs used for assets and AJAX stay available. If you lock yourself out, disable SecurePress from the filesystem or the database option <code>securepress_url_disguise</code>.
+        Bookmark your custom login URL before blocking <code>wp-login.php</code> (blocked requests return 404, not a redirect). If you lock yourself out, disable SecurePress from the filesystem or the database option <code>securepress_url_disguise</code>.
     </p>
 </div>

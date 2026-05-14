@@ -8,8 +8,7 @@ use SecurePress\Core\Config\Config;
 use SecurePress\Core\Support\WpHelper;
 
 /**
- * Configuration for disguising the default WordPress login and (optionally)
- * admin URLs behind custom path slugs.
+ * Configuration for disguising the default WordPress login URL behind a custom path slug.
  *
  * Storage: single autoloaded option {@see OPTION_NAME}, merged on top of
  * `config/plugin.php` (`url_disguise.*`). The Settings API save path calls
@@ -32,7 +31,7 @@ final class UrlDisguiseOptions
     }
 
     /**
-     * @return array{enabled: bool, login_slug: string, admin_slug: string, block_default_wp_login: bool, block_default_wp_admin: bool}
+     * @return array{enabled: bool, login_slug: string, block_default_wp_login: bool}
      */
     public function all(): array
     {
@@ -70,11 +69,6 @@ final class UrlDisguiseOptions
         return $this->all()['login_slug'];
     }
 
-    public function adminSlug(): string
-    {
-        return $this->all()['admin_slug'];
-    }
-
     /**
      * When URL disguise is active and this is true, requests for the real
      * wp-login.php URL receive HTTP 404 (no redirect to the custom slug).
@@ -82,15 +76,6 @@ final class UrlDisguiseOptions
     public function shouldBlockDefaultWpLogin(): bool
     {
         return (bool) ($this->all()['block_default_wp_login'] ?? true);
-    }
-
-    /**
-     * When an admin URL slug is set and disguise is active, direct hits to the
-     * default wp-admin entry (root or index.php) get HTTP 404 (no redirect).
-     */
-    public function shouldBlockDefaultWpAdmin(): bool
-    {
-        return (bool) ($this->all()['block_default_wp_admin'] ?? true);
     }
 
     public function setEnabled(bool $enabled): void
@@ -102,7 +87,7 @@ final class UrlDisguiseOptions
 
     /**
      * @param mixed $input
-     * @return array{enabled: bool, login_slug: string, admin_slug: string, block_default_wp_login: bool, block_default_wp_admin: bool}
+     * @return array{enabled: bool, login_slug: string, block_default_wp_login: bool}
      */
     public function sanitize(mixed $input): array
     {
@@ -115,23 +100,16 @@ final class UrlDisguiseOptions
 
     /**
      * @param array<string, mixed> $raw
-     * @return array{enabled: bool, login_slug: string, admin_slug: string, block_default_wp_login: bool, block_default_wp_admin: bool}
+     * @return array{enabled: bool, login_slug: string, block_default_wp_login: bool}
      */
     private function normalize(array $raw): array
     {
         $login = $this->normalizeSlug($raw['login_slug'] ?? '');
-        $admin = $this->normalizeSlug($raw['admin_slug'] ?? '');
-
-        if ($login !== '' && $admin !== '' && strcasecmp($login, $admin) === 0) {
-            $admin = '';
-        }
 
         return [
             'enabled' => $this->toBool($raw['enabled'] ?? false),
             'login_slug' => $login,
-            'admin_slug' => $admin,
             'block_default_wp_login' => $this->toBool($raw['block_default_wp_login'] ?? true),
-            'block_default_wp_admin' => $this->toBool($raw['block_default_wp_admin'] ?? true),
         ];
     }
 

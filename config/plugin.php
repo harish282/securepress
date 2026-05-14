@@ -35,19 +35,16 @@ return [
         'file' => 'securepress.log',
     ],
     /**
-     * Disguise default `wp-login.php` (and optionally `/wp-admin/`) behind
-     * custom URL slugs. Master `enabled` is mirrored on the dashboard; slugs
-     * are configured on SecurePress → URL disguise. Off by default — enabling
-     * without saving permalinks / slugs can lock admins out.
+     * Disguise default `wp-login.php` behind a custom URL slug. Master
+     * `enabled` is mirrored on the dashboard; slug is configured on
+     * SecurePress → URL disguise. Off by default — enabling without saving
+     * permalinks / slug can lock admins out.
      */
     'url_disguise' => [
         'enabled' => false,
         'login_slug' => '',
-        'admin_slug' => '',
         // When disguise is active and true, direct wp-login.php gets HTTP 404 (no redirect).
         'block_default_wp_login' => true,
-        // When an admin slug is set and true, default /wp-admin/ entry gets HTTP 404.
-        'block_default_wp_admin' => true,
     ],
     'rate_limit' => [
         // Master switch. Mirrored on the SecurePress dashboard's feature

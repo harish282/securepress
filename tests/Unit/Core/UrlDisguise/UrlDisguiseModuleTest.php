@@ -26,65 +26,21 @@ final class UrlDisguiseModuleTest extends TestCase
         self::assertSame([], WpStubState::$rewriteRulesAdded);
     }
 
-    public function test_add_rewrite_rules_registers_login_and_admin_when_active(): void
+    public function test_add_rewrite_rules_registers_login_when_active(): void
     {
         $config = new Config();
         WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
             'enabled' => true,
             'login_slug' => 'my-login',
-            'admin_slug' => 'my-dash',
             'block_default_wp_login' => true,
         ];
         $options = new UrlDisguiseOptions($config);
         $module = new UrlDisguiseModule($options);
         $module->addRewriteRules();
-        self::assertGreaterThanOrEqual(1, count(WpStubState::$rewriteRulesAdded));
+        self::assertCount(1, WpStubState::$rewriteRulesAdded);
         $patterns = array_column(WpStubState::$rewriteRulesAdded, 'pattern');
         $loginQuoted = preg_quote('my-login', '#');
         self::assertContains('^' . $loginQuoted . '/?$', $patterns);
-        $adminQuoted = preg_quote('my-dash', '#');
-        self::assertContains('^' . $adminQuoted . '/?$', $patterns);
-    }
-
-    public function test_maybe_block_default_wp_admin_root_does_not_redirect(): void
-    {
-        $config = new Config();
-        WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
-            'enabled' => true,
-            'login_slug' => 'secret-gate',
-            'admin_slug' => 'my-dash',
-            'block_default_wp_login' => true,
-            'block_default_wp_admin' => true,
-        ];
-        $_SERVER['REQUEST_URI'] = '/wp-admin/';
-        $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
-        $module->maybeBlockDefaultWpAdmin();
-        self::assertSame([], WpStubState::$redirects);
-        unset($_SERVER['REQUEST_URI']);
-    }
-
-    public function test_is_request_for_default_wp_admin_entry(): void
-    {
-        $config = new Config();
-        WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
-            'enabled' => true,
-            'login_slug' => 'gate',
-            'admin_slug' => 'dash',
-            'block_default_wp_login' => true,
-        ];
-        $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
-        $m = (new \ReflectionClass($module))->getMethod('isRequestForDefaultWpAdminEntry');
-        $m->setAccessible(true);
-
-        foreach (['/wp-admin', '/wp-admin/', '/blog/wp-admin/index.php', '/Wp-Admin/'] as $uri) {
-            $_SERVER['REQUEST_URI'] = $uri;
-            self::assertTrue($m->invoke($module), $uri);
-        }
-        foreach (['/wp-admin/edit.php', '/wp-admin/admin-ajax.php', '/wp-admin/css/foo.css'] as $uri) {
-            $_SERVER['REQUEST_URI'] = $uri;
-            self::assertFalse($m->invoke($module), $uri);
-        }
-        unset($_SERVER['REQUEST_URI']);
     }
 
     public function test_maybe_block_default_wp_login_does_not_redirect(): void
@@ -93,7 +49,6 @@ final class UrlDisguiseModuleTest extends TestCase
         WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
             'enabled' => true,
             'login_slug' => 'secret-gate',
-            'admin_slug' => '',
             'block_default_wp_login' => true,
         ];
         $_SERVER['REQUEST_URI'] = '/wp-login.php';
@@ -103,23 +58,12 @@ final class UrlDisguiseModuleTest extends TestCase
         unset($_SERVER['REQUEST_URI']);
     }
 
-    public function test_load_woocommerce_admin_layer_if_missing_is_no_op_without_wc(): void
-    {
-        $config = new Config();
-        $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
-        $m = (new \ReflectionClass($module))->getMethod('loadWooCommerceAdminLayerIfMissing');
-        $m->setAccessible(true);
-        $this->expectNotToPerformAssertions();
-        $m->invoke($module);
-    }
-
     public function test_register_wires_template_redirect(): void
     {
         $config = new Config();
         WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
             'enabled' => true,
             'login_slug' => 'gate',
-            'admin_slug' => '',
             'block_default_wp_login' => true,
         ];
         $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
@@ -128,52 +72,6 @@ final class UrlDisguiseModuleTest extends TestCase
         self::assertTrue(WpStubState::hasAction('template_redirect'));
         self::assertTrue(WpStubState::hasFilter('pre_handle_404'));
         self::assertTrue(WpStubState::hasFilter('redirect_canonical'));
-        self::assertTrue(WpStubState::hasFilter('auth_redirect_scheme'));
-    }
-
-    public function test_filter_auth_redirect_scheme_uses_logged_in_on_disguised_admin_path(): void
-    {
-        $config = new Config();
-        WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
-            'enabled' => true,
-            'login_slug' => 'my-login',
-            'admin_slug' => 'my-dash',
-            'block_default_wp_login' => true,
-        ];
-        $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
-        $_SERVER['REQUEST_URI'] = '/my-dash/index.php';
-        self::assertSame('logged_in', $module->filterAuthRedirectScheme(''));
-        unset($_SERVER['REQUEST_URI']);
-    }
-
-    public function test_filter_auth_redirect_scheme_leaves_explicit_scheme(): void
-    {
-        $config = new Config();
-        WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
-            'enabled' => true,
-            'login_slug' => 'my-login',
-            'admin_slug' => 'my-dash',
-            'block_default_wp_login' => true,
-        ];
-        $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
-        $_SERVER['REQUEST_URI'] = '/my-dash/';
-        self::assertSame('auth', $module->filterAuthRedirectScheme('auth'));
-        unset($_SERVER['REQUEST_URI']);
-    }
-
-    public function test_filter_auth_redirect_scheme_not_for_real_wp_admin_path(): void
-    {
-        $config = new Config();
-        WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
-            'enabled' => true,
-            'login_slug' => 'my-login',
-            'admin_slug' => 'my-dash',
-            'block_default_wp_login' => true,
-        ];
-        $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
-        $_SERVER['REQUEST_URI'] = '/wp-admin/index.php';
-        self::assertSame('', $module->filterAuthRedirectScheme(''));
-        unset($_SERVER['REQUEST_URI']);
     }
 
     public function test_request_path_relative_to_home_strips_blog_prefix(): void
@@ -182,7 +80,6 @@ final class UrlDisguiseModuleTest extends TestCase
         WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
             'enabled' => true,
             'login_slug' => 'my-login',
-            'admin_slug' => '',
             'block_default_wp_login' => true,
         ];
         $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
@@ -216,7 +113,6 @@ final class UrlDisguiseModuleTest extends TestCase
         WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
             'enabled' => true,
             'login_slug' => 'gate',
-            'admin_slug' => '',
             'block_default_wp_login' => true,
         ];
         $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
@@ -231,7 +127,6 @@ final class UrlDisguiseModuleTest extends TestCase
         WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
             'enabled' => true,
             'login_slug' => 'gate',
-            'admin_slug' => '',
             'block_default_wp_login' => true,
         ];
         $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
@@ -251,7 +146,6 @@ final class UrlDisguiseModuleTest extends TestCase
         WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
             'enabled' => true,
             'login_slug' => 'gate',
-            'admin_slug' => '',
             'block_default_wp_login' => true,
         ];
         $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));

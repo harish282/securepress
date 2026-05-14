@@ -25,24 +25,27 @@ final class UrlDisguiseOptionsTest extends TestCase
         WpStubState::$options[UrlDisguiseOptions::OPTION_NAME] = [
             'enabled' => true,
             'login_slug' => 'my-login',
-            'admin_slug' => '',
             'block_default_wp_login' => true,
         ];
         self::assertTrue($o->isActive());
     }
 
-    public function test_sanitize_clears_admin_when_same_as_login(): void
+    public function test_sanitize_ignores_legacy_admin_keys(): void
     {
         $config = new Config();
         $o = new UrlDisguiseOptions($config);
         $out = $o->sanitize([
             'enabled' => true,
-            'login_slug' => 'same-slug',
-            'admin_slug' => 'SAME-SLUG',
+            'login_slug' => 'my-login',
+            'admin_slug' => 'ignored',
             'block_default_wp_login' => true,
+            'block_default_wp_admin' => true,
         ]);
-        self::assertSame('same-slug', $out['login_slug']);
-        self::assertSame('', $out['admin_slug']);
+        self::assertSame([
+            'enabled' => true,
+            'login_slug' => 'my-login',
+            'block_default_wp_login' => true,
+        ], $out);
     }
 
     public function test_normalize_slug_rejects_reserved_and_short(): void
