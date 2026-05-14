@@ -60,6 +60,17 @@ final class Config
             (string) ($config['signed_url']['ttl_default'] ?? 3600)
         );
 
+        $betaTrialDefault = ($config['pro_license']['beta_trial']['enabled'] ?? false) ? 'true' : 'false';
+        $config['pro_license']['beta_trial']['enabled'] = filter_var(
+            $this->env('SECUREPRESS_BETA_TRIAL_ENABLED', $betaTrialDefault),
+            FILTER_VALIDATE_BOOL
+        );
+        $trialDays = (int) $this->env(
+            'SECUREPRESS_BETA_TRIAL_DURATION_DAYS',
+            (string) ($config['pro_license']['beta_trial']['duration_days'] ?? 182)
+        );
+        $config['pro_license']['beta_trial']['duration_days'] = max(1, min(730, $trialDays));
+
         return $config;
     }
 

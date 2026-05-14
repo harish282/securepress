@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SecurePress\Core\Licensing;
 
+use SecurePress\Core\Config\Config;
 use SecurePress\Core\Support\WpHelper;
 
 /**
@@ -17,11 +18,11 @@ use SecurePress\Core\Support\WpHelper;
  *   4. `apply_filters('securepress.pro_license', '')` — programmatic override (extensions, tests).
  *
  * After resolution the key is validated through the injected
- * {@see LicenseValidatorInterface} and the result is cached **for the lifetime of the
- * current request only**. We deliberately do NOT persist the status to a transient:
- * the cost of validation is microseconds (HMAC over ~30 bytes), and persisted status
- * is the classic vector for "I revoked the key but Pro still feels active" support
- * tickets.
+ * {@see LicenseValidatorInterface}. When there is **no** resolvable key (or an
+ * empty string) and no validator outcome qualifies as {@see LicenseStatus::isActive()},
+ * the manager may still return {@see LicenseStatus::STATE_BETA_TRIAL} so public beta
+ * installs get time-boxed Pro access without a purchase — see `config/plugin.php`
+ * (`pro_license.beta_trial.*`) and {@see BetaTrial}.
  *
  * The "is Pro" check is wrapped in a filter (`securepress.is_pro`) so:
  *  - test suites can flip behaviour without faking a license key;
@@ -42,13 +43,15 @@ final class LicenseManager
 
     private ?LicenseStatus $cached = null;
 
-    public function __construct(private readonly LicenseValidatorInterface $validator)
-    {
+    public function __construct(
+        private readonly LicenseValidatorInterface $validator,
+        private readonly Config $config,
+    ) {
     }
 
     public function isPro(): bool
     {
-        $isPro = $this->status()->isActive();
+        $isPro = $this->status()->hasProAccess();
 
         if (\function_exists('apply_filters')) {
             $isPro = (bool) \call_user_func('apply_filters', self::FILTER_IS_PRO, $isPro, $this);
@@ -64,13 +67,13 @@ final class LicenseManager
 
     public function status(): LicenseStatus
     {
-        return $this->cached ??= $this->validator->validate($this->resolveKey());
+        return $this->cached ??= $this->resolveStatus();
     }
 
     /**
      * Persists a license key into the autoloaded option, re-validates, and returns the
      * resulting status. An invalid key is still persisted (so the admin can see WHY it
-     * was rejected), but {@see isPro()} will return false.
+     * was rejected), but {@see isPro()} will return false unless beta trial still applies.
      */
     public function setLicense(string $key): LicenseStatus
     {
@@ -94,6 +97,31 @@ final class LicenseManager
     public function flushCache(): void
     {
         $this->cached = null;
+    }
+
+    private function resolveStatus(): LicenseStatus
+    {
+        $key = $this->resolveKey();
+        $validated = $this->validator->validate($key);
+
+        if ($validated->isActive()) {
+            return $validated;
+        }
+
+        // Key material is present but the signature / expiry / format failed —
+        // never mask a broken key behind the beta programme.
+        if ($key !== '') {
+            return $validated;
+        }
+
+        if (BetaTrial::isWithinWindow($this->config)) {
+            $end = BetaTrial::trialEndsAt($this->config);
+            if ($end !== null && $end > time()) {
+                return LicenseStatus::betaTrial($end);
+            }
+        }
+
+        return $validated;
     }
 
     private function resolveKey(): string

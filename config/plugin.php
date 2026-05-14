@@ -8,6 +8,23 @@ return [
         'env' => 'development',
         'debug' => false,
     ],
+    /**
+     * Pro licensing + optional public beta trial.
+     *
+     * Beta trial: when `beta_trial.enabled` is true and no valid license key is
+     * configured, the install receives Pro capabilities for `duration_days` from
+     * the first request that evaluates licensing (a `securepress_beta_trial_started_at`
+     * timestamp is written once). Override at deploy time with
+     * `SECUREPRESS_BETA_TRIAL_ENABLED=true|false`. PHPUnit forces it off in
+     * `tests/bootstrap.php` so the suite stays deterministic.
+     */
+    'pro_license' => [
+        'beta_trial' => [
+            'enabled' => true,
+            // ~6 calendar months (182 d). Clamped at runtime to 1–730 days.
+            'duration_days' => 182,
+        ],
+    ],
     'requirements' => [
         'php' => '8.2.0',
         'wordpress' => '6.4',

@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 
+// Keep the public-beta trial programme off during PHPUnit so "no license key"
+// cases stay strictly Free unless a test explicitly enables the env var.
+putenv('SECUREPRESS_BETA_TRIAL_ENABLED=false');
+
 if (!defined('ABSPATH')) {
     define('ABSPATH', __DIR__ . '/');
 }

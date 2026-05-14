@@ -123,7 +123,7 @@ final class DashboardMuLoaderCalloutTest extends TestCase
                 return LicenseStatus::none();
             }
         };
-        $license = new LicenseManager($validator);
+        $license = new LicenseManager($validator, new Config());
 
         $features = new FeatureRegistry(
             new AuditLogOptions($config),

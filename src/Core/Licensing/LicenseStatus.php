@@ -13,10 +13,9 @@ namespace SecurePress\Core\Licensing;
  * admin UI without any further transformation.
  *
  * `state` follows a small fixed vocabulary so callers can `match` on it rather than
- * stringly-typed comparisons. The vocabulary is deliberately conservative — anything
- * not actively "active" falls into one of the inactive states and is treated as
- * "Pro disabled" by the boot logic. We don't ship a "grace period" state to keep the
- * security promises simple: either the install is licensed right now or it is not.
+ * stringly-typed comparisons. Anything that is not {@see LicenseStatus::hasProAccess()}
+ * is treated as "Pro disabled" by feature gates. Paid keys use {@see STATE_ACTIVE};
+ * public beta uses {@see STATE_BETA_TRIAL}.
  */
 final class LicenseStatus
 {
@@ -24,6 +23,9 @@ final class LicenseStatus
     public const STATE_EXPIRED = 'expired';
     public const STATE_INVALID = 'invalid';
     public const STATE_NONE = 'none';
+
+    /** Time-boxed Pro access without a paid key (public beta programme). */
+    public const STATE_BETA_TRIAL = 'beta_trial';
 
     public function __construct(
         public readonly string $state,
@@ -54,9 +56,37 @@ final class LicenseStatus
         return new self(self::STATE_ACTIVE, $tier, $expiresAt, '', $maskedKey);
     }
 
+    /**
+     * Pro feature gates should use this instead of {@see isActive()} alone.
+     * Beta trial grants the same product capabilities as an active paid Pro
+     * license until {@see $expiresAt} (trial window end, UTC unix).
+     */
+    public static function betaTrial(int $expiresAtUnix): self
+    {
+        return new self(
+            self::STATE_BETA_TRIAL,
+            'pro',
+            $expiresAtUnix,
+            'Pro features are unlocked during the beta trial. Add a license key before the trial ends to keep access.',
+            null,
+        );
+    }
+
+    /**
+     * True only for a cryptographically validated paid (or perpetual) license.
+     */
     public function isActive(): bool
     {
         return $this->state === self::STATE_ACTIVE;
+    }
+
+    /**
+     * True when this install should behave as Pro: paid active license or an
+     * in-window public beta trial.
+     */
+    public function hasProAccess(): bool
+    {
+        return $this->state === self::STATE_ACTIVE || $this->state === self::STATE_BETA_TRIAL;
     }
 
     public function daysRemaining(?int $now = null): ?int

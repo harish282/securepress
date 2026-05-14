@@ -60,7 +60,6 @@ final class LicensePage
             return;
         }
         $status = $this->license->status();
-        $isPro = $this->license->isPro();
         $adminUrl = WpHelper::adminUrl('admin-post.php');
         $statusFlag = isset($_GET[self::STATUS_QUERY_KEY]) && is_string($_GET[self::STATUS_QUERY_KEY])
             ? (string) $_GET[self::STATUS_QUERY_KEY]
@@ -83,7 +82,7 @@ final class LicensePage
                 . WpHelper::escapeHtml($statusFlag) . '</p></div>';
         }
 
-        $this->renderStatusBanner($status, $isPro);
+        $this->renderStatusBanner($status);
 
         echo '<h2>Enter your license key</h2>';
         echo '<form method="post" action="' . WpHelper::escapeUrl($adminUrl) . '">';
@@ -97,7 +96,16 @@ final class LicensePage
         \call_user_func('submit_button', 'Save license');
         echo '</form>';
 
-        if ($status->state !== LicenseStatus::STATE_NONE) {
+        // Only offer "remove license" when a key is actually stored (or the
+        // validator surfaced invalid/expired material tied to that key). Beta
+        // trial uses STATE_BETA_TRIAL with an empty option — there is nothing
+        // to clear from the database in that case.
+        $storedKey = trim((string) WpHelper::getOption(LicenseManager::OPTION_NAME, ''));
+        $mayClearStoredKey = $storedKey !== ''
+            || $status->state === LicenseStatus::STATE_INVALID
+            || $status->state === LicenseStatus::STATE_EXPIRED;
+
+        if ($mayClearStoredKey) {
             echo '<form method="post" action="' . WpHelper::escapeUrl($adminUrl) . '" style="margin-top: 1em;">';
             echo '<input type="hidden" name="action" value="securepress_license_clear" />';
             echo $nonceField(self::NONCE_ACTION);
@@ -126,9 +134,25 @@ final class LicensePage
         $this->redirect('License removed.');
     }
 
-    private function renderStatusBanner(LicenseStatus $status, bool $isPro): void
+    private function renderStatusBanner(LicenseStatus $status): void
     {
-        if ($isPro) {
+        if ($status->state === LicenseStatus::STATE_BETA_TRIAL) {
+            $days = $status->daysRemaining();
+            $until = $status->expiresAt !== null
+                ? WpHelper::escapeHtml(gmdate('Y-m-d', $status->expiresAt))
+                : '';
+            echo '<div class="notice notice-info inline" style="margin-bottom:1em;"><p>'
+                . '<strong>Public beta trial active.</strong> '
+                . 'All Pro features are unlocked without a license key until '
+                . ($until !== '' ? '<strong>' . $until . '</strong> (UTC)' : 'the trial end date')
+                . ($days !== null ? ' &mdash; about <strong>' . (int) $days . '</strong> day(s) remaining.' : '.')
+                . ' Enter a purchased key below any time; it takes over automatically when valid.'
+                . '</p></div>';
+
+            return;
+        }
+
+        if ($status->isActive()) {
             echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>'
                 . '<strong>Pro license active.</strong> Tier: <code>'
                 . WpHelper::escapeHtml($status->tier) . '</code>'

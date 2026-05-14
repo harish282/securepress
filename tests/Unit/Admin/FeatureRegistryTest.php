@@ -173,7 +173,7 @@ final class FeatureRegistryTest extends TestCase
             new IntegrityOptions($config),
             new WooCommerceProtectionOptions($config),
             new RateLimitOptions($config),
-            new LicenseManager($validator),
+            new LicenseManager($validator, new Config()),
         );
     }
 }

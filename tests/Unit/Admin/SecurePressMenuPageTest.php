@@ -191,7 +191,7 @@ final class SecurePressMenuPageTest extends TestCase
             new IntegrityOptions($config),
             new WooCommerceProtectionOptions($config),
             new RateLimitOptions($config),
-            new LicenseManager($validator),
+            new LicenseManager($validator, $config),
         );
 
         $page = (new ReflectionClass(SecurePressMenuPage::class))->newInstanceWithoutConstructor();

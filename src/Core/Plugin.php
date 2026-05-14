@@ -870,7 +870,8 @@ final class Plugin
         $this->container->singleton(
             LicenseManager::class,
             static fn (Container $container): LicenseManager => new LicenseManager(
-                $container->get(LicenseValidatorInterface::class)
+                $container->get(LicenseValidatorInterface::class),
+                $container->get(Config::class)
             )
         );
         $this->container->singleton(
