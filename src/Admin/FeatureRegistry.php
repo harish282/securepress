@@ -10,6 +10,7 @@ use SecurePress\Core\Headers\SecurityHeadersOptions;
 use SecurePress\Core\Integrity\IntegrityOptions;
 use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\RateLimit\RateLimitOptions;
+use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
 use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
@@ -41,7 +42,7 @@ use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
  *  - The admin-post handler reuses the same key→feature mapping it just
  *    rendered, so there's no risk of a form field name drifting away from
  *    its handler.
- *  - Adding a sixth feature (e.g. a future "Backups" module) is a single
+ *  - Adding another feature (e.g. a future "Backups" module) is a single
  *    `add()` call here and one new tile in the view — no Plugin.php or DI
  *    surgery needed.
  *
@@ -63,6 +64,7 @@ final class FeatureRegistry
         IntegrityOptions $integrity,
         WooCommerceProtectionOptions $wcProtection,
         RateLimitOptions $rateLimit,
+        UrlDisguiseOptions $urlDisguise,
         private readonly LicenseManager $license,
     ) {
         // Closures (not arrow fns) for the setters because arrow fns implicitly
@@ -98,6 +100,16 @@ final class FeatureRegistry
                 isEnabled: static fn (): bool => $rateLimit->isEnabled(),
                 setEnabled: static function (bool $on) use ($rateLimit): void {
                     $rateLimit->setEnabled($on);
+                },
+                isPro: false,
+            ),
+            new FeatureDescriptor(
+                key: 'url_disguise',
+                label: 'URL disguise',
+                description: 'Optional custom paths for the login screen and (optionally) admin PHP URLs instead of wp-login.php / wp-admin.',
+                isEnabled: static fn (): bool => $urlDisguise->isEnabled(),
+                setEnabled: static function (bool $on) use ($urlDisguise): void {
+                    $urlDisguise->setEnabled($on);
                 },
                 isPro: false,
             ),

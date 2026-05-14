@@ -20,6 +20,7 @@ use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Licensing\LicenseValidatorInterface;
 use SecurePress\Core\RateLimit\RateLimitOptions;
+use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
 use SecurePress\Core\View\View;
 use SecurePress\Tests\Stubs\WpStubState;
 use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
@@ -132,6 +133,7 @@ final class DashboardMuLoaderCalloutTest extends TestCase
             new IntegrityOptions($config),
             new WooCommerceProtectionOptions($config),
             new RateLimitOptions($config),
+            new UrlDisguiseOptions($config),
             $license,
         );
 

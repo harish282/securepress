@@ -631,6 +631,47 @@ final class WpHelper
         return '/' . ltrim($path, '/');
     }
 
+    public static function homeUrl(string $path = ''): string
+    {
+        if (\function_exists('home_url')) {
+            return (string) \call_user_func('home_url', $path);
+        }
+
+        return '/' . ltrim($path, '/');
+    }
+
+    public static function getQueryVar(string $key, mixed $default = ''): mixed
+    {
+        if (!\function_exists('get_query_var')) {
+            return $default;
+        }
+
+        $value = \call_user_func('get_query_var', $key, $default);
+
+        return $value === false ? $default : $value;
+    }
+
+    public static function addRewriteRule(string $pattern, string $query, string $after = 'bottom'): void
+    {
+        if (\function_exists('add_rewrite_rule')) {
+            \call_user_func('add_rewrite_rule', $pattern, $query, $after);
+        }
+    }
+
+    public static function flushRewriteRules(bool $hard = true): void
+    {
+        if (\function_exists('flush_rewrite_rules')) {
+            \call_user_func('flush_rewrite_rules', $hard);
+        }
+    }
+
+    public static function statusHeader(int $code): void
+    {
+        if (\function_exists('status_header')) {
+            \call_user_func('status_header', $code);
+        }
+    }
+
     public static function blogName(): string
     {
         if (\function_exists('get_bloginfo')) {

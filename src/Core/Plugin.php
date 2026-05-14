@@ -13,6 +13,7 @@ use SecurePress\Admin\MuLoaderDownloadController;
 use SecurePress\Admin\MuLoaderStatus;
 use SecurePress\Admin\RateLimitSettingsPage;
 use SecurePress\Admin\SecurePressMenuPage;
+use SecurePress\Admin\UrlDisguiseSettingsPage;
 use SecurePress\Admin\SecurityHeadersSettingsPage;
 use SecurePress\Admin\UserSecurityProfilePage;
 use SecurePress\Auth\AuthenticationHardeningKernel;
@@ -122,6 +123,8 @@ use SecurePress\Core\RateLimit\RateLimiter;
 use SecurePress\Core\RateLimit\RateLimitOptions;
 use SecurePress\Core\RateLimit\RateLimitStoreInterface;
 use SecurePress\Core\RateLimit\TransientStore;
+use SecurePress\Core\UrlDisguise\UrlDisguiseModule;
+use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
 use SecurePress\Core\Url\NonceStoreInterface;
 use SecurePress\Core\Url\SecretProviderInterface;
 use SecurePress\Core\Url\TransientNonceStore;
@@ -200,6 +203,18 @@ final class Plugin
         );
 
         $this->registerAdminHooks();
+
+        $this->container->get(UrlDisguiseModule::class)->register();
+
+        WpHelper::addAction(
+            'update_option_' . UrlDisguiseOptions::OPTION_NAME,
+            function (): void {
+                $this->container->get(UrlDisguiseModule::class)->addRewriteRules();
+                WpHelper::flushRewriteRules();
+            },
+            10,
+            0
+        );
     }
 
     public function renderRequirementsNotice(): void
@@ -380,6 +395,18 @@ final class Plugin
             )
         );
         $this->container->singleton(
+            UrlDisguiseOptions::class,
+            static fn (Container $container): UrlDisguiseOptions => new UrlDisguiseOptions(
+                $container->get(Config::class)
+            )
+        );
+        $this->container->singleton(
+            UrlDisguiseModule::class,
+            static fn (Container $container): UrlDisguiseModule => new UrlDisguiseModule(
+                $container->get(UrlDisguiseOptions::class)
+            )
+        );
+        $this->container->singleton(
             RateLimitMiddleware::class,
             static function (Container $container): RateLimitMiddleware {
                 $options = $container->get(RateLimitOptions::class);
@@ -451,6 +478,13 @@ final class Plugin
             RateLimitSettingsPage::class,
             static fn (Container $container): RateLimitSettingsPage => new RateLimitSettingsPage(
                 $container->get(RateLimitOptions::class),
+                $container->get(View::class)
+            )
+        );
+        $this->container->singleton(
+            UrlDisguiseSettingsPage::class,
+            static fn (Container $container): UrlDisguiseSettingsPage => new UrlDisguiseSettingsPage(
+                $container->get(UrlDisguiseOptions::class),
                 $container->get(View::class)
             )
         );
@@ -889,6 +923,7 @@ final class Plugin
                 $container->get(IntegrityOptions::class),
                 $container->get(WooCommerceProtectionOptions::class),
                 $container->get(RateLimitOptions::class),
+                $container->get(UrlDisguiseOptions::class),
                 $container->get(LicenseManager::class),
             )
         );
@@ -1180,6 +1215,7 @@ final class Plugin
             $this->container->get(AuthHardeningSettingsPage::class)->register();
             $this->container->get(SecurityHeadersSettingsPage::class)->register();
             $this->container->get(RateLimitSettingsPage::class)->register();
+            $this->container->get(UrlDisguiseSettingsPage::class)->register();
             $this->container->get(FileIntegrityPage::class)->register();
             $this->container->get(AuditLogPage::class)->register();
             // The WC settings page is registered unconditionally so admins can

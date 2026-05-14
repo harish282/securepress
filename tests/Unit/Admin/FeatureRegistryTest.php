@@ -15,6 +15,7 @@ use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Licensing\LicenseValidatorInterface;
 use SecurePress\Core\RateLimit\RateLimitOptions;
+use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
 use SecurePress\Core\Support\WpHelper;
 use SecurePress\Tests\Stubs\WpStubState;
 use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
@@ -55,6 +56,7 @@ final class FeatureRegistryTest extends TestCase
                 'auth_hardening',
                 'security_headers',
                 'rate_limit',
+                'url_disguise',
                 'file_integrity',
                 'audit_log',
                 'woocommerce_protection',
@@ -105,11 +107,12 @@ final class FeatureRegistryTest extends TestCase
     {
         $registry = $this->makeRegistry();
 
-        // Everything is ON by default; ask for everything to stay ON.
+        // Every feature at its default persisted state; ask for no changes.
         $changed = $registry->apply([
             'auth_hardening' => true,
             'security_headers' => true,
             'rate_limit' => true,
+            'url_disguise' => false,
             'file_integrity' => true,
             'audit_log' => true,
             'woocommerce_protection' => true,
@@ -173,6 +176,7 @@ final class FeatureRegistryTest extends TestCase
             new IntegrityOptions($config),
             new WooCommerceProtectionOptions($config),
             new RateLimitOptions($config),
+            new UrlDisguiseOptions($config),
             new LicenseManager($validator, new Config()),
         );
     }

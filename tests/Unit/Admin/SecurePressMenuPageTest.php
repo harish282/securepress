@@ -17,6 +17,7 @@ use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Licensing\LicenseValidatorInterface;
 use SecurePress\Core\RateLimit\RateLimitOptions;
+use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
 use SecurePress\Tests\Stubs\WpDieException;
 use SecurePress\Tests\Stubs\WpStubState;
 use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
@@ -100,7 +101,7 @@ final class SecurePressMenuPageTest extends TestCase
         $page = $this->makePage();
         WpStubState::$currentUserCapabilities = ['manage_options' => true];
         $this->presentNonce(SecurePressMenuPage::NONCE_ACTION, 'tk');
-        // Every feature already ON by default → ask for every feature ON.
+        // Every master switch at its default config state (URL disguise defaults off).
         $_POST['features'] = [
             'auth_hardening' => '1',
             'security_headers' => '1',
@@ -191,6 +192,7 @@ final class SecurePressMenuPageTest extends TestCase
             new IntegrityOptions($config),
             new WooCommerceProtectionOptions($config),
             new RateLimitOptions($config),
+            new UrlDisguiseOptions($config),
             new LicenseManager($validator, $config),
         );
 

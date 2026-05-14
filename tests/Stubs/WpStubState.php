@@ -123,6 +123,17 @@ final class WpStubState
 
     public static string $siteUrl = 'https://example.test';
 
+    /** When set, {@see home_url()} uses this base instead of {@see $siteUrl}. */
+    public static ?string $homeUrl = null;
+
+    /** @var array<string, mixed> Simulated main query vars for {@see get_query_var()} stubs. */
+    public static array $queryVars = [];
+
+    /** @var list<array{pattern:string, query:string, after:string}> */
+    public static array $rewriteRulesAdded = [];
+
+    public static int $flushRewriteRulesCalls = 0;
+
     private static int $createCounter = 0;
 
     public static function reset(): void
@@ -145,6 +156,10 @@ final class WpStubState
         self::$authCookies = [];
         self::$blogName = 'Test Site';
         self::$siteUrl = 'https://example.test';
+        self::$homeUrl = null;
+        self::$queryVars = [];
+        self::$rewriteRulesAdded = [];
+        self::$flushRewriteRulesCalls = 0;
         self::$registeredActions = [];
         self::$registeredFilters = [];
         self::$redirects = [];
@@ -208,6 +223,11 @@ final class WpStubState
     public static function hasAction(string $hook): bool
     {
         return !empty(self::$registeredActions[$hook]);
+    }
+
+    public static function hasFilter(string $hook): bool
+    {
+        return !empty(self::$registeredFilters[$hook]);
     }
 
     /**

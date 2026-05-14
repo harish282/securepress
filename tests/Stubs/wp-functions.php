@@ -334,6 +334,38 @@ if (!function_exists('admin_url')) {
 if (!function_exists('home_url')) {
     function home_url(string $path = ''): string
     {
-        return WpStubState::$siteUrl . '/' . ltrim($path, '/');
+        $base = WpStubState::$homeUrl ?? WpStubState::$siteUrl;
+
+        return $base . '/' . ltrim($path, '/');
+    }
+}
+
+if (!function_exists('get_query_var')) {
+    function get_query_var(string $key, mixed $default = ''): mixed
+    {
+        if (array_key_exists($key, WpStubState::$queryVars)) {
+            return WpStubState::$queryVars[$key];
+        }
+
+        return $default;
+    }
+}
+
+if (!function_exists('add_rewrite_rule')) {
+    function add_rewrite_rule(string $pattern, string $query, string $after = 'bottom'): void
+    {
+        WpStubState::$rewriteRulesAdded[] = [
+            'pattern' => $pattern,
+            'query' => $query,
+            'after' => $after,
+        ];
+    }
+}
+
+if (!function_exists('flush_rewrite_rules')) {
+    function flush_rewrite_rules(bool $hard = true): void
+    {
+        unset($hard);
+        WpStubState::$flushRewriteRulesCalls++;
     }
 }
