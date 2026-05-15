@@ -7,8 +7,10 @@ namespace SecurePress\Core;
 use SecurePress\Admin\AuditLogPage;
 use SecurePress\Admin\AuditLogSettingsPage;
 use SecurePress\Admin\AuthHardeningSettingsPage;
+use SecurePress\Admin\Diagnostics\HealthDiagnosticsCollector;
 use SecurePress\Admin\FeatureRegistry;
 use SecurePress\Admin\FileIntegrityPage;
+use SecurePress\Admin\HealthDiagnosticsPage;
 use SecurePress\Admin\LicensePage;
 use SecurePress\Admin\MuLoaderDownloadController;
 use SecurePress\Admin\MuLoaderStatus;
@@ -1000,6 +1002,34 @@ final class Plugin
                 $container->get(MuLoaderStatus::class)
             )
         );
+
+        $this->container->singleton(
+            HealthDiagnosticsCollector::class,
+            static fn (Container $container): HealthDiagnosticsCollector => new HealthDiagnosticsCollector(
+                $container->get(FeatureRegistry::class),
+                $container->get(LicenseManager::class),
+                $container->get(SecurityHeadersOptions::class),
+                $container->get(UrlDisguiseOptions::class),
+                $container->get(RateLimitOptions::class),
+                $container->get(AuditLogOptions::class),
+                $container->get(AuthHardeningOptions::class),
+                $container->get(IntegrityOptions::class),
+                $container->get(WooCommerceProtectionOptions::class),
+                $container->get(AuditLogSchema::class),
+                $container->get(SessionSchema::class),
+                $container->get(IntegritySchema::class),
+                $container->get(MiddlewareStack::class),
+                $container->get(MuLoaderStatus::class),
+                $container->get(Config::class),
+            )
+        );
+        $this->container->singleton(
+            HealthDiagnosticsPage::class,
+            static fn (Container $container): HealthDiagnosticsPage => new HealthDiagnosticsPage(
+                $container->get(HealthDiagnosticsCollector::class),
+                $container->get(View::class),
+            )
+        );
     }
 
     private function registerWooCommerceServices(): void
@@ -1264,6 +1294,7 @@ final class Plugin
             $this->container->get(FileIntegrityPage::class)->register();
             $this->container->get(AuditLogPage::class)->register();
             $this->container->get(AuditLogSettingsPage::class)->register();
+            $this->container->get(HealthDiagnosticsPage::class)->register();
             // The WC settings page is registered unconditionally so admins can
             // discover the feature even on Free. The page itself renders an
             // upgrade prompt when the license isn't active.

@@ -158,6 +158,24 @@ final class WpHelper
         return (bool) \call_user_func('delete_transient', $name);
     }
 
+    public static function hasAction(string $hook, mixed $callback = false): bool
+    {
+        if (!\function_exists('has_action')) {
+            return false;
+        }
+
+        return (bool) \call_user_func('has_action', $hook, $callback);
+    }
+
+    public static function hasFilter(string $hook, mixed $callback = false): bool
+    {
+        if (!\function_exists('has_filter')) {
+            return false;
+        }
+
+        return (bool) \call_user_func('has_filter', $hook, $callback);
+    }
+
     /**
      * Performs a GET request against `$url` via `wp_remote_get()` and returns the response
      * body, or `null` when the request errored / returned a non-200 status.

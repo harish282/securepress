@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use SecurePress\Admin\AuditLogPage;
 use SecurePress\Admin\FileIntegrityPage;
+use SecurePress\Admin\HealthDiagnosticsPage;
 use SecurePress\Admin\LicensePage;
 use SecurePress\Tests\Stubs\WpStubState;
 
@@ -77,6 +78,17 @@ final class AdminPageRegistrationTest extends TestCase
                 sprintf('FileIntegrityPage must register %s — without it the related toolbar button silently no-ops.', $hook)
             );
         }
+    }
+
+    public function test_health_diagnostics_page_registers_admin_menu(): void
+    {
+        $page = (new \ReflectionClass(HealthDiagnosticsPage::class))->newInstanceWithoutConstructor();
+        $page->register();
+
+        self::assertTrue(
+            WpStubState::hasAction('admin_menu'),
+            'HealthDiagnosticsPage must register admin_menu to add its submenu.'
+        );
     }
 
     public function test_license_page_registers_save_and_clear_admin_post_hooks(): void

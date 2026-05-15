@@ -157,6 +157,28 @@ if (!function_exists('add_action')) {
     }
 }
 
+if (!function_exists('has_action')) {
+    function has_action(string $hook, mixed $callback = false): bool
+    {
+        if ($callback !== false) {
+            return WpStubState::hasAction($hook);
+        }
+
+        return WpStubState::hasAction($hook);
+    }
+}
+
+if (!function_exists('has_filter')) {
+    function has_filter(string $hook, mixed $callback = false): bool
+    {
+        if ($callback !== false) {
+            return WpStubState::hasFilter($hook);
+        }
+
+        return WpStubState::hasFilter($hook);
+    }
+}
+
 if (!function_exists('wp_die')) {
     function wp_die(string $message = '', string $title = '', array|int $args = []): void
     {
