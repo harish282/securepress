@@ -93,7 +93,11 @@ final class SecurePressMenuPageTest extends TestCase
         self::assertCount(1, WpStubState::$redirects);
         $url = WpStubState::$redirects[0];
         self::assertStringContainsString('page=' . SecurePressMenuPage::DASHBOARD_SLUG, $url);
-        self::assertStringContainsString(SecurePressMenuPage::STATUS_QUERY_KEY . '=saved%3A1', $url);
+        self::assertStringContainsString(SecurePressMenuPage::STATUS_QUERY_KEY . '=saved%3A2', $url);
+
+        $rate = WpStubState::$options[RateLimitOptions::OPTION_NAME] ?? null;
+        self::assertIsArray($rate);
+        self::assertTrue($rate['enabled']);
     }
 
     public function test_handle_save_features_no_op_redirect_still_renders_zero(): void
@@ -105,7 +109,6 @@ final class SecurePressMenuPageTest extends TestCase
         $_POST['features'] = [
             'auth_hardening' => '1',
             'security_headers' => '1',
-            'rate_limit' => '1',
             'file_integrity' => '1',
             'audit_log' => '1',
             'woocommerce_protection' => '1',

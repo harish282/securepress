@@ -15,7 +15,7 @@ namespace SecurePress\Core\Licensing;
  * `state` follows a small fixed vocabulary so callers can `match` on it rather than
  * stringly-typed comparisons. Anything that is not {@see LicenseStatus::hasProAccess()}
  * is treated as "Pro disabled" by feature gates. Paid keys use {@see STATE_ACTIVE};
- * public beta uses {@see STATE_BETA_TRIAL}.
+ * early-access builds use {@see STATE_EARLY_ACCESS}; public beta uses {@see STATE_BETA_TRIAL}.
  */
 final class LicenseStatus
 {
@@ -23,6 +23,9 @@ final class LicenseStatus
     public const STATE_EXPIRED = 'expired';
     public const STATE_INVALID = 'invalid';
     public const STATE_NONE = 'none';
+
+    /** Pro unlocked without a paid key or trial clock (pre-commercial beta). */
+    public const STATE_EARLY_ACCESS = 'early_access';
 
     /** Time-boxed Pro access without a paid key (public beta programme). */
     public const STATE_BETA_TRIAL = 'beta_trial';
@@ -72,6 +75,17 @@ final class LicenseStatus
         );
     }
 
+    public static function earlyAccess(): self
+    {
+        return new self(
+            self::STATE_EARLY_ACCESS,
+            'pro',
+            null,
+            'Early access: Pro features are unlocked without a commercial license key.',
+            null,
+        );
+    }
+
     /**
      * True only for a cryptographically validated paid (or perpetual) license.
      */
@@ -81,12 +95,14 @@ final class LicenseStatus
     }
 
     /**
-     * True when this install should behave as Pro: paid active license or an
-     * in-window public beta trial.
+     * True when this install should behave as Pro: paid active license, early
+     * access, or an in-window public beta trial.
      */
     public function hasProAccess(): bool
     {
-        return $this->state === self::STATE_ACTIVE || $this->state === self::STATE_BETA_TRIAL;
+        return $this->state === self::STATE_ACTIVE
+            || $this->state === self::STATE_EARLY_ACCESS
+            || $this->state === self::STATE_BETA_TRIAL;
     }
 
     public function daysRemaining(?int $now = null): ?int

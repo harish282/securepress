@@ -21,6 +21,8 @@ final class WpStubState
 
     public static bool $isRestRequest = false;
 
+    public static bool $isAdmin = false;
+
     /** @var array<string, array{value: mixed, expires: int}> */
     public static array $transients = [];
 
@@ -141,6 +143,7 @@ final class WpStubState
         self::$validNonces = [];
         self::$isDoingAjax = false;
         self::$isRestRequest = false;
+        self::$isAdmin = false;
         self::$transients = [];
         self::$now = time();
         self::$salts = [];

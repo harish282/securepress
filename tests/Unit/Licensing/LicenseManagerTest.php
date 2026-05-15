@@ -24,12 +24,14 @@ final class LicenseManagerTest extends TestCase
         WpStubState::$options = [];
         putenv(LicenseManager::ENV_VAR);
         putenv('SECUREPRESS_BETA_TRIAL_ENABLED=false');
+        putenv('SECUREPRESS_EARLY_ACCESS=false');
     }
 
     protected function tearDown(): void
     {
         putenv(LicenseManager::ENV_VAR);
         putenv('SECUREPRESS_BETA_TRIAL_ENABLED=false');
+        putenv('SECUREPRESS_EARLY_ACCESS=false');
         WpStubState::$options = [];
     }
 
@@ -161,5 +163,30 @@ final class LicenseManagerTest extends TestCase
 
         self::assertFalse($manager->isPro());
         self::assertSame(LicenseStatus::STATE_NONE, $manager->status()->state);
+    }
+
+    public function test_early_access_unlocks_pro_without_a_key(): void
+    {
+        putenv('SECUREPRESS_EARLY_ACCESS=true');
+
+        $manager = $this->manager(new LocalLicenseValidator('secret'));
+
+        self::assertTrue($manager->isPro());
+        self::assertSame(LicenseStatus::STATE_EARLY_ACCESS, $manager->status()->state);
+        self::assertTrue($manager->status()->hasProAccess());
+        self::assertFalse($manager->status()->isActive());
+        self::assertNull($manager->status()->expiresAt);
+    }
+
+    public function test_early_access_takes_precedence_over_beta_trial(): void
+    {
+        putenv('SECUREPRESS_EARLY_ACCESS=true');
+        putenv('SECUREPRESS_BETA_TRIAL_ENABLED=true');
+        putenv('SECUREPRESS_BETA_TRIAL_DURATION_DAYS=14');
+
+        $manager = $this->manager(new LocalLicenseValidator('secret'));
+
+        self::assertSame(LicenseStatus::STATE_EARLY_ACCESS, $manager->status()->state);
+        self::assertTrue($manager->isPro());
     }
 }

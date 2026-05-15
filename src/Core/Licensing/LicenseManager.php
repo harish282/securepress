@@ -20,9 +20,10 @@ use SecurePress\Core\Support\WpHelper;
  * After resolution the key is validated through the injected
  * {@see LicenseValidatorInterface}. When there is **no** resolvable key (or an
  * empty string) and no validator outcome qualifies as {@see LicenseStatus::isActive()},
- * the manager may still return {@see LicenseStatus::STATE_BETA_TRIAL} so public beta
- * installs get time-boxed Pro access without a purchase — see `config/plugin.php`
- * (`pro_license.beta_trial.*`) and {@see BetaTrial}.
+ * the manager may return {@see LicenseStatus::STATE_EARLY_ACCESS} (no expiry, no
+ * purchase) or {@see LicenseStatus::STATE_BETA_TRIAL} for a time-boxed programme —
+ * see `config/plugin.php` (`pro_license.early_access`, `pro_license.beta_trial.*`)
+ * and {@see BetaTrial}. Early access is evaluated before the beta trial window.
  *
  * The "is Pro" check is wrapped in a filter (`securepress.is_pro`) so:
  *  - test suites can flip behaviour without faking a license key;
@@ -72,8 +73,9 @@ final class LicenseManager
 
     /**
      * Persists a license key into the autoloaded option, re-validates, and returns the
-     * resulting status. An invalid key is still persisted (so the admin can see WHY it
-     * was rejected), but {@see isPro()} will return false unless beta trial still applies.
+ * resulting status. An invalid key is still persisted (so the admin can see WHY it
+ * was rejected), but {@see isPro()} will return false unless early access or beta
+ * trial still applies.
      */
     public function setLicense(string $key): LicenseStatus
     {
@@ -114,6 +116,10 @@ final class LicenseManager
             return $validated;
         }
 
+        if ($this->earlyAccessEnabled()) {
+            return LicenseStatus::earlyAccess();
+        }
+
         if (BetaTrial::isWithinWindow($this->config)) {
             $end = BetaTrial::trialEndsAt($this->config);
             if ($end !== null && $end > time()) {
@@ -143,5 +149,10 @@ final class LicenseManager
         }
 
         return '';
+    }
+
+    private function earlyAccessEnabled(): bool
+    {
+        return (bool) $this->config->get('pro_license.early_access', false);
     }
 }

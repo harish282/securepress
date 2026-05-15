@@ -5,20 +5,30 @@ declare(strict_types=1);
 return [
     'app' => [
         'name' => 'SecurePress',
-        'env' => 'development',
+        'env' => 'production',
         'debug' => false,
     ],
     /**
-     * Pro licensing + optional public beta trial.
+     * Pro licensing + optional early access + optional public beta trial.
      *
-     * Beta trial: when `beta_trial.enabled` is true and no valid license key is
-     * configured, the install receives Pro capabilities for `duration_days` from
-     * the first request that evaluates licensing (a `securepress_beta_trial_started_at`
-     * timestamp is written once). Override at deploy time with
-     * `SECUREPRESS_BETA_TRIAL_ENABLED=true|false`. PHPUnit forces it off in
+     * Default posture for a new plugin: **time-boxed trial** (no key during the
+     * window) so sites can evaluate Pro features before any license ask — same idea
+     * as a multi-month trial, then optional keys when you are ready to sell.
+     *
+     * Beta trial: when `beta_trial.enabled` is true and there is no valid license key,
+     * the install receives Pro capabilities for `duration_days` from the first
+     * request that evaluates licensing (`securepress_beta_trial_started_at` is set
+     * once). Override with `SECUREPRESS_BETA_TRIAL_ENABLED` and
+     * `SECUREPRESS_BETA_TRIAL_DURATION_DAYS`. PHPUnit forces the trial off in
      * `tests/bootstrap.php` so the suite stays deterministic.
+     *
+     * Early access: when `early_access` is true and there is no valid key, Pro
+     * unlocks with **no expiry** (use sparingly, e.g. private previews). When on, it
+     * wins over the beta trial. Override with `SECUREPRESS_EARLY_ACCESS`. PHPUnit
+     * forces it off in `tests/bootstrap.php`.
      */
     'pro_license' => [
+        'early_access' => false,
         'beta_trial' => [
             'enabled' => true,
             // ~6 calendar months (182 d). Clamped at runtime to 1–730 days.
@@ -49,7 +59,8 @@ return [
     'rate_limit' => [
         // Master switch. Mirrored on the SecurePress dashboard's feature
         // toggle list and the dedicated Rate Limiting settings page.
-        'enabled' => true,
+        // Default off: enable after tuning — global HTTP enforcement skips wp-admin.
+        'enabled' => false,
         // Requests allowed per `window` seconds, per bucket
         // (per-user when authenticated, per-IP otherwise).
         'limit' => 60,

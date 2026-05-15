@@ -88,6 +88,11 @@ final class RequestContext
         return self::detect() === self::CRON;
     }
 
+    public static function isCli(): bool
+    {
+        return self::detect() === self::CLI;
+    }
+
     public static function isFrontend(): bool
     {
         return self::detect() === self::FRONTEND;

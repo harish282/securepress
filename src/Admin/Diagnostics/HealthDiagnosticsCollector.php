@@ -20,12 +20,10 @@ use SecurePress\Core\Integrity\IntegrityOptions;
 use SecurePress\Core\Integrity\IntegrityScheduler;
 use SecurePress\Core\Integrity\IntegritySchema;
 use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Middleware\MiddlewareStack;
 use SecurePress\Core\RateLimit\RateLimitOptions;
 use SecurePress\Core\Recovery\SafeMode;
 use SecurePress\Core\Support\WpHelper;
 use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\Middleware\RateLimitMiddleware;
 use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
 use SecurePress\WooCommerce\WooCommerceModule;
 
@@ -49,7 +47,6 @@ final class HealthDiagnosticsCollector
         private readonly AuditLogSchema $auditSchema,
         private readonly SessionSchema $sessionSchema,
         private readonly IntegritySchema $integritySchema,
-        private readonly MiddlewareStack $middlewareStack,
         private readonly MuLoaderStatus $muLoader,
         private readonly Config $config,
     ) {
@@ -111,14 +108,24 @@ final class HealthDiagnosticsCollector
                     : 'Disabled.'),
         ];
 
-        $rateOnStack = in_array(RateLimitMiddleware::class, $this->middlewareStack->all(), true);
+        $secret = (string) $this->config->get('licensing.secret', '');
+        $weakSecret = $secret === '' || $secret === 'change-me-in-production' || strlen($secret) < 24;
         $rows[] = [
-            'key' => 'rate_limit_middleware',
-            'label' => 'Global rate-limit middleware',
-            'state' => $rateOnStack && $this->rateLimitOptions->isEnabled() ? 'active' : 'inactive',
-            'detail' => $rateOnStack
-                ? 'Registered on Security middleware stack.'
-                : 'Not on middleware stack — register via Security::middleware() if you need global 429 enforcement.',
+            'key' => 'license_hmac_secret',
+            'label' => 'License HMAC secret',
+            'state' => $weakSecret ? 'blocked' : 'active',
+            'detail' => $weakSecret
+                ? 'Use SECUREPRESS_LICENSE_SECRET (24+ chars) before issuing or trusting Pro keys in production.'
+                : 'Configured with a non-placeholder secret.',
+        ];
+
+        $rows[] = [
+            'key' => 'rate_limit_http',
+            'label' => 'Global rate limiting (HTTP)',
+            'state' => $this->rateLimitOptions->isEnabled() ? 'active' : 'inactive',
+            'detail' => $this->rateLimitOptions->isEnabled()
+                ? 'Enforced on REST, front-end, AJAX, and wp-login; wp-admin dashboard loads are excluded to avoid editor lockouts.'
+                : 'Disabled — enable from the dashboard or Rate Limiting settings after tuning limit/window.',
         ];
 
         if ($this->license->isPro() && $this->wcOptions->isEnabled()) {

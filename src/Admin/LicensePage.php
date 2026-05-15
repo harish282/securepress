@@ -84,22 +84,30 @@ final class LicensePage
 
         $this->renderStatusBanner($status);
 
-        echo '<h2>Enter your license key</h2>';
+        $isEarly = $status->state === LicenseStatus::STATE_EARLY_ACCESS;
+        $isBetaTrial = $status->state === LicenseStatus::STATE_BETA_TRIAL;
+        echo '<h2>' . ($isEarly ? 'License key (optional)' : 'Enter your license key') . '</h2>';
         echo '<form method="post" action="' . WpHelper::escapeUrl($adminUrl) . '">';
         echo '<input type="hidden" name="action" value="securepress_license_save" />';
         echo $nonceField(self::NONCE_ACTION);
         echo '<table class="form-table" role="presentation"><tbody>';
         echo '<tr><th scope="row"><label for="securepress-license-key">License key</label></th><td>';
         echo '<input type="text" id="securepress-license-key" name="license_key" value="" class="regular-text" autocomplete="off" placeholder="SP-PRO-1714780800-1746316800-………" />';
-        echo '<p class="description">Keys are signed offline. Paste the key you received during purchase.</p>';
+        $keyHelp = 'Keys are signed offline. Paste a valid key when your organization issues one.';
+        if ($isEarly) {
+            $keyHelp = 'Commercial licensing is not required at this stage. If you already have a signed preview key, paste it here; a valid key takes over from early access automatically.';
+        } elseif ($isBetaTrial) {
+            $keyHelp = 'Paste a valid key below any time before the trial ends; it takes over automatically when accepted.';
+        }
+        echo '<p class="description">' . WpHelper::escapeHtml($keyHelp) . '</p>';
         echo '</td></tr></tbody></table>';
         \call_user_func('submit_button', 'Save license');
         echo '</form>';
 
         // Only offer "remove license" when a key is actually stored (or the
-        // validator surfaced invalid/expired material tied to that key). Beta
-        // trial uses STATE_BETA_TRIAL with an empty option — there is nothing
-        // to clear from the database in that case.
+        // validator surfaced invalid/expired material tied to that key). Early
+        // access and beta trial use an empty option — there is nothing to clear
+        // from the database in those cases.
         $storedKey = trim((string) WpHelper::getOption(LicenseManager::OPTION_NAME, ''));
         $mayClearStoredKey = $storedKey !== ''
             || $status->state === LicenseStatus::STATE_INVALID
@@ -120,6 +128,20 @@ final class LicensePage
     {
         $this->guardWriteRequest();
         $key = isset($_POST['license_key']) && is_string($_POST['license_key']) ? trim($_POST['license_key']) : '';
+
+        if ($key === '') {
+            $this->license->clearLicense();
+            $status = $this->license->status();
+            $msg = match (true) {
+                $status->state === LicenseStatus::STATE_EARLY_ACCESS => 'No key stored. Early access remains active.',
+                $status->state === LicenseStatus::STATE_BETA_TRIAL => 'No key stored. Beta trial remains active.',
+                default => 'License cleared.',
+            };
+            $this->redirect($msg);
+
+            return;
+        }
+
         $status = $this->license->setLicense($key);
         $msg = $status->isActive()
             ? 'License activated.'
@@ -136,6 +158,26 @@ final class LicensePage
 
     private function renderStatusBanner(LicenseStatus $status): void
     {
+        if ($status->isActive()) {
+            echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>'
+                . '<strong>Pro license active.</strong> Tier: <code>'
+                . WpHelper::escapeHtml($status->tier) . '</code>'
+                . ($status->expiresAt ? ' &mdash; expires ' . WpHelper::escapeHtml(gmdate('Y-m-d', $status->expiresAt)) : '')
+                . '</p></div>';
+
+            return;
+        }
+
+        if ($status->state === LicenseStatus::STATE_EARLY_ACCESS) {
+            echo '<div class="notice notice-info inline" style="margin-bottom:1em;"><p>'
+                . '<strong>Early access build.</strong> '
+                . 'All Pro features are unlocked without a commercial license or remote license server. '
+                . 'You can still paste a signed key below if your organization issued one; a valid key replaces this mode automatically.'
+                . '</p></div>';
+
+            return;
+        }
+
         if ($status->state === LicenseStatus::STATE_BETA_TRIAL) {
             $days = $status->daysRemaining();
             $until = $status->expiresAt !== null
@@ -146,18 +188,9 @@ final class LicensePage
                 . 'All Pro features are unlocked without a license key until '
                 . ($until !== '' ? '<strong>' . $until . '</strong> (UTC)' : 'the trial end date')
                 . ($days !== null ? ' &mdash; about <strong>' . (int) $days . '</strong> day(s) remaining.' : '.')
-                . ' Enter a purchased key below any time; it takes over automatically when valid.'
+                . ' Enter a valid key below any time; it takes over automatically when accepted.'
                 . '</p></div>';
 
-            return;
-        }
-
-        if ($status->isActive()) {
-            echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>'
-                . '<strong>Pro license active.</strong> Tier: <code>'
-                . WpHelper::escapeHtml($status->tier) . '</code>'
-                . ($status->expiresAt ? ' &mdash; expires ' . WpHelper::escapeHtml(gmdate('Y-m-d', $status->expiresAt)) : '')
-                . '</p></div>';
             return;
         }
         $label = match ($status->state) {

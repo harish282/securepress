@@ -104,6 +104,15 @@ final class WooCommerceProtectionPage
     private function renderLicenseBanner(LicenseStatus $status, bool $isPro): void
     {
         if ($isPro) {
+            if ($status->state === LicenseStatus::STATE_EARLY_ACCESS) {
+                echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>'
+                    . '<strong>Early access.</strong> WooCommerce Protection and the rest of the Pro tier are '
+                    . 'unlocked without a commercial license. Optional keys are managed on the '
+                    . '<a href="' . WpHelper::escapeUrl(SecurePressMenuPage::submenuUrl(LicensePage::PAGE_SLUG)) . '">License</a> page.</p></div>';
+
+                return;
+            }
+
             $remaining = $status->daysRemaining();
             $msg = '<strong>Pro license active.</strong> Tier: <code>' . WpHelper::escapeHtml($status->tier) . '</code>';
             if ($remaining !== null) {

@@ -60,6 +60,20 @@ final class Config
             (string) ($config['signed_url']['ttl_default'] ?? 3600)
         );
 
+        if (!is_array($config['pro_license'] ?? null)) {
+            $config['pro_license'] = [];
+        }
+
+        $earlyDefault = ($config['pro_license']['early_access'] ?? false) ? 'true' : 'false';
+        $config['pro_license']['early_access'] = filter_var(
+            $this->env('SECUREPRESS_EARLY_ACCESS', $earlyDefault),
+            FILTER_VALIDATE_BOOL
+        );
+
+        if (!is_array($config['pro_license']['beta_trial'] ?? null)) {
+            $config['pro_license']['beta_trial'] = [];
+        }
+
         $betaTrialDefault = ($config['pro_license']['beta_trial']['enabled'] ?? false) ? 'true' : 'false';
         $config['pro_license']['beta_trial']['enabled'] = filter_var(
             $this->env('SECUREPRESS_BETA_TRIAL_ENABLED', $betaTrialDefault),
@@ -70,6 +84,12 @@ final class Config
             (string) ($config['pro_license']['beta_trial']['duration_days'] ?? 182)
         );
         $config['pro_license']['beta_trial']['duration_days'] = max(1, min(730, $trialDays));
+
+        if (!is_array($config['licensing'] ?? null)) {
+            $config['licensing'] = [];
+        }
+        $defaultLicenseSecret = (string) ($config['licensing']['secret'] ?? 'change-me-in-production');
+        $config['licensing']['secret'] = $this->env('SECUREPRESS_LICENSE_SECRET', $defaultLicenseSecret);
 
         if (is_array($config['audit_log'] ?? null)) {
             $audit = $config['audit_log'];

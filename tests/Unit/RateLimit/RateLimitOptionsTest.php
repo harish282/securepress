@@ -35,13 +35,13 @@ final class RateLimitOptionsTest extends TestCase
 
         self::assertSame(
             [
-                'enabled' => true,
+                'enabled' => false,
                 'limit' => 60,
                 'window' => 60,
             ],
             $options->all()
         );
-        self::assertTrue($options->isEnabled());
+        self::assertFalse($options->isEnabled());
         self::assertSame(60, $options->limit());
         self::assertSame(60, $options->window());
     }
@@ -112,7 +112,7 @@ final class RateLimitOptionsTest extends TestCase
         $sanitized = $options->sanitize('not-an-array');
 
         self::assertSame(
-            ['enabled' => true, 'limit' => 60, 'window' => 60],
+            ['enabled' => false, 'limit' => 60, 'window' => 60],
             $sanitized
         );
     }

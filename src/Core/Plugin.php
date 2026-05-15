@@ -123,6 +123,7 @@ use SecurePress\Core\Middleware\MiddlewarePipeline;
 use SecurePress\Core\Middleware\MiddlewareRegistry;
 use SecurePress\Core\Middleware\MiddlewareStack;
 use SecurePress\Core\Recovery\SafeMode;
+use SecurePress\Core\RateLimit\GlobalRateLimitSubscriber;
 use SecurePress\Core\RateLimit\RateLimiter;
 use SecurePress\Core\RateLimit\RateLimitOptions;
 use SecurePress\Core\RateLimit\RateLimitStoreInterface;
@@ -177,6 +178,7 @@ final class Plugin
         }
         Security::bootstrap($this->container);
         AuditLog::bootstrap($this->container);
+        $this->container->get(GlobalRateLimitSubscriber::class)->register();
         $this->container->get(SecurityHeadersDispatcher::class)->register();
 
         $this->container->get(AuditLogSchema::class)->install();
@@ -298,6 +300,27 @@ final class Plugin
         echo '<div class="notice notice-warning is-dismissible"><p><strong>SecurePress logging:</strong> '
             . WpHelper::escapeHtml($error)
             . '</p></div>';
+    }
+
+    /**
+     * Warns when the offline license HMAC secret is still the shipped placeholder
+     * or is too short — forged keys are trivial if the secret is known.
+     */
+    public function renderLicenseSecretNotice(): void
+    {
+        if (!WpHelper::currentUserCan('manage_options')) {
+            return;
+        }
+
+        $secret = (string) $this->container->get(Config::class)->get('licensing.secret', '');
+        if ($secret !== '' && $secret !== 'change-me-in-production' && strlen($secret) >= 24) {
+            return;
+        }
+
+        echo '<div class="notice notice-error"><p><strong>SecurePress licensing:</strong> '
+            . 'Set a strong <code>SECUREPRESS_LICENSE_SECRET</code> environment variable '
+            . '(or override <code>licensing.secret</code> in <code>config/plugin.php</code> before deploy). '
+            . 'The default placeholder must never be used in production.</p></div>';
     }
 
     public function renderMuLoaderNotice(): void
@@ -454,6 +477,13 @@ final class Plugin
                     enabled: $options->isEnabled() && !SafeMode::bypasses(SafeMode::BYPASS_RATE_LIMIT),
                 );
             }
+        );
+        $this->container->singleton(
+            GlobalRateLimitSubscriber::class,
+            static fn (Container $container): GlobalRateLimitSubscriber => new GlobalRateLimitSubscriber(
+                $container->get(RateLimitMiddleware::class),
+                $container->get(RateLimitOptions::class),
+            )
         );
         $this->container->singleton(
             SecretProviderInterface::class,
@@ -1018,7 +1048,6 @@ final class Plugin
                 $container->get(AuditLogSchema::class),
                 $container->get(SessionSchema::class),
                 $container->get(IntegritySchema::class),
-                $container->get(MiddlewareStack::class),
                 $container->get(MuLoaderStatus::class),
                 $container->get(Config::class),
             )
@@ -1244,6 +1273,7 @@ final class Plugin
 
         WpHelper::addAction('admin_notices', [$this, 'renderMuLoaderNotice']);
         WpHelper::addAction('admin_notices', [$this, 'renderLoggerNotice']);
+        WpHelper::addAction('admin_notices', [$this, 'renderLicenseSecretNotice']);
         WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
 
         // The top-level "Secure Press" menu owns the parent slug every submenu

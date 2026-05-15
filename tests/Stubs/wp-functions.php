@@ -179,6 +179,28 @@ if (!function_exists('has_filter')) {
     }
 }
 
+if (!function_exists('is_admin')) {
+    function is_admin(): bool
+    {
+        return WpStubState::$isAdmin;
+    }
+}
+
+if (!class_exists('WP_Error', false)) {
+    final class WP_Error
+    {
+        /**
+         * @param array<string, mixed> $data
+         */
+        public function __construct(
+            public string $code = '',
+            public string $message = '',
+            public array $data = [],
+        ) {
+        }
+    }
+}
+
 if (!function_exists('wp_die')) {
     function wp_die(string $message = '', string $title = '', array|int $args = []): void
     {

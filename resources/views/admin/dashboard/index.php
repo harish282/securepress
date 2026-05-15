@@ -56,6 +56,7 @@ $nonceField = static function (string $action): string {
 $licenseStatus = $license['status'];
 $licenseLabel = match ($licenseStatus->state) {
     LicenseStatus::STATE_ACTIVE => 'Active (' . $licenseStatus->tier . ')',
+    LicenseStatus::STATE_EARLY_ACCESS => 'Early access (Pro)',
     LicenseStatus::STATE_BETA_TRIAL => 'Beta trial'
         . ($licenseStatus->expiresAt !== null
             ? ' (~' . (string) (int) $licenseStatus->daysRemaining() . ' d left)'

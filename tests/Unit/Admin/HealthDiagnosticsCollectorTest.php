@@ -20,7 +20,6 @@ use SecurePress\Core\Integrity\IntegritySchema;
 use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Licensing\LicenseValidatorInterface;
-use SecurePress\Core\Middleware\MiddlewareStack;
 use SecurePress\Core\RateLimit\RateLimitOptions;
 use SecurePress\Core\Support\WpHelper;
 use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
@@ -97,6 +96,8 @@ final class HealthDiagnosticsCollectorTest extends TestCase
         self::assertContains('auth_hardening', $keys);
         self::assertContains('audit_log', $keys);
         self::assertContains('mu_loader', $keys);
+        self::assertContains('rate_limit_http', $keys);
+        self::assertContains('license_hmac_secret', $keys);
     }
 
     private function collector(): HealthDiagnosticsCollector
@@ -132,7 +133,6 @@ final class HealthDiagnosticsCollectorTest extends TestCase
             new AuditLogSchema(),
             new SessionSchema(),
             new IntegritySchema(),
-            new MiddlewareStack(),
             new MuLoaderStatus(),
             $config,
         );

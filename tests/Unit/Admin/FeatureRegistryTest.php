@@ -111,7 +111,7 @@ final class FeatureRegistryTest extends TestCase
         $changed = $registry->apply([
             'auth_hardening' => true,
             'security_headers' => true,
-            'rate_limit' => true,
+            'rate_limit' => false,
             'url_disguise' => false,
             'file_integrity' => true,
             'audit_log' => true,
