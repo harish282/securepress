@@ -17,6 +17,9 @@ storage/tmp/*
 vendor/
 node_modules/
 
+# Release artifacts
+build/
+
 # OS/editor files
 .DS_Store
 Thumbs.db
