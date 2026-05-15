@@ -3,6 +3,7 @@
     <testsuites>
         <testsuite name="SecurePress Test Suite">
             <directory>tests/Unit</directory>
+            <directory>tests/Performance</directory>
         </testsuite>
     </testsuites>
 </phpunit>
