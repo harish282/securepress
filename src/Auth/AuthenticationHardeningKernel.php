@@ -12,6 +12,7 @@ use SecurePress\Core\Auth\SuspiciousLogin\LoginContext;
 use SecurePress\Core\Auth\SuspiciousLogin\SuspicionDetector;
 use SecurePress\Core\Auth\TwoFactor\TwoFactorService;
 use SecurePress\Core\Logging\LoggerInterface;
+use SecurePress\Core\Recovery\SafeMode;
 use SecurePress\Core\Support\WpHelper;
 
 /**
@@ -75,6 +76,9 @@ final class AuthenticationHardeningKernel
     {
         unset($password);
 
+        if (SafeMode::bypasses(SafeMode::BYPASS_LOCKOUT)) {
+            return $user;
+        }
         if (!($this->flags['lockout_enabled'] ?? true)) {
             return $user;
         }
@@ -146,6 +150,9 @@ final class AuthenticationHardeningKernel
 
     public function onLoginFailed(string $username): void
     {
+        if (SafeMode::bypasses(SafeMode::BYPASS_LOCKOUT)) {
+            return;
+        }
         if (!($this->flags['lockout_enabled'] ?? true)) {
             return;
         }

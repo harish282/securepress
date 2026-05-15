@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SecurePress\Core\RateLimit;
 
 use SecurePress\Core\Config\Config;
+use SecurePress\Core\Recovery\SafeMode;
 use SecurePress\Core\Support\WpHelper;
 
 /**
@@ -73,6 +74,10 @@ final class RateLimitOptions
 
     public function isEnabled(): bool
     {
+        if (SafeMode::bypasses(SafeMode::BYPASS_RATE_LIMIT)) {
+            return false;
+        }
+
         return $this->all()['enabled'];
     }
 

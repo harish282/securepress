@@ -251,6 +251,33 @@ final class WpStubState
         }
     }
 
+    /**
+     * Runs filter callbacks in priority order and returns the transformed value.
+     */
+    public static function applyFilters(string $hook, mixed $value, mixed ...$args): mixed
+    {
+        $callbacks = self::$registeredFilters[$hook] ?? [];
+        if ($callbacks === []) {
+            return $value;
+        }
+        usort(
+            $callbacks,
+            static fn (array $a, array $b): int => $a['priority'] <=> $b['priority']
+        );
+        foreach ($callbacks as $entry) {
+            $passed = array_merge([$value], $args);
+            $sliced = array_slice($passed, 0, max(1, $entry['accepted_args']));
+            $value = \call_user_func_array($entry['callback'], $sliced);
+        }
+
+        return $value;
+    }
+
+    public static function removeAllFilters(string $hook): void
+    {
+        unset(self::$registeredFilters[$hook]);
+    }
+
     public static function setUserMeta(int $userId, string $key, mixed $value): void
     {
         self::$userMeta[$userId] ??= [];

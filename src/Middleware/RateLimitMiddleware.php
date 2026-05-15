@@ -9,6 +9,7 @@ use SecurePress\Core\Logging\LoggerInterface;
 use SecurePress\Core\Logging\NullLogger;
 use SecurePress\Core\Middleware\MiddlewareInterface;
 use SecurePress\Core\RateLimit\RateLimiter;
+use SecurePress\Core\Recovery\SafeMode;
 use SecurePress\Core\Support\WpHelper;
 
 /**
@@ -68,6 +69,20 @@ final class RateLimitMiddleware implements MiddlewareInterface
 
     public function handle(array $context, callable $next): array
     {
+        if (SafeMode::bypasses(SafeMode::BYPASS_RATE_LIMIT)) {
+            $context['rate_limit'] = [
+                'allowed' => true,
+                'bypassed' => true,
+                'safe_mode' => true,
+                'key' => $this->resolveKey($context),
+                'limit' => $this->limit,
+                'hits' => 0,
+                'remaining' => $this->limit,
+                'retry_after' => 0,
+            ];
+
+            return $next($context);
+        }
         if (!$this->enabled) {
             // Annotate the context so anything reading `$context['rate_limit']`
             // can still reason about whether the limiter ran (e.g. response

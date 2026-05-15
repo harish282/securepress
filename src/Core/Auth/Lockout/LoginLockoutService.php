@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace SecurePress\Core\Auth\Lockout;
 
+use SecurePress\Core\Recovery\SafeMode;
+
 /**
  * Coordinates the failed-login counter / lockout lifecycle behind a friendly API.
  *
@@ -26,6 +28,9 @@ final class LoginLockoutService
 
     public function isLocked(string $username, ?string $ip): bool
     {
+        if (SafeMode::bypasses(SafeMode::BYPASS_LOCKOUT)) {
+            return false;
+        }
         if (!$this->policy->enabled) {
             return false;
         }
@@ -53,6 +58,9 @@ final class LoginLockoutService
      */
     public function registerFailure(string $username, ?string $ip): bool
     {
+        if (SafeMode::bypasses(SafeMode::BYPASS_LOCKOUT)) {
+            return false;
+        }
         if (!$this->policy->enabled) {
             return false;
         }

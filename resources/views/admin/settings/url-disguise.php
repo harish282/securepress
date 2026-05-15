@@ -66,6 +66,8 @@ use SecurePress\Core\Support\WpHelper;
 
     <hr>
     <p class="description">
-        Bookmark your custom login URL before blocking <code>wp-login.php</code> (blocked requests return 404, not a redirect). If you lock yourself out, disable SecurePress from the filesystem or the database option <code>securepress_url_disguise</code>.
+        Bookmark your custom login URL before blocking <code>wp-login.php</code> (blocked requests return 404, not a redirect).
+        If you lock yourself out, set <code>SECUREPRESS_SAFE_MODE=true</code> in the plugin <code>.env</code> (see <code>.env.example</code>) or add <code>define('SECUREPRESS_SAFE_MODE', true);</code> to <code>wp-config.php</code>, reload once, sign in at <code>wp-login.php</code>, then turn safe mode off.
+        You can also disable the plugin from the filesystem or clear the <code>securepress_url_disguise</code> option in the database.
     </p>
 </div>

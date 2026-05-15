@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SecurePress\Core\UrlDisguise;
 
 use SecurePress\Core\Config\Config;
+use SecurePress\Core\Recovery\SafeMode;
 use SecurePress\Core\Support\WpHelper;
 
 /**
@@ -59,6 +60,9 @@ final class UrlDisguiseOptions
      */
     public function isActive(): bool
     {
+        if (SafeMode::bypasses(SafeMode::BYPASS_LOGIN_DISGUISE)) {
+            return false;
+        }
         $a = $this->all();
 
         return $a['enabled'] && $a['login_slug'] !== '';

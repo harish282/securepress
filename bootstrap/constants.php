@@ -49,3 +49,15 @@ if (!defined('SECUREPRESS_MU_LOADER_FILENAME')) {
 if (!defined('SECUREPRESS_MU_LOADER_TEMPLATE_PATH')) {
     define('SECUREPRESS_MU_LOADER_TEMPLATE_PATH', SECUREPRESS_PATH . '/mu-loader/' . SECUREPRESS_MU_LOADER_FILENAME);
 }
+
+/**
+ * Emergency recovery: set in wp-config.php before wp-settings.php loads.
+ *
+ *     define('SECUREPRESS_SAFE_MODE', true);
+ *
+ * While true, SecurePress bypasses login URL disguise, login lockouts, and global
+ * rate limiting without changing stored options. Remove after you regain access.
+ *
+ * You can also set `SECUREPRESS_SAFE_MODE=true` in the plugin `.env` file; see
+ * `.env.example` and {@see SECUREPRESS_BOOTSTRAP_PATH}/safe-mode.php.
+ */

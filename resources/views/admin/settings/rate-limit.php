@@ -30,6 +30,10 @@ use SecurePress\Core\Support\WpHelper;
         </div>
     <?php endif; ?>
 
+    <p class="description">
+        Locked out or throttled? Set <code>SECUREPRESS_SAFE_MODE=true</code> in the plugin <code>.env</code> (see <code>.env.example</code>) or add the constant to <code>wp-config.php</code> to bypass global rate limiting and login lockouts until you regain access.
+    </p>
+
     <form method="post" action="options.php">
         <?php
         if (\function_exists('settings_fields')) {

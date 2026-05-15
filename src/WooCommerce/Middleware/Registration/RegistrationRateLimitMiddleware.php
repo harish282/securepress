@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SecurePress\WooCommerce\Middleware\Registration;
 
+use SecurePress\Core\Recovery\SafeMode;
 use SecurePress\WooCommerce\Detection\Decision;
 use SecurePress\WooCommerce\Detection\DetectionContext;
 use SecurePress\WooCommerce\Detection\Signal;
@@ -39,6 +40,9 @@ final class RegistrationRateLimitMiddleware implements WcMiddlewareInterface
 
     public function handle(DetectionContext $context, callable $next): Decision
     {
+        if (SafeMode::bypasses(SafeMode::BYPASS_RATE_LIMIT)) {
+            return $next($context);
+        }
         if ($context->ip === '') {
             return $next($context);
         }

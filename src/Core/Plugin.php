@@ -119,6 +119,7 @@ use SecurePress\Core\Middleware\MiddlewareManager;
 use SecurePress\Core\Middleware\MiddlewarePipeline;
 use SecurePress\Core\Middleware\MiddlewareRegistry;
 use SecurePress\Core\Middleware\MiddlewareStack;
+use SecurePress\Core\Recovery\SafeMode;
 use SecurePress\Core\RateLimit\RateLimiter;
 use SecurePress\Core\RateLimit\RateLimitOptions;
 use SecurePress\Core\RateLimit\RateLimitStoreInterface;
@@ -162,7 +163,15 @@ final class Plugin
             return;
         }
 
-        $this->container->get(LoggerInterface::class)->info('SecurePress plugin booted.');
+        $logger = $this->container->get(LoggerInterface::class);
+        $logger->info('SecurePress plugin booted.');
+        if (SafeMode::isActive()) {
+            $logger->warning(
+                'SecurePress safe mode is active — emergency bypasses: '
+                . implode(', ', SafeMode::activeBypasses())
+            );
+            WpHelper::addAction('admin_notices', [$this, 'renderSafeModeNotice']);
+        }
         Security::bootstrap($this->container);
         AuditLog::bootstrap($this->container);
         $this->container->get(SecurityHeadersDispatcher::class)->register();
@@ -204,17 +213,30 @@ final class Plugin
 
         $this->registerAdminHooks();
 
-        $this->container->get(UrlDisguiseModule::class)->register();
+        if (!SafeMode::bypasses(SafeMode::BYPASS_LOGIN_DISGUISE)) {
+            $this->container->get(UrlDisguiseModule::class)->register();
 
-        WpHelper::addAction(
-            'update_option_' . UrlDisguiseOptions::OPTION_NAME,
-            function (): void {
-                $this->container->get(UrlDisguiseModule::class)->addRewriteRules();
-                WpHelper::flushRewriteRules();
-            },
-            10,
-            0
-        );
+            WpHelper::addAction(
+                'update_option_' . UrlDisguiseOptions::OPTION_NAME,
+                function (): void {
+                    $this->container->get(UrlDisguiseModule::class)->addRewriteRules();
+                    WpHelper::flushRewriteRules();
+                },
+                10,
+                0
+            );
+        }
+    }
+
+    public function renderSafeModeNotice(): void
+    {
+        if (!SafeMode::isActive() || !WpHelper::currentUserCan('manage_options')) {
+            return;
+        }
+
+        $this->container->get(View::class)->render('admin.notices.safe-mode', [
+            'bypasses' => SafeMode::activeBypasses(),
+        ]);
     }
 
     public function renderRequirementsNotice(): void
@@ -417,7 +439,7 @@ final class Plugin
                     limit: $options->limit(),
                     window: $options->window(),
                     keyResolver: null,
-                    enabled: $options->isEnabled(),
+                    enabled: $options->isEnabled() && !SafeMode::bypasses(SafeMode::BYPASS_RATE_LIMIT),
                 );
             }
         );

@@ -199,6 +199,20 @@ if (!function_exists('add_filter')) {
     }
 }
 
+if (!function_exists('apply_filters')) {
+    function apply_filters(string $hook, mixed $value, mixed ...$args): mixed
+    {
+        return WpStubState::applyFilters($hook, $value, ...$args);
+    }
+}
+
+if (!function_exists('remove_all_filters')) {
+    function remove_all_filters(string $hook): void
+    {
+        WpStubState::removeAllFilters($hook);
+    }
+}
+
 if (!function_exists('do_action')) {
     function do_action(string $hook, mixed ...$args): void
     {

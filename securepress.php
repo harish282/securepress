@@ -21,6 +21,7 @@ if (!defined('ABSPATH')) {
 
 require_once __DIR__ . '/bootstrap/constants.php';
 require_once SECUREPRESS_BOOTSTRAP_PATH . '/env.php';
+require_once SECUREPRESS_BOOTSTRAP_PATH . '/safe-mode.php';
 require_once SECUREPRESS_SRC_PATH . '/Core/Support/Autoloader.php';
 require_once SECUREPRESS_SRC_PATH . '/Core/Plugin.php';
 
