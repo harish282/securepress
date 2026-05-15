@@ -9,6 +9,7 @@ use SecurePress\Admin\SecurePressMenuPage;
 use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Support\WpHelper;
+use SecurePress\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
 
 /**
  * Settings → WooCommerce Protection admin page.
@@ -148,7 +149,23 @@ final class WooCommerceProtectionPage
         $this->numberRow("{$name}[checkout][velocity_soft]", 'Velocity: soft threshold', (int) $v['velocity_soft']);
         $this->numberRow("{$name}[checkout][velocity_hard]", 'Velocity: hard threshold', (int) $v['velocity_hard']);
         $this->numberRow("{$name}[checkout][velocity_window]", 'Velocity window (seconds)', (int) $v['velocity_window']);
-        $this->numberRow("{$name}[checkout][min_seconds_to_submit]", 'Minimum seconds to submit', (int) $v['min_seconds_to_submit']);
+        $this->numberRow(
+            "{$name}[checkout][min_seconds_to_submit]",
+            'Minimum seconds on checkout form',
+            (int) $v['min_seconds_to_submit'],
+            'Use <strong>0</strong> to disable timing checks. If you enable timing, start with at least <strong>8</strong> seconds — mobile, autofill, password managers, and express wallets often finish faster than desktop.'
+        );
+        $this->numberRow(
+            "{$name}[checkout][bot][weight_impossible_timing]",
+            'Fraud score: fast-checkout timing weight',
+            (int) ($v['bot']['weight_impossible_timing'] ?? 30),
+            'Points added when checkout is faster than the minimum. Does not block by itself unless you choose <strong>Block checkout</strong> below or the combined fraud score reaches the deny threshold.'
+        );
+        $this->timingActionRow(
+            "{$name}[checkout][timing_action]",
+            'When checkout is suspiciously fast',
+            (string) ($v['timing_action'] ?? BotCheckoutMiddleware::TIMING_REPORT)
+        );
         $this->numberRow("{$name}[checkout][fraud][challenge_threshold]", 'Fraud score: challenge threshold', (int) $v['fraud']['challenge_threshold']);
         $this->numberRow("{$name}[checkout][fraud][deny_threshold]", 'Fraud score: deny threshold', (int) $v['fraud']['deny_threshold']);
         echo '</tbody></table>';
@@ -210,10 +227,33 @@ final class WooCommerceProtectionPage
         echo '</td></tr>';
     }
 
-    private function numberRow(string $name, string $label, int $value): void
+    private function numberRow(string $name, string $label, int $value, string $description = ''): void
     {
         echo '<tr><th scope="row">' . WpHelper::escapeHtml($label) . '</th><td>';
         echo '<input type="number" min="0" name="' . WpHelper::escapeAttribute($name) . '" value="' . (int) $value . '" class="small-text" />';
+        if ($description !== '') {
+            echo '<p class="description">' . $description . '</p>';
+        }
+        echo '</td></tr>';
+    }
+
+    private function timingActionRow(string $name, string $label, string $value): void
+    {
+        $isReport = $value !== BotCheckoutMiddleware::TIMING_BLOCK;
+        echo '<tr><th scope="row">' . WpHelper::escapeHtml($label) . '</th><td>';
+        printf(
+            '<label style="display:block;margin-bottom:6px;"><input type="radio" name="%1$s" value="%2$s"%3$s> <strong>Report only (recommended)</strong> — log to audit trail and increase fraud score. Does not block checkout by itself.</label>',
+            WpHelper::escapeAttribute($name),
+            WpHelper::escapeAttribute(BotCheckoutMiddleware::TIMING_REPORT),
+            $isReport ? ' checked' : ''
+        );
+        printf(
+            '<label style="display:block;"><input type="radio" name="%1$s" value="%2$s"%3$s> <strong>Block checkout</strong> — immediately reject the order.</label>',
+            WpHelper::escapeAttribute($name),
+            WpHelper::escapeAttribute(BotCheckoutMiddleware::TIMING_BLOCK),
+            $isReport ? '' : ' checked'
+        );
+        echo '<p class="description">Requires minimum seconds &gt; 0. Mobile, autofill, password managers, and Shop Pay can be fast — start with <strong>Report only</strong> and review the audit log before enabling blocking.</p>';
         echo '</td></tr>';
     }
 }

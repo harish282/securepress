@@ -30,7 +30,7 @@ final class HoneypotMiddleware implements WcMiddlewareInterface
 {
     public function __construct(
         private readonly string $fieldName = 'securepress_hp',
-        private readonly int $minSecondsToSubmit = 2,
+        private readonly int $minSecondsToSubmit = 0,
     ) {
     }
 
@@ -51,7 +51,12 @@ final class HoneypotMiddleware implements WcMiddlewareInterface
         }
 
         $elapsed = $context->get('form_elapsed_seconds');
-        if (is_int($elapsed) && $elapsed >= 0 && $elapsed < $this->minSecondsToSubmit) {
+        if (
+            $this->minSecondsToSubmit > 0
+            && is_int($elapsed)
+            && $elapsed >= 0
+            && $elapsed < $this->minSecondsToSubmit
+        ) {
             return Decision::deny(
                 'Form submitted too quickly to be human.',
                 [...$context->signals, new Signal(

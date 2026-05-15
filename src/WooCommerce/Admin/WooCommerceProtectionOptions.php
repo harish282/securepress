@@ -6,6 +6,7 @@ namespace SecurePress\WooCommerce\Admin;
 
 use SecurePress\Core\Config\Config;
 use SecurePress\Core\Support\WpHelper;
+use SecurePress\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
 
 /**
  * Resolves the effective WooCommerce-protection configuration for the current request.
@@ -143,13 +144,17 @@ final class WooCommerceProtectionOptions
                 'velocity_soft' => $this->intIn($checkout['velocity_soft'] ?? 3, 1, 999),
                 'velocity_hard' => $this->intIn($checkout['velocity_hard'] ?? 8, 1, 9999),
                 'velocity_window' => $this->intIn($checkout['velocity_window'] ?? 120, 5, 86400),
-                'min_seconds_to_submit' => $this->intIn($checkout['min_seconds_to_submit'] ?? 3, 0, 3600),
+                'min_seconds_to_submit' => $this->intIn($checkout['min_seconds_to_submit'] ?? 0, 0, 3600),
+                'timing_action' => $this->timingAction(
+                    $checkout['timing_action'] ?? null,
+                    $checkout['timing_enforcement'] ?? null
+                ),
                 'honeypot_field_name' => $this->string($checkout['honeypot_field_name'] ?? 'securepress_hp'),
                 'bot' => [
                     'extra_scanner_uas' => $this->stringList($bot['extra_scanner_uas'] ?? []),
                     'weight_honeypot' => $this->intIn($bot['weight_honeypot'] ?? 200, 0, 1000),
                     'weight_scanner_ua' => $this->intIn($bot['weight_scanner_ua'] ?? 200, 0, 1000),
-                    'weight_impossible_timing' => $this->intIn($bot['weight_impossible_timing'] ?? 200, 0, 1000),
+                    'weight_impossible_timing' => $this->intIn($bot['weight_impossible_timing'] ?? 30, 0, 1000),
                     'weight_empty_ua' => $this->intIn($bot['weight_empty_ua'] ?? 35, 0, 1000),
                     'weight_missing_referer' => $this->intIn($bot['weight_missing_referer'] ?? 15, 0, 1000),
                 ],
@@ -164,7 +169,7 @@ final class WooCommerceProtectionOptions
                 'window' => $this->intIn($registration['window'] ?? 600, 30, 86400),
                 'deny_disposable_emails' => $this->bool($registration['deny_disposable_emails'] ?? true),
                 'honeypot_field_name' => $this->string($registration['honeypot_field_name'] ?? 'securepress_hp'),
-                'min_seconds_to_submit' => $this->intIn($registration['min_seconds_to_submit'] ?? 2, 0, 600),
+                'min_seconds_to_submit' => $this->intIn($registration['min_seconds_to_submit'] ?? 0, 0, 600),
             ],
             'api' => [
                 'enabled' => $this->bool($api['enabled'] ?? true),
@@ -225,6 +230,31 @@ final class WooCommerceProtectionOptions
         $n = is_numeric($value) ? (int) $value : $min;
 
         return max($min, min($max, $n));
+    }
+
+    /**
+     * @param mixed $timingAction New `timing_action` value (`report` | `block`).
+     * @param mixed $legacyTimingEnforcement Deprecated `timing_enforcement` (`off` | `signal` | `deny`).
+     */
+    private function timingAction(mixed $timingAction, mixed $legacyTimingEnforcement): string
+    {
+        if (is_string($timingAction) && $timingAction !== '') {
+            $candidate = strtolower(trim($timingAction));
+            if ($candidate === BotCheckoutMiddleware::TIMING_BLOCK) {
+                return BotCheckoutMiddleware::TIMING_BLOCK;
+            }
+
+            return BotCheckoutMiddleware::TIMING_REPORT;
+        }
+
+        if (!is_string($legacyTimingEnforcement)) {
+            return BotCheckoutMiddleware::TIMING_REPORT;
+        }
+
+        return match (strtolower(trim($legacyTimingEnforcement))) {
+            'deny', 'block' => BotCheckoutMiddleware::TIMING_BLOCK,
+            default => BotCheckoutMiddleware::TIMING_REPORT,
+        };
     }
 
     private function string(mixed $value): string

@@ -224,7 +224,14 @@ $levelClass = static function (string $level): string {
 
     <hr>
     <h2>Maintenance</h2>
-    <p class="description">All actions below require the <code>manage_options</code> capability and a valid WordPress nonce. Clearing logs is permanent.</p>
+    <p class="description">
+        Configure <a href="<?= WpHelper::escapeUrl(
+            \function_exists('admin_url')
+                ? (string) \call_user_func('admin_url', 'admin.php?page=securepress-audit-settings')
+                : '#'
+        ) ?>">retention, auto-prune, and minimum log level</a> before large deployments.
+        All actions below require the <code>manage_options</code> capability and a valid WordPress nonce. Clearing logs is permanent.
+    </p>
 
     <form method="post" action="<?= WpHelper::escapeUrl(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block; margin-right: 8px;" onsubmit="return confirm('Run pruner now? Entries beyond the configured retention window will be deleted.');">
         <input type="hidden" name="action" value="securepress_prune_audit_logs">

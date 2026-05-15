@@ -110,18 +110,19 @@ final class CheckoutPipelineTest extends TestCase
         self::assertTrue($r->blocked());
     }
 
-    public function test_bot_middleware_denies_on_impossible_timing(): void
+    public function test_bot_middleware_blocks_on_timing_only_when_action_is_block(): void
     {
-        // BotCheckoutMiddleware now owns timing checks. A submission that
-        // arrives before the configured floor is an unambiguous bot tell, so
-        // the pipeline DENIES rather than CHALLENGES.
         $now = 1000;
         $clock = new BehaviorClock('secret', static function () use (&$now): int {
             return $now;
         });
         $clock->mark('tok-1');
         $pipeline = new CheckoutPipeline([
-            new BotCheckoutMiddleware($clock, minSecondsToSubmit: 5),
+            new BotCheckoutMiddleware(
+                $clock,
+                minSecondsToSubmit: 5,
+                timingAction: BotCheckoutMiddleware::TIMING_BLOCK,
+            ),
             new FraudScoreMiddleware(new FraudScoreService(30, 80)),
         ]);
 

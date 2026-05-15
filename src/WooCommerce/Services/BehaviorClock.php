@@ -10,9 +10,10 @@ use SecurePress\Core\Support\WpHelper;
 /**
  * Tracks "when did the user start this flow?" for impossible-timing detection.
  *
- * A real user takes at least a handful of seconds to fill out a checkout form. A bot
- * that submits the form within 1.5 seconds of the page rendering is almost certainly
- * automated. The clock writes a short-lived transient when the form is rendered and
+ * Records when a checkout (or registration) form was rendered so middleware can
+ * compare elapsed time on submit. Legitimate express flows (mobile, autofill, password
+ * managers, Shop Pay) can be very fast — timing rules are off by default and should
+ * only be enabled in signal or deny mode after observing your traffic. The clock writes
  * compares against `time()` when the form is submitted.
  *
  * Why not rely on JS-set form timestamps:

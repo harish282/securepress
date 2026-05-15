@@ -50,4 +50,31 @@ final class AuditEventLevel
 
         return self::isValid($candidate) ? $candidate : $fallback;
     }
+
+    /**
+     * PSR-3-style numeric rank (higher = more severe). Used to compare whether an
+     * event meets the configured minimum level for database storage.
+     */
+    public static function severityRank(string $level): int
+    {
+        return match (self::normalize($level)) {
+            self::EMERGENCY => 800,
+            self::ALERT => 700,
+            self::CRITICAL => 600,
+            self::ERROR => 500,
+            self::WARNING => 400,
+            self::NOTICE => 300,
+            self::INFO => 200,
+            self::DEBUG => 100,
+            default => 200,
+        };
+    }
+
+    /**
+     * True when `$level` is at least as severe as `$minimum` (e.g. `error` meets `warning`).
+     */
+    public static function isAtLeast(string $level, string $minimum): bool
+    {
+        return self::severityRank($level) >= self::severityRank($minimum);
+    }
 }

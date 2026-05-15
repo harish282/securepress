@@ -7,7 +7,9 @@ namespace SecurePress\Tests\Unit\Audit;
 use PHPUnit\Framework\TestCase;
 use SecurePress\Core\Audit\ArrayAuditLogRepository;
 use SecurePress\Core\Audit\AuditEvent;
+use SecurePress\Core\Audit\AuditLogOptions;
 use SecurePress\Core\Audit\AuditLogPruner;
+use SecurePress\Core\Config\Config;
 use SecurePress\Core\Logging\NullLogger;
 use SecurePress\Tests\Stubs\WpStubState;
 
@@ -31,49 +33,81 @@ final class AuditLogPrunerTest extends TestCase
         $repo->record(AuditEvent::make('old')->withOccurredAt($now - (10 * 86400)));
         $repo->record(AuditEvent::make('keep')->withOccurredAt($now - (3 * 86400)));
 
-        $pruner = new AuditLogPruner($repo, new NullLogger(), retentionDays: 7);
+        $pruner = $this->makePruner($repo, ['retention_days' => 7]);
         $deleted = $pruner->prune();
 
         self::assertSame(1, $deleted);
         self::assertSame(1, $repo->count());
     }
 
-    public function test_prune_is_noop_when_retention_is_disabled(): void
+    public function test_prune_is_noop_when_retention_is_zero(): void
     {
         $repo = new ArrayAuditLogRepository();
         $repo->record(AuditEvent::make('ancient')->withOccurredAt(1));
 
-        $pruner = new AuditLogPruner($repo, new NullLogger(), retentionDays: 0);
+        $pruner = $this->makePruner($repo, ['retention_days' => 0]);
 
-        self::assertSame(0, $pruner->prune());
-        self::assertSame(1, $repo->count(), 'nothing should be deleted with retention=0');
+        self::assertSame(0, $pruner->prune(manual: true));
+        self::assertSame(1, $repo->count());
     }
 
-    public function test_register_schedules_daily_event(): void
+    public function test_scheduled_prune_skipped_when_auto_prune_disabled(): void
     {
         $repo = new ArrayAuditLogRepository();
-        $pruner = new AuditLogPruner($repo, new NullLogger(), retentionDays: 30);
+        $repo->record(AuditEvent::make('old')->withOccurredAt(time() - (30 * 86400)));
 
+        $pruner = $this->makePruner($repo, ['retention_days' => 7, 'auto_prune_enabled' => false]);
+        self::assertSame(0, $pruner->prune());
+        self::assertSame(1, $repo->count());
+    }
+
+    public function test_manual_prune_runs_when_auto_prune_disabled(): void
+    {
+        $repo = new ArrayAuditLogRepository();
+        $repo->record(AuditEvent::make('old')->withOccurredAt(time() - (30 * 86400)));
+
+        $pruner = $this->makePruner($repo, ['retention_days' => 7, 'auto_prune_enabled' => false]);
+        self::assertSame(1, $pruner->prune(manual: true));
+    }
+
+    public function test_register_schedules_daily_event_when_auto_prune_on(): void
+    {
+        $pruner = $this->makePruner(null, ['retention_days' => 30, 'auto_prune_enabled' => true]);
         $pruner->register();
 
         self::assertArrayHasKey(AuditLogPruner::HOOK, WpStubState::$scheduledEvents);
         self::assertSame('daily', WpStubState::$scheduledEvents[AuditLogPruner::HOOK]['recurrence']);
     }
 
-    public function test_register_does_not_double_schedule(): void
+    public function test_sync_schedule_clears_cron_when_auto_prune_off(): void
     {
-        $repo = new ArrayAuditLogRepository();
-        $pruner = new AuditLogPruner($repo, new NullLogger(), retentionDays: 30);
-
+        $pruner = $this->makePruner(null, ['retention_days' => 30, 'auto_prune_enabled' => true]);
         $pruner->register();
-        $existing = WpStubState::$scheduledEvents[AuditLogPruner::HOOK];
+        self::assertArrayHasKey(AuditLogPruner::HOOK, WpStubState::$scheduledEvents);
 
-        $pruner->register();
+        $pruner = $this->makePruner(null, ['retention_days' => 30, 'auto_prune_enabled' => false]);
+        $pruner->syncSchedule();
 
-        self::assertSame(
-            $existing['timestamp'],
-            WpStubState::$scheduledEvents[AuditLogPruner::HOOK]['timestamp'],
-            'second register call must not overwrite the existing schedule'
+        self::assertArrayNotHasKey(AuditLogPruner::HOOK, WpStubState::$scheduledEvents);
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     */
+    private function makePruner(?ArrayAuditLogRepository $repo = null, array $overrides = []): AuditLogPruner
+    {
+        WpStubState::$options[AuditLogOptions::OPTION_NAME] = array_replace([
+            'enabled' => true,
+            'retention_days' => 7,
+            'auto_prune_enabled' => true,
+            'min_storage_level' => 'info',
+            'mirror_to_file_logger' => false,
+        ], $overrides);
+
+        return new AuditLogPruner(
+            $repo ?? new ArrayAuditLogRepository(),
+            new NullLogger(),
+            new AuditLogOptions(new Config()),
         );
     }
 }

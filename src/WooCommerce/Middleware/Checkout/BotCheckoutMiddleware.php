@@ -33,9 +33,10 @@ use SecurePress\WooCommerce\Services\BehaviorClock;
  *     clients (intra-network apps, privacy tooling) strip the header, so we
  *     contribute weight rather than block outright.
  *
- *  4. **Impossibly fast submission.** If the kernel recorded a clock token on
- *     page render, and the submission landed within `$minSecondsToSubmit`
- *     seconds, that's almost certainly a bot. Hard deny.
+ *  4. **Fast submission (timing).** Optional (`min_seconds_to_submit` &gt; 0).
+ *     Default action is **report only**: audit log + fraud-score signal, no
+ *     instant block — safe for mobile, autofill, password managers, and Shop Pay.
+ *     Admins may switch to **block** to reject the checkout immediately.
  *
  *  5. **Missing Referer.** Real browsers send one for same-origin POSTs (unless
  *     the site sets a strict Referrer-Policy that strips it — increasingly
@@ -57,6 +58,18 @@ use SecurePress\WooCommerce\Services\BehaviorClock;
  */
 final class BotCheckoutMiddleware implements WcMiddlewareInterface
 {
+    /** @deprecated Use {@see self::TIMING_REPORT}. Legacy option value `signal`. */
+    public const TIMING_SIGNAL = 'report';
+
+    /** @deprecated Use {@see self::TIMING_BLOCK}. Legacy option value `deny`. */
+    public const TIMING_DENY = 'block';
+
+    /** Log suspicious timing and add fraud score; do not block checkout by itself. */
+    public const TIMING_REPORT = 'report';
+
+    /** Immediately reject checkout when timing is suspicious. */
+    public const TIMING_BLOCK = 'block';
+
     /**
      * Default substrings flagged as scanner-pattern User-Agents. Kept inline so
      * the middleware works standalone in tests; production wires in additional
@@ -76,11 +89,12 @@ final class BotCheckoutMiddleware implements WcMiddlewareInterface
     public function __construct(
         private readonly BehaviorClock $clock,
         private readonly string $honeypotField = 'securepress_hp',
-        private readonly int $minSecondsToSubmit = 3,
+        private readonly int $minSecondsToSubmit = 0,
+        private readonly string $timingAction = self::TIMING_REPORT,
         private readonly array $extraScannerUas = [],
         private readonly int $weightHoneypot = 200,
         private readonly int $weightScannerUa = 200,
-        private readonly int $weightImpossibleTiming = 200,
+        private readonly int $weightImpossibleTiming = 25,
         private readonly int $weightEmptyUa = 35,
         private readonly int $weightMissingReferer = 15,
     ) {
@@ -129,23 +143,35 @@ final class BotCheckoutMiddleware implements WcMiddlewareInterface
             ));
         }
 
-        // 4) Impossible timing — if we have a clock token, see how fast they
-        // submitted. Sub-second submission on a real checkout form is bot
-        // territory regardless of autofill.
+        // 4) Checkout timing — enabled when floor > 0. Default: report (log + score).
         $token = (string) $context->get('clock_token', '');
-        if ($token !== '') {
+        if ($token !== '' && $this->minSecondsToSubmit > 0) {
             $elapsed = $this->clock->elapsedSeconds($token);
             if ($elapsed !== null && $elapsed < $this->minSecondsToSubmit) {
-                return Decision::deny(
-                    sprintf('Checkout submitted in %ds (under %ds floor).', $elapsed, $this->minSecondsToSubmit),
-                    [...$context->signals, new Signal(
-                        rule: 'bot_impossible_timing',
-                        weight: $this->weightImpossibleTiming,
-                        reason: sprintf('Checkout submitted in %ds (under %ds floor).', $elapsed, $this->minSecondsToSubmit),
-                        meta: ['elapsed_seconds' => $elapsed, 'floor_seconds' => $this->minSecondsToSubmit],
-                    )],
-                    $context->score + $this->weightImpossibleTiming,
+                $signal = new Signal(
+                    rule: 'bot_fast_checkout_timing',
+                    weight: $this->weightImpossibleTiming,
+                    reason: sprintf(
+                        'Suspicious checkout timing: submitted in %ds (under %ds floor).',
+                        $elapsed,
+                        $this->minSecondsToSubmit
+                    ),
+                    meta: [
+                        'elapsed_seconds' => $elapsed,
+                        'floor_seconds' => $this->minSecondsToSubmit,
+                        'timing_action' => $this->normalizedTimingAction(),
+                    ],
                 );
+
+                if ($this->normalizedTimingAction() === self::TIMING_BLOCK) {
+                    return Decision::deny(
+                        $signal->reason,
+                        [...$context->signals, $signal],
+                        $context->score + $this->weightImpossibleTiming,
+                    );
+                }
+
+                $context = $context->withSignal($signal);
             }
         }
 
@@ -161,6 +187,13 @@ final class BotCheckoutMiddleware implements WcMiddlewareInterface
         }
 
         return $next($context);
+    }
+
+    private function normalizedTimingAction(): string
+    {
+        $action = strtolower(trim($this->timingAction));
+
+        return $action === self::TIMING_BLOCK ? self::TIMING_BLOCK : self::TIMING_REPORT;
     }
 
     private function matchScannerNeedle(string $ua): ?string

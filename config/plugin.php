@@ -61,6 +61,9 @@ return [
     'audit_log' => [
         'enabled' => true,
         'retention_days' => 90,
+        'auto_prune_enabled' => true,
+        // Events below this PSR-3 level are not inserted into wp_securepress_audit_logs.
+        'min_storage_level' => 'notice',
         'mirror_to_file_logger' => false,
         'listeners' => [
             'auth' => true,
@@ -145,9 +148,11 @@ return [
             'velocity_soft' => 3,
             'velocity_hard' => 8,
             'velocity_window' => 120,
-            // BotCheckoutMiddleware: floor under which a submission is "too fast",
-            // and the honeypot field name (must match the one rendered on the form).
-            'min_seconds_to_submit' => 3,
+            // Checkout timing: set min_seconds_to_submit > 0 to enable. Default action
+            // is report (audit log + fraud score only). Use timing_action "block" only
+            // when the admin explicitly wants instant rejection.
+            'min_seconds_to_submit' => 0,
+            'timing_action' => 'report',
             'honeypot_field_name' => 'securepress_hp',
             'bot' => [
                 // Extra User-Agent substrings to flag as scanners. The middleware
@@ -157,7 +162,7 @@ return [
                 // with DENY; the lower ones only contribute to the fraud score.
                 'weight_honeypot' => 200,
                 'weight_scanner_ua' => 200,
-                'weight_impossible_timing' => 200,
+                'weight_impossible_timing' => 30,
                 'weight_empty_ua' => 35,
                 'weight_missing_referer' => 15,
             ],
@@ -177,7 +182,7 @@ return [
             'deny_disposable_emails' => true,
             // HoneypotMiddleware: hidden field name + min seconds to submit.
             'honeypot_field_name' => 'securepress_hp',
-            'min_seconds_to_submit' => 2,
+            'min_seconds_to_submit' => 0,
         ],
 
         'api' => [

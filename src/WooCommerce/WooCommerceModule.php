@@ -16,6 +16,7 @@ use SecurePress\WooCommerce\Detection\Decision;
 use SecurePress\WooCommerce\Detection\DetectionContext;
 use SecurePress\WooCommerce\Pipelines\ApiPipeline;
 use SecurePress\WooCommerce\Pipelines\CartPipeline;
+use SecurePress\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
 use SecurePress\WooCommerce\Pipelines\CheckoutPipeline;
 use SecurePress\WooCommerce\Pipelines\PipelineResult;
 use SecurePress\WooCommerce\Pipelines\RegistrationPipeline;
@@ -361,6 +362,8 @@ final class WooCommerceModule
     private function record(PipelineResult $result): void
     {
         try {
+            $this->recordSuspiciousCheckoutTiming($result);
+
             if (!$result->blocked() && !$result->challenged() && $result->context->score === 0) {
                 return; // Skip clean traffic — keeps the audit log tidy.
             }
@@ -394,6 +397,32 @@ final class WooCommerceModule
     // Lazy resolvers for the lightweight side-services. They're tiny but
     // still skipped on requests that never hit a relevant hook.
     // ------------------------------------------------------------------
+
+    private function recordSuspiciousCheckoutTiming(PipelineResult $result): void
+    {
+        if ($result->context->kind !== DetectionContext::KIND_CHECKOUT) {
+            return;
+        }
+
+        foreach ($result->context->signals as $signal) {
+            if ($signal->rule !== 'bot_fast_checkout_timing') {
+                continue;
+            }
+
+            AuditLog::notice('wc.checkout.timing_suspicious', [
+                'ip' => $result->context->ip,
+                'email_hash' => $result->context->email ? hash('sha256', $result->context->email) : null,
+                'elapsed_seconds' => $signal->meta['elapsed_seconds'] ?? null,
+                'floor_seconds' => $signal->meta['floor_seconds'] ?? null,
+                'timing_action' => $signal->meta['timing_action'] ?? BotCheckoutMiddleware::TIMING_REPORT,
+                'fraud_score_delta' => $signal->weight,
+                'checkout_blocked' => $result->blocked(),
+                'reason' => $signal->reason,
+            ]);
+
+            return;
+        }
+    }
 
     private function clock(): BehaviorClock
     {

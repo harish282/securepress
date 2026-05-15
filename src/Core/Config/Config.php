@@ -71,6 +71,28 @@ final class Config
         );
         $config['pro_license']['beta_trial']['duration_days'] = max(1, min(730, $trialDays));
 
+        if (is_array($config['audit_log'] ?? null)) {
+            $audit = $config['audit_log'];
+            $config['audit_log']['retention_days'] = max(
+                0,
+                min(3650, (int) $this->env(
+                    'SECUREPRESS_AUDIT_RETENTION_DAYS',
+                    (string) ($audit['retention_days'] ?? 90)
+                ))
+            );
+            $config['audit_log']['auto_prune_enabled'] = filter_var(
+                $this->env(
+                    'SECUREPRESS_AUDIT_AUTO_PRUNE',
+                    ($audit['auto_prune_enabled'] ?? true) ? 'true' : 'false'
+                ),
+                FILTER_VALIDATE_BOOL
+            );
+            $config['audit_log']['min_storage_level'] = $this->env(
+                'SECUREPRESS_AUDIT_MIN_STORAGE_LEVEL',
+                (string) ($audit['min_storage_level'] ?? 'notice')
+            );
+        }
+
         return $config;
     }
 

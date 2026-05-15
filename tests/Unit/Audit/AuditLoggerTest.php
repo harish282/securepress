@@ -8,6 +8,7 @@ use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use SecurePress\Core\Audit\ArrayAuditLogRepository;
 use SecurePress\Core\Audit\AuditEvent;
+use SecurePress\Core\Audit\AuditEventLevel;
 use SecurePress\Core\Audit\AuditLogger;
 use SecurePress\Core\Audit\AuditLogRepositoryInterface;
 use SecurePress\Core\Logging\LoggerInterface;
@@ -71,6 +72,52 @@ final class AuditLoggerTest extends TestCase
         self::assertSame('1.1.1.1', $stored->ip);
         self::assertSame('WP-CLI/3.0', $stored->userAgent);
         self::assertSame('/wp-cron.php', $stored->requestUri);
+    }
+
+    public function test_min_storage_level_skips_database_but_can_mirror(): void
+    {
+        $captured = [];
+        $fileLogger = new class ($captured) implements LoggerInterface {
+            public function __construct(private array &$captured)
+            {
+            }
+
+            public function log(string $level, string $message, array $context = []): void
+            {
+                $this->captured[] = $message;
+            }
+
+            public function info(string $message, array $context = []): void
+            {
+                $this->log('info', $message, $context);
+            }
+
+            public function warning(string $message, array $context = []): void
+            {
+                $this->log('warning', $message, $context);
+            }
+
+            public function error(string $message, array $context = []): void
+            {
+                $this->log('error', $message, $context);
+            }
+        };
+
+        $repo = new ArrayAuditLogRepository();
+        $logger = new AuditLogger(
+            $repo,
+            $fileLogger,
+            enabled: true,
+            mirrorToFileLogger: true,
+            minStorageLevel: AuditEventLevel::WARNING,
+        );
+
+        self::assertNull($logger->info('low.noise'));
+        self::assertSame(0, $repo->count());
+        self::assertCount(1, $captured);
+
+        self::assertNotNull($logger->warning('important.event'));
+        self::assertSame(1, $repo->count());
     }
 
     public function test_disabled_logger_is_a_noop(): void

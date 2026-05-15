@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SecurePress\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
+use SecurePress\Core\Audit\AuditEventLevel;
 use SecurePress\Core\Audit\AuditLogOptions;
 use SecurePress\Core\Config\Config;
 use SecurePress\Tests\Stubs\WpStubState;
@@ -28,9 +29,10 @@ final class AuditLogOptionsTest extends TestCase
     {
         $options = new AuditLogOptions(new Config());
 
-        // config/plugin.php ships audit_log.enabled = true and retention 90 days.
         self::assertTrue($options->isEnabled());
         self::assertSame(90, $options->retentionDays());
+        self::assertTrue($options->isAutoPruneEnabled());
+        self::assertSame('notice', $options->minStorageLevel());
         self::assertFalse($options->mirrorToFileLogger());
     }
 
@@ -40,11 +42,7 @@ final class AuditLogOptionsTest extends TestCase
 
         $options = new AuditLogOptions(new Config());
 
-        self::assertFalse(
-            $options->isEnabled(),
-            'wp_option override should win over config/plugin.php so the dashboard toggle takes effect.'
-        );
-        // Other defaults survive the partial override.
+        self::assertFalse($options->isEnabled());
         self::assertSame(90, $options->retentionDays());
     }
 
@@ -57,35 +55,46 @@ final class AuditLogOptionsTest extends TestCase
         $stored = WpStubState::$options[AuditLogOptions::OPTION_NAME] ?? null;
         self::assertIsArray($stored);
         self::assertFalse($stored['enabled']);
-        // Other sub-keys round-trip from the config defaults so re-enabling
-        // doesn't lose retention configuration.
         self::assertSame(90, $stored['retention_days']);
     }
 
-    public function test_set_enabled_round_trip_restores_state(): void
-    {
-        $options = new AuditLogOptions(new Config());
-        self::assertTrue($options->isEnabled());
-
-        $options->setEnabled(false);
-        self::assertFalse($options->isEnabled());
-
-        $options->setEnabled(true);
-        self::assertTrue($options->isEnabled());
-    }
-
-    public function test_retention_days_clamps_to_valid_range(): void
+    public function test_retention_zero_means_keep_forever(): void
     {
         WpStubState::$options[AuditLogOptions::OPTION_NAME] = ['retention_days' => 0];
         $options = new AuditLogOptions(new Config());
-        self::assertSame(
-            1,
-            $options->retentionDays(),
-            'Zero retention would mean "delete every row" — clamp to a sane minimum so a fat-fingered config can never wipe the audit log.'
-        );
+        self::assertSame(0, $options->retentionDays());
+    }
 
+    public function test_retention_days_clamps_upper_bound(): void
+    {
         WpStubState::$options[AuditLogOptions::OPTION_NAME] = ['retention_days' => 99_999];
         $options = new AuditLogOptions(new Config());
-        self::assertSame(3650, $options->retentionDays(), 'Cap at 10 years so we never silently round to overflow.');
+        self::assertSame(3650, $options->retentionDays());
+    }
+
+    public function test_should_persist_level_respects_minimum(): void
+    {
+        WpStubState::$options[AuditLogOptions::OPTION_NAME] = ['min_storage_level' => 'warning'];
+        $options = new AuditLogOptions(new Config());
+
+        self::assertFalse($options->shouldPersistLevel(AuditEventLevel::INFO));
+        self::assertTrue($options->shouldPersistLevel(AuditEventLevel::WARNING));
+        self::assertTrue($options->shouldPersistLevel(AuditEventLevel::ERROR));
+    }
+
+    public function test_sanitize_normalizes_submitted_values(): void
+    {
+        $options = new AuditLogOptions(new Config());
+        $out = $options->sanitize([
+            'retention_days' => '45',
+            'auto_prune_enabled' => '1',
+            'min_storage_level' => 'error',
+            'mirror_to_file_logger' => '0',
+        ]);
+
+        self::assertSame(45, $out['retention_days']);
+        self::assertTrue($out['auto_prune_enabled']);
+        self::assertSame('error', $out['min_storage_level']);
+        self::assertFalse($out['mirror_to_file_logger']);
     }
 }

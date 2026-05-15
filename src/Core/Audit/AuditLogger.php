@@ -31,6 +31,7 @@ final class AuditLogger implements AuditLoggerInterface
         private readonly LoggerInterface $logger,
         private readonly bool $enabled = true,
         private readonly bool $mirrorToFileLogger = false,
+        private readonly string $minStorageLevel = AuditEventLevel::INFO,
     ) {
     }
 
@@ -41,6 +42,14 @@ final class AuditLogger implements AuditLoggerInterface
         }
 
         $enriched = $this->enrich($event);
+
+        if (!AuditEventLevel::isAtLeast($enriched->level, $this->minStorageLevel)) {
+            if ($this->mirrorToFileLogger) {
+                $this->mirror($enriched);
+            }
+
+            return null;
+        }
 
         try {
             $stored = $this->repository->record($enriched);

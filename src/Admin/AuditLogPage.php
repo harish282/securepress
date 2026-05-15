@@ -99,7 +99,7 @@ final class AuditLogPage
     public function handlePrune(): void
     {
         $this->guardWriteRequest();
-        $deleted = $this->pruner->prune();
+        $deleted = $this->pruner->prune(manual: true);
         $this->redirect([self::STATUS_QUERY_KEY => 'pruned:' . $deleted]);
     }
 

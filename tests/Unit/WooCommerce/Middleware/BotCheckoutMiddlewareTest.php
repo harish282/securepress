@@ -91,25 +91,79 @@ final class BotCheckoutMiddlewareTest extends TestCase
         self::assertCount(1, $signals);
     }
 
-    public function test_submit_too_fast_denies(): void
+    public function test_submit_too_fast_blocks_only_when_action_is_block(): void
     {
         $now = 1_000_000;
         $clock = new BehaviorClock('secret', static function () use (&$now): int {
             return $now;
         });
         $clock->mark('tok-1');
-        $now += 1; // 1 second elapsed — under the 3s floor.
+        $now += 1;
 
-        $mw = new BotCheckoutMiddleware($clock, minSecondsToSubmit: 3);
+        $mw = new BotCheckoutMiddleware(
+            $clock,
+            minSecondsToSubmit: 3,
+            timingAction: BotCheckoutMiddleware::TIMING_BLOCK,
+        );
         $context = $this->ctx('Mozilla/5.0', referer: 'https://store.test/cart')
             ->withData('clock_token', 'tok-1');
 
-        $decision = $mw->handle($context, fn () => self::fail('Should deny on impossible timing.'));
+        $decision = $mw->handle($context, fn () => self::fail('Should block when timing action is block.'));
 
         self::assertSame(Decision::DENY, $decision->outcome);
         $last = $decision->signals[array_key_last($decision->signals)];
-        self::assertSame('bot_impossible_timing', $last->rule);
+        self::assertSame('bot_fast_checkout_timing', $last->rule);
         self::assertSame(1, $last->meta['elapsed_seconds']);
+        self::assertSame(BotCheckoutMiddleware::TIMING_BLOCK, $last->meta['timing_action']);
+    }
+
+    public function test_submit_too_fast_reports_only_by_default(): void
+    {
+        $now = 1_000_000;
+        $clock = new BehaviorClock('secret', static function () use (&$now): int {
+            return $now;
+        });
+        $clock->mark('tok-1');
+        $now += 1;
+
+        $mw = new BotCheckoutMiddleware(
+            $clock,
+            minSecondsToSubmit: 8,
+            timingAction: BotCheckoutMiddleware::TIMING_REPORT,
+        );
+        $context = $this->ctx('Mozilla/5.0', referer: 'https://store.test/cart')
+            ->withData('clock_token', 'tok-1');
+
+        $captured = null;
+        $decision = $mw->handle($context, function (DetectionContext $ctx) use (&$captured): Decision {
+            $captured = $ctx;
+
+            return Decision::accept();
+        });
+
+        self::assertSame(Decision::ACCEPT, $decision->outcome);
+        self::assertNotNull($captured);
+        $timing = array_values(array_filter($captured->signals, static fn ($s) => $s->rule === 'bot_fast_checkout_timing'));
+        self::assertCount(1, $timing);
+        self::assertSame(BotCheckoutMiddleware::TIMING_REPORT, $timing[0]->meta['timing_action']);
+    }
+
+    public function test_timing_disabled_when_floor_is_zero(): void
+    {
+        $now = 1_000_000;
+        $clock = new BehaviorClock('secret', static function () use (&$now): int {
+            return $now;
+        });
+        $clock->mark('tok-1');
+        $now += 1;
+
+        $mw = new BotCheckoutMiddleware($clock);
+        $context = $this->ctx('Mozilla/5.0', referer: 'https://store.test/cart')
+            ->withData('clock_token', 'tok-1');
+
+        $decision = $mw->handle($context, static fn () => Decision::accept());
+
+        self::assertSame(Decision::ACCEPT, $decision->outcome);
     }
 
     public function test_slow_enough_submission_passes_timing_check(): void

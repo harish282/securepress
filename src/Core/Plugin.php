@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SecurePress\Core;
 
 use SecurePress\Admin\AuditLogPage;
+use SecurePress\Admin\AuditLogSettingsPage;
 use SecurePress\Admin\AuthHardeningSettingsPage;
 use SecurePress\Admin\FeatureRegistry;
 use SecurePress\Admin\FileIntegrityPage;
@@ -178,7 +179,16 @@ final class Plugin
 
         $this->container->get(AuditLogSchema::class)->install();
         $this->registerAuditListeners();
-        $this->container->get(AuditLogPruner::class)->register();
+        $auditPruner = $this->container->get(AuditLogPruner::class);
+        $auditPruner->register();
+        WpHelper::addAction(
+            'update_option_' . AuditLogOptions::OPTION_NAME,
+            static function () use ($auditPruner): void {
+                $auditPruner->syncSchedule();
+            },
+            10,
+            0
+        );
 
         $this->container->get(SessionSchema::class)->install();
         $authOptions = $this->container->get(AuthHardeningOptions::class)->all();
@@ -533,19 +543,31 @@ final class Plugin
         // request without any cache flush or plugin reactivation.
         $this->container->singleton(
             AuditLoggerInterface::class,
-            static fn (Container $container): AuditLoggerInterface => new AuditLogger(
-                $container->get(AuditLogRepositoryInterface::class),
-                $container->get(LoggerInterface::class),
-                $container->get(AuditLogOptions::class)->isEnabled(),
-                $container->get(AuditLogOptions::class)->mirrorToFileLogger(),
-            )
+            static function (Container $container): AuditLoggerInterface {
+                $auditOptions = $container->get(AuditLogOptions::class);
+
+                return new AuditLogger(
+                    $container->get(AuditLogRepositoryInterface::class),
+                    $container->get(LoggerInterface::class),
+                    $auditOptions->isEnabled(),
+                    $auditOptions->mirrorToFileLogger(),
+                    $auditOptions->minStorageLevel(),
+                );
+            }
         );
         $this->container->singleton(
             AuditLogPruner::class,
             static fn (Container $container): AuditLogPruner => new AuditLogPruner(
                 $container->get(AuditLogRepositoryInterface::class),
                 $container->get(LoggerInterface::class),
-                $container->get(AuditLogOptions::class)->retentionDays(),
+                $container->get(AuditLogOptions::class),
+            )
+        );
+        $this->container->singleton(
+            AuditLogSettingsPage::class,
+            static fn (Container $container): AuditLogSettingsPage => new AuditLogSettingsPage(
+                $container->get(AuditLogOptions::class),
+                $container->get(View::class),
             )
         );
         $this->registerIntegrityServices();
@@ -1037,11 +1059,12 @@ final class Plugin
                     new BotCheckoutMiddleware(
                         $container->get(BehaviorClock::class),
                         honeypotField: (string) ($c['honeypot_field_name'] ?? 'securepress_hp'),
-                        minSecondsToSubmit: (int) ($c['min_seconds_to_submit'] ?? 3),
+                        minSecondsToSubmit: (int) ($c['min_seconds_to_submit'] ?? 0),
+                        timingAction: (string) ($c['timing_action'] ?? BotCheckoutMiddleware::TIMING_REPORT),
                         extraScannerUas: is_array($bot['extra_scanner_uas'] ?? null) ? $bot['extra_scanner_uas'] : [],
                         weightHoneypot: (int) ($bot['weight_honeypot'] ?? 200),
                         weightScannerUa: (int) ($bot['weight_scanner_ua'] ?? 200),
-                        weightImpossibleTiming: (int) ($bot['weight_impossible_timing'] ?? 200),
+                        weightImpossibleTiming: (int) ($bot['weight_impossible_timing'] ?? 30),
                         weightEmptyUa: (int) ($bot['weight_empty_ua'] ?? 35),
                         weightMissingReferer: (int) ($bot['weight_missing_referer'] ?? 15),
                     ),
@@ -1240,6 +1263,7 @@ final class Plugin
             $this->container->get(UrlDisguiseSettingsPage::class)->register();
             $this->container->get(FileIntegrityPage::class)->register();
             $this->container->get(AuditLogPage::class)->register();
+            $this->container->get(AuditLogSettingsPage::class)->register();
             // The WC settings page is registered unconditionally so admins can
             // discover the feature even on Free. The page itself renders an
             // upgrade prompt when the license isn't active.
