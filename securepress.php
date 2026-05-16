@@ -27,5 +27,12 @@ require_once SECUREPRESS_SRC_PATH . '/Core/Plugin.php';
 
 \SecurePress\Core\Support\Autoloader::register();
 
+\register_activation_hook(
+    SECUREPRESS_FILE,
+    static function (): void {
+        \SecurePress\Core\Licensing\LicenseHmacSecretProvisioner::ensure();
+    }
+);
+
 $plugin = new \SecurePress\Core\Plugin();
 $plugin->boot();

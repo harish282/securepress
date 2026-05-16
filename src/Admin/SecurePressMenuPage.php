@@ -146,6 +146,7 @@ final class SecurePressMenuPage
             'license' => [
                 'isPro' => $this->license->isPro(),
                 'status' => $licenseStatus,
+                'menuVisible' => LicensePage::shouldShowAdminMenu($licenseStatus),
             ],
             'auth' => [
                 'enabled' => $this->authOptions->isEnabled(),

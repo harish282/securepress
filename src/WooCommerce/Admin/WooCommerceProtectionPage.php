@@ -113,6 +113,17 @@ final class WooCommerceProtectionPage
                 return;
             }
 
+            if ($status->state === LicenseStatus::STATE_BETA_TRIAL) {
+                $days = $status->daysRemaining();
+                echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>'
+                    . '<strong>Beta trial active.</strong> WooCommerce Protection and the rest of the Pro tier are '
+                    . 'unlocked during your evaluation period'
+                    . ($days !== null ? ' (about <strong>' . (int) $days . '</strong> day(s) remaining)' : '')
+                    . '.</p></div>';
+
+                return;
+            }
+
             $remaining = $status->daysRemaining();
             $msg = '<strong>Pro license active.</strong> Tier: <code>' . WpHelper::escapeHtml($status->tier) . '</code>';
             if ($remaining !== null) {
@@ -122,9 +133,13 @@ final class WooCommerceProtectionPage
             return;
         }
         $reason = $status->reason !== '' ? $status->reason : 'No active Pro license.';
+        $licenseHint = LicensePage::shouldShowAdminMenu($status)
+            ? ' Configure a license on the <a href="'
+                . WpHelper::escapeUrl(SecurePressMenuPage::submenuUrl(LicensePage::PAGE_SLUG))
+                . '">License</a> page.'
+            : '';
         echo '<div class="notice notice-warning inline" style="margin-bottom:1em;"><p>'
-            . '<strong>' . WpHelper::escapeHtml($reason) . '</strong> '
-            . 'Configure a license on the <a href="' . WpHelper::escapeUrl(SecurePressMenuPage::submenuUrl(LicensePage::PAGE_SLUG)) . '">License</a> page.</p></div>';
+            . '<strong>' . WpHelper::escapeHtml($reason) . '</strong>' . $licenseHint . '</p></div>';
     }
 
     private function renderUpgradePrompt(): void

@@ -115,8 +115,8 @@ final class HealthDiagnosticsCollector
             'label' => 'License HMAC secret',
             'state' => $weakSecret ? 'blocked' : 'active',
             'detail' => $weakSecret
-                ? 'Use SECUREPRESS_LICENSE_SECRET (24+ chars) before issuing or trusting Pro keys in production.'
-                : 'Configured with a non-placeholder secret.',
+                ? 'Ensure the database option securepress_license_hmac_secret is writable, or set SECUREPRESS_LICENSE_SECRET (24+ chars) via wp-config.php, .env, or environment.'
+                : 'Strong secret resolved (auto-generated option, constant, or environment).',
         ];
 
         $rows[] = [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace SecurePress\Admin;
 
+use SecurePress\Core\Licensing\LicenseHmacSecretProvisioner;
 use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Support\WpHelper;
@@ -13,7 +14,8 @@ use SecurePress\Core\Support\WpHelper;
  *
  * Three concerns:
  *  - **Show** the current status (active/expired/invalid/none) with a masked key.
- *  - **Submit** a new key (POST, nonce-checked, capability-gated).
+ *  - **Submit** a new key (POST, nonce-checked, capability-gated). Persisted in
+ *    the WordPress options table (`securepress_pro_license`).
  *  - **Clear** the key — useful for moving a license to a different site.
  *
  * The page intentionally does NOT contact the vendor server. Validation goes through
@@ -42,8 +44,22 @@ final class LicensePage
         WpHelper::addAction('admin_post_securepress_license_clear', [$this, 'handleClear']);
     }
 
+    /**
+     * The License submenu is hidden during an active beta trial so admins are not
+     * prompted for keys before the evaluation window ends. POST handlers stay
+     * registered; the screen remains reachable by direct URL if needed.
+     */
+    public static function shouldShowAdminMenu(LicenseStatus $status): bool
+    {
+        return $status->state !== LicenseStatus::STATE_BETA_TRIAL;
+    }
+
     public function addMenu(): void
     {
+        if (!self::shouldShowAdminMenu($this->license->status())) {
+            return;
+        }
+
         WpHelper::addSubmenuPage(
             SecurePressMenuPage::PARENT_SLUG,
             'SecurePress License',
@@ -84,6 +100,8 @@ final class LicensePage
 
         $this->renderStatusBanner($status);
 
+        $this->renderInstallSigningSecretPanel();
+
         $isEarly = $status->state === LicenseStatus::STATE_EARLY_ACCESS;
         $isBetaTrial = $status->state === LicenseStatus::STATE_BETA_TRIAL;
         echo '<h2>' . ($isEarly ? 'License key (optional)' : 'Enter your license key') . '</h2>';
@@ -122,6 +140,26 @@ final class LicensePage
         }
 
         echo '</div>';
+    }
+
+    private function renderInstallSigningSecretPanel(): void
+    {
+        $raw = WpHelper::getOption(LicenseHmacSecretProvisioner::OPTION_NAME, '');
+        $secret = is_string($raw) ? trim($raw) : '';
+        if (!LicenseHmacSecretProvisioner::isStoredSecretStrong($secret)) {
+            return;
+        }
+
+        echo '<h2>Install signing secret</h2>';
+        echo '<p class="description">This random value is stored in your WordPress database and is used to verify '
+            . 'offline <code>SP-…</code> license keys for <strong>this site only</strong>. When you issue paid keys, '
+            . 'your signing tool must use the same secret.</p>';
+        echo '<table class="form-table" role="presentation"><tbody><tr><th scope="row">Secret</th><td>';
+        echo '<input type="text" readonly class="large-text code" style="font-size:12px;" value="'
+            . WpHelper::escapeAttribute($secret) . '" onclick="this.select();" />';
+        echo '<p class="description">Click the field to select, then copy. Anyone with this string can forge keys that '
+            . 'validate on this install — treat it like a password.</p>';
+        echo '</td></tr></tbody></table>';
     }
 
     public function handleSave(): void

@@ -4,6 +4,18 @@ declare(strict_types=1);
 
 namespace SecurePress\Core\Config;
 
+use SecurePress\Core\Licensing\LicenseHmacSecretProvisioner;
+use SecurePress\Core\Support\WpHelper;
+
+/**
+ * Merged file config + environment.
+ *
+ * Licensing secret resolution (first match wins): non-empty
+ * {@see SECUREPRESS_LICENSE_SECRET} constant → strong value in option
+ * {@see LicenseHmacSecretProvisioner::OPTION_NAME} (auto-generated, plug-and-play)
+ * → `SECUREPRESS_LICENSE_SECRET` environment variable → shipped file default →
+ * {@see apply_filters()} for hook `securepress_licensing_secret`.
+ */
 final class Config
 {
     /** @var array<string, mixed> */
@@ -89,7 +101,14 @@ final class Config
             $config['licensing'] = [];
         }
         $defaultLicenseSecret = (string) ($config['licensing']['secret'] ?? 'change-me-in-production');
-        $config['licensing']['secret'] = $this->env('SECUREPRESS_LICENSE_SECRET', $defaultLicenseSecret);
+        $secret = $this->resolveLicensingSecret($defaultLicenseSecret);
+        if (\function_exists('apply_filters')) {
+            $filtered = \apply_filters('securepress_licensing_secret', $secret);
+            if (is_string($filtered) && $filtered !== '') {
+                $secret = $filtered;
+            }
+        }
+        $config['licensing']['secret'] = $secret;
 
         if (is_array($config['audit_log'] ?? null)) {
             $audit = $config['audit_log'];
@@ -114,6 +133,24 @@ final class Config
         }
 
         return $config;
+    }
+
+    private function resolveLicensingSecret(string $defaultLicenseSecret): string
+    {
+        if (\defined('SECUREPRESS_LICENSE_SECRET')) {
+            $fromConstant = \constant('SECUREPRESS_LICENSE_SECRET');
+            if (is_string($fromConstant) && $fromConstant !== '') {
+                return $fromConstant;
+            }
+        }
+
+        $dbRaw = WpHelper::getOption(LicenseHmacSecretProvisioner::OPTION_NAME, '');
+        $dbSecret = is_string($dbRaw) ? trim($dbRaw) : '';
+        if (LicenseHmacSecretProvisioner::isStoredSecretStrong($dbSecret)) {
+            return $dbSecret;
+        }
+
+        return $this->env('SECUREPRESS_LICENSE_SECRET', $defaultLicenseSecret);
     }
 
     private function env(string $name, string $default): string

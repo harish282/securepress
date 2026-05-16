@@ -11,10 +11,12 @@ use SecurePress\Core\Support\WpHelper;
  * Time-boxed Pro access for public beta installs that do not yet have a paid
  * license key.
  *
- * The clock starts the first time {@see self::trialEndsAt()} runs with an empty
- * license key and trial mode enabled in config — typically the first
- * front-end or admin request after activation. The end timestamp is
- * `started_at + duration_days` (from {@see Config}, clamped to 1–730 days).
+ * The trial window is stored in the WordPress database (`securepress_beta_trial_started_at`
+ * option + duration from config), not in a short-lived transient, so object-cache
+ * flushes cannot silently reset the clock. The clock starts the first time
+ * {@see self::trialEndsAt()} runs with an empty license key and trial mode enabled
+ * in config — typically the first front-end or admin request after activation.
+ * The end timestamp is `started_at + duration_days` (from {@see Config}, clamped to 1–730 days).
  *
  * Operators can disable the programme entirely via
  * `pro_license.beta_trial.enabled` in `config/plugin.php`, or override at

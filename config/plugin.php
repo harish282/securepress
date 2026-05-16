@@ -141,9 +141,9 @@ return [
         ],
     ],
     'licensing' => [
-        // The HMAC secret used to verify offline-issued license keys.
-        // In production, override via the SECUREPRESS_LICENSE_SECRET env var so the
-        // secret never lands in repo or backups.
+        // Offline HMAC keys use a per-install secret in the options table
+        // (`securepress_license_hmac_secret`), auto-created on activation — no
+        // wp-config required. This value is only a fallback before the option exists.
         'secret' => 'change-me-in-production',
     ],
 

@@ -65,6 +65,7 @@ use SecurePress\Core\Config\Config;
 use SecurePress\Core\Headers\HeaderRegistryFactory;
 use SecurePress\Core\Headers\SecurityHeadersDispatcher;
 use SecurePress\Core\Headers\SecurityHeadersOptions;
+use SecurePress\Core\Licensing\LicenseHmacSecretProvisioner;
 use SecurePress\Core\Licensing\LicenseManager;
 use SecurePress\Core\Licensing\LicenseValidatorInterface;
 use SecurePress\Core\Licensing\LocalLicenseValidator;
@@ -318,9 +319,11 @@ final class Plugin
         }
 
         echo '<div class="notice notice-error"><p><strong>SecurePress licensing:</strong> '
-            . 'Set a strong <code>SECUREPRESS_LICENSE_SECRET</code> environment variable '
-            . '(or override <code>licensing.secret</code> in <code>config/plugin.php</code> before deploy). '
-            . 'The default placeholder must never be used in production.</p></div>';
+            . 'The install could not establish a strong signing secret for offline license keys. '
+            . 'Check that the database is writable and PHP can use <code>random_bytes()</code> or '
+            . '<code>wp_generate_password()</code>. Optional overrides: '
+            . '<code>define(\'SECUREPRESS_LICENSE_SECRET\', \'…\');</code> in <code>wp-config.php</code> '
+            . 'or <code>SECUREPRESS_LICENSE_SECRET</code> in environment / <code>.env</code>.</p></div>';
     }
 
     public function renderMuLoaderNotice(): void
@@ -370,6 +373,8 @@ final class Plugin
 
     private function registerServices(): void
     {
+        LicenseHmacSecretProvisioner::ensure();
+
         $this->container->singleton(Config::class, static fn (): Config => new Config());
         $this->container->singleton(
             View::class,

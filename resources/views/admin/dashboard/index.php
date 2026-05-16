@@ -7,7 +7,7 @@ use SecurePress\Core\Licensing\LicenseStatus;
 use SecurePress\Core\Support\WpHelper;
 
 /**
- * @var array{isPro:bool,status:LicenseStatus}                              $license
+ * @var array{isPro:bool,status:LicenseStatus,menuVisible:bool}             $license
  * @var array{enabled:bool}                                                  $auth
  * @var array{enabledCount:int,totalCount:int,masterEnabled:bool}           $headers
  * @var array{enabled:bool,openFindings:int}                                 $integrity
@@ -28,17 +28,19 @@ $badge = static function (bool $ok, string $okLabel, string $offLabel): string {
         . WpHelper::escapeHtml($label) . '</span>';
 };
 
-$card = static function (string $title, string $statusHtml, string $bodyHtml, string $href, string $cta): string {
+$card = static function (string $title, string $statusHtml, string $bodyHtml, ?string $href, string $cta): string {
     return '<div style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-height:140px;">'
         . '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">'
         . '<h2 style="margin:0;font-size:15px;">' . WpHelper::escapeHtml($title) . '</h2>'
         . $statusHtml
         . '</div>'
         . '<div style="color:#50575e;font-size:13px;line-height:1.5;">' . $bodyHtml . '</div>'
-        . '<div style="margin-top:auto;">'
-        . '<a class="button button-secondary" href="' . WpHelper::escapeUrl($href) . '">'
-        . WpHelper::escapeHtml($cta) . ' &rarr;</a>'
-        . '</div>'
+        . ($href !== null && $href !== '' && $cta !== ''
+            ? '<div style="margin-top:auto;">'
+                . '<a class="button button-secondary" href="' . WpHelper::escapeUrl($href) . '">'
+                . WpHelper::escapeHtml($cta) . ' &rarr;</a>'
+                . '</div>'
+            : '')
         . '</div>';
 };
 
@@ -223,14 +225,20 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
             'Open audit log',
         ); ?>
 
+        <?php
+        $licenseMenuVisible = $license['menuVisible'] ?? true;
+        $licenseBody = $license['isPro']
+            ? ($licenseMenuVisible
+                ? 'Pro features are unlocked: WooCommerce protection, file integrity heuristics, advanced audit listeners.'
+                : 'Pro features are unlocked during your evaluation trial. The License screen appears in the menu when the trial ends.')
+            : 'Free tier. Apply a license key to unlock the Pro feature set.';
+        ?>
         <?= $card(
             'License',
             $badge($license['isPro'], $licenseLabel, $licenseLabel),
-            $license['isPro']
-                ? 'Pro features are unlocked: WooCommerce protection, file integrity heuristics, advanced audit listeners.'
-                : 'Free tier. Apply a license key to unlock the Pro feature set.',
-            $links['license'],
-            $license['isPro'] ? 'Manage license' : 'Activate Pro',
+            $licenseBody,
+            $licenseMenuVisible ? $links['license'] : null,
+            $licenseMenuVisible ? ($license['isPro'] ? 'Manage license' : 'Activate Pro') : '',
         ); ?>
     </div>
 
