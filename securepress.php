@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Plugin Name: SecurePress
  * Plugin URI: https://github.com/harish282/securepress
@@ -6,7 +7,7 @@
  * Version: 0.1.0
  * Requires at least: 6.4
  * Requires PHP: 8.2
- * Author: SecurePress
+ * Author: Niyish Tech
  * Author URI: https://github.com/harish282
  * License: GPL-2.0-or-later
  * License URI: https://www.gnu.org/licenses/gpl-2.0.html
