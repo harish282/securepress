@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\SuspiciousLogin;
+namespace PressSentinel\Core\Auth\SuspiciousLogin;
 
 /**
  * Aggregated output of the rule engine — a numeric score and the list of rule names

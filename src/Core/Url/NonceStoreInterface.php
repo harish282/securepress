@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Url;
+namespace PressSentinel\Core\Url;
 
 /**
  * Persistence contract for one-time-use signed-URL nonces.

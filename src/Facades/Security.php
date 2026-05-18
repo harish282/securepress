@@ -2,40 +2,40 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Facades;
+namespace PressSentinel\Facades;
 
 use Closure;
 use LogicException;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Container;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\Http\RouteGuardRegistry;
-use SecurePress\Core\Integrity\IntegrityOptions;
-use SecurePress\Core\Middleware\MiddlewareInterface;
-use SecurePress\Core\Middleware\MiddlewareRegistry;
-use SecurePress\Core\Middleware\MiddlewareStack;
-use SecurePress\Core\RateLimit\RateLimitResult;
-use SecurePress\Core\RateLimit\RateLimiter;
-use SecurePress\Core\Url\NonceStoreInterface;
-use SecurePress\Core\Url\SignedUrlResult;
-use SecurePress\Core\Url\UrlSigner;
-use SecurePress\Middleware\CsrfProtectionMiddleware;
-use SecurePress\Sdk\AuditApi;
-use SecurePress\Sdk\Csrf\CsrfTokenManager;
-use SecurePress\Sdk\Events\EventDispatcher;
-use SecurePress\Sdk\Exceptions\RateLimitExceededException;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Licensing\LicenseStatus;
-use SecurePress\Sdk\IntegrityApi;
-use SecurePress\Sdk\LockoutApi;
-use SecurePress\Sdk\WooCommerceApi;
-use SecurePress\Sdk\Routing\RouteBuilder;
-use SecurePress\Sdk\SessionApi;
-use SecurePress\Sdk\TwoFactorApi;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\Http\RouteGuardRegistry;
+use PressSentinel\Core\Integrity\IntegrityOptions;
+use PressSentinel\Core\Middleware\MiddlewareInterface;
+use PressSentinel\Core\Middleware\MiddlewareRegistry;
+use PressSentinel\Core\Middleware\MiddlewareStack;
+use PressSentinel\Core\RateLimit\RateLimitResult;
+use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Core\Url\NonceStoreInterface;
+use PressSentinel\Core\Url\SignedUrlResult;
+use PressSentinel\Core\Url\UrlSigner;
+use PressSentinel\Middleware\CsrfProtectionMiddleware;
+use PressSentinel\Sdk\AuditApi;
+use PressSentinel\Sdk\Csrf\CsrfTokenManager;
+use PressSentinel\Sdk\Events\EventDispatcher;
+use PressSentinel\Sdk\Exceptions\RateLimitExceededException;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\Licensing\LicenseStatus;
+use PressSentinel\Sdk\IntegrityApi;
+use PressSentinel\Sdk\LockoutApi;
+use PressSentinel\Sdk\WooCommerceApi;
+use PressSentinel\Sdk\Routing\RouteBuilder;
+use PressSentinel\Sdk\SessionApi;
+use PressSentinel\Sdk\TwoFactorApi;
 
 /**
- * Static-style entry point for the SecurePress developer SDK.
+ * Static-style entry point for the PressSentinel developer SDK.
  *
  * Two layers live on this facade:
  *
@@ -52,14 +52,14 @@ use SecurePress\Sdk\TwoFactorApi;
  * with a custom container ({@see bootstrap()}) and swap any sub-component (e.g., the
  * `RateLimiter`'s store) for an in-memory implementation.
  *
- * **Lifecycle.** The plugin bootstraps the facade exactly once in {@see \SecurePress\Core\Plugin::register()}.
+ * **Lifecycle.** The plugin bootstraps the facade exactly once in {@see \PressSentinel\Core\Plugin::register()}.
  * Third-party code must NOT call `bootstrap()` itself; doing so during runtime would orphan
  * any sub-facade instances already in flight.
  *
  * Example wire-up in a third-party plugin:
  *
  * ```php
- * use SecurePress\Facades\Security;
+ * use PressSentinel\Facades\Security;
  *
  * Security::route('/wp-admin/admin-post.php?action=my_export')
  *     ->capability('manage_options')
@@ -135,7 +135,7 @@ final class Security
      *                                            `signed_url.ttl_default` from config (3600s default).
      * @param bool                       $oneTime When `true`, mints a single-use URL backed by the
      *                                            nonce store. The URL is invalidated the first time
-     *                                            it passes through {@see \SecurePress\Middleware\SignedUrlMiddleware}.
+     *                                            it passes through {@see \PressSentinel\Middleware\SignedUrlMiddleware}.
      */
     public static function signedUrl(
         string $path,
@@ -161,7 +161,7 @@ final class Security
      * Verifies the signed URL on the current request (or a supplied URL).
      *
      * Pure verification of the signature/expiry only — does not consume one-time-use nonces.
-     * Use {@see \SecurePress\Middleware\SignedUrlMiddleware} when single-use enforcement is required.
+     * Use {@see \PressSentinel\Middleware\SignedUrlMiddleware} when single-use enforcement is required.
      */
     public static function verifySignedUrl(?string $url = null): SignedUrlResult
     {
@@ -350,7 +350,7 @@ final class Security
     }
 
     /**
-     * Registers a listener for a SecurePress SDK event.
+     * Registers a listener for a PressSentinel SDK event.
      *
      * Equivalent to `Security::events()->listen($event, $callback)` — the short form
      * exists because event registration shows up frequently in plugin bootstrap code.
@@ -364,7 +364,7 @@ final class Security
 
     /**
      * Fires an SDK event. Listeners registered via {@see on()} run synchronously; the
-     * event is also bridged to `do_action('securepress.<event>', …)` for WordPress
+     * event is also bridged to `do_action('presssentinel.<event>', …)` for WordPress
      * interop.
      */
     public static function fire(string $event, mixed ...$args): void
@@ -462,7 +462,7 @@ final class Security
     private static function container(): Container
     {
         if (self::$container === null) {
-            throw new LogicException('SecurePress has not been bootstrapped. Call Security::bootstrap() from the plugin.');
+            throw new LogicException('PressSentinel has not been bootstrapped. Call Security::bootstrap() from the plugin.');
         }
 
         return self::$container;

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Audit;
+namespace PressSentinel\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Audit\AuditEventLevel;
-use SecurePress\Core\Audit\AuditLogOptions;
-use SecurePress\Core\Config\Config;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Audit\AuditEventLevel;
+use PressSentinel\Core\Audit\AuditLogOptions;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Core\Audit\AuditLogOptions
+ * @see \PressSentinel\Core\Audit\AuditLogOptions
  */
 final class AuditLogOptionsTest extends TestCase
 {

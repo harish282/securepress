@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\SuspiciousLogin\Rules;
+namespace PressSentinel\Core\Auth\SuspiciousLogin\Rules;
 
-use SecurePress\Core\Auth\Sessions\SessionRepositoryInterface;
-use SecurePress\Core\Auth\SuspiciousLogin\LoginContext;
+use PressSentinel\Core\Auth\Sessions\SessionRepositoryInterface;
+use PressSentinel\Core\Auth\SuspiciousLogin\LoginContext;
 
 /**
  * Fires when no past session for this user matches the current device fingerprint.

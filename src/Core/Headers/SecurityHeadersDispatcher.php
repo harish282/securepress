@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Headers;
+namespace PressSentinel\Core\Headers;
 
 use Closure;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Emits configured security headers on every WordPress response.

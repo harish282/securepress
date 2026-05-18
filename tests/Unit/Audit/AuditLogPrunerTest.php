@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Audit;
+namespace PressSentinel\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Audit\ArrayAuditLogRepository;
-use SecurePress\Core\Audit\AuditEvent;
-use SecurePress\Core\Audit\AuditLogOptions;
-use SecurePress\Core\Audit\AuditLogPruner;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Audit\ArrayAuditLogRepository;
+use PressSentinel\Core\Audit\AuditEvent;
+use PressSentinel\Core\Audit\AuditLogOptions;
+use PressSentinel\Core\Audit\AuditLogPruner;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 final class AuditLogPrunerTest extends TestCase
 {

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Sdk;
+namespace PressSentinel\Sdk;
 
-use SecurePress\Core\Container;
-use SecurePress\Core\Integrity\Finding;
-use SecurePress\Core\Integrity\FindingRepositoryInterface;
-use SecurePress\Core\Integrity\IntegrityScanResult;
-use SecurePress\Core\Integrity\IntegrityScheduler;
-use SecurePress\Core\Integrity\IntegrityService;
-use SecurePress\Core\Integrity\ManifestRepositoryInterface;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Integrity\Finding;
+use PressSentinel\Core\Integrity\FindingRepositoryInterface;
+use PressSentinel\Core\Integrity\IntegrityScanResult;
+use PressSentinel\Core\Integrity\IntegrityScheduler;
+use PressSentinel\Core\Integrity\IntegrityService;
+use PressSentinel\Core\Integrity\ManifestRepositoryInterface;
 
 /**
  * Public surface for the file-integrity subsystem.

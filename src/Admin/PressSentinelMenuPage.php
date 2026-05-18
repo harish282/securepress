@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
-use SecurePress\Core\Audit\AuditLogRepositoryInterface;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\Integrity\FindingRepositoryInterface;
-use SecurePress\Core\Integrity\IntegrityOptions;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\View\View;
+use PressSentinel\Core\Audit\AuditLogRepositoryInterface;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\Integrity\FindingRepositoryInterface;
+use PressSentinel\Core\Integrity\IntegrityOptions;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\View\View;
 
 /**
- * Top-level "Secure Press" admin menu controller.
+ * Top-level "Press Sentinel" admin menu controller.
  *
- * Owns the parent menu slug that every other SecurePress admin page hangs off as a
+ * Owns the parent menu slug that every other PressSentinel admin page hangs off as a
  * submenu. The page itself renders a lightweight dashboard summarising the state of
  * each subsystem (license, auth hardening, security headers, file integrity, audit
  * log) so an admin can see "is everything still on?" at a glance and jump to the
@@ -31,30 +31,30 @@ use SecurePress\Core\View\View;
  * links to the canonical submenu page where toggles live, keeping the
  * "configure-one-place / one-source-of-truth" property of the existing pages.
  */
-final class SecurePressMenuPage
+final class PressSentinelMenuPage
 {
     /**
-     * Slug used by every SecurePress submenu as the `parent_slug` argument. Pinned
+     * Slug used by every PressSentinel submenu as the `parent_slug` argument. Pinned
      * to a stable value because external code (custom plugins, redirects, deep
-     * links to `admin.php?page=securepress-…`) may rely on it.
+     * links to `admin.php?page=presssentinel-…`) may rely on it.
      */
-    public const PARENT_SLUG = 'securepress';
+    public const PARENT_SLUG = 'presssentinel';
 
-    public const DASHBOARD_SLUG = 'securepress';
+    public const DASHBOARD_SLUG = 'presssentinel';
 
     /**
      * Nonce action for the dashboard feature-toggle form. Distinct from the
      * other admin pages' nonces so a leaked nonce from (say) the audit log
      * page can't be replayed against the feature-toggle endpoint.
      */
-    public const NONCE_ACTION = 'securepress_features';
+    public const NONCE_ACTION = 'presssentinel_features';
 
     /**
      * Query-string key the admin_post handler uses to surface the
      * "X features updated" notice after a successful save. Read in
      * {@see render()} and rendered to the page; never used for branching.
      */
-    public const STATUS_QUERY_KEY = 'securepress_status';
+    public const STATUS_QUERY_KEY = 'presssentinel_status';
 
     /**
      * Position 58 sits right under "Comments" (25) and above "Appearance" (60) on
@@ -97,8 +97,8 @@ final class SecurePressMenuPage
     public function addMenu(): void
     {
         WpHelper::addMenuPage(
-            'Secure Press',
-            'Secure Press',
+            'Press Sentinel',
+            'Press Sentinel',
             'manage_options',
             self::PARENT_SLUG,
             [$this, 'render'],
@@ -108,7 +108,7 @@ final class SecurePressMenuPage
 
         WpHelper::addSubmenuPage(
             self::PARENT_SLUG,
-            'Secure Press Dashboard',
+            'Press Sentinel Dashboard',
             'Dashboard',
             'manage_options',
             self::DASHBOARD_SLUG,
@@ -249,13 +249,13 @@ final class SecurePressMenuPage
         $url = $base . '?' . http_build_query($args);
 
         WpHelper::safeRedirect($url);
-        if (!\defined('SECUREPRESS_TESTING')) {
+        if (!\defined('PRESS_SENTINEL_TESTING')) {
             exit; // @codeCoverageIgnore
         }
     }
 
     /**
-     * Builds the canonical admin URL for a SecurePress submenu page. Centralising
+     * Builds the canonical admin URL for a PressSentinel submenu page. Centralising
      * this lets every page (and the dashboard tiles) move to a different parent
      * slug in future without touching every call site.
      */

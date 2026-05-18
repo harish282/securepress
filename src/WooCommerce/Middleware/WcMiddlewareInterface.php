@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Middleware;
+namespace PressSentinel\WooCommerce\Middleware;
 
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Decision;
 
 /**
  * Middleware contract for the WooCommerce pipelines.
  *
- * Distinct from the HTTP-level {@see \SecurePress\Core\Middleware\MiddlewareInterface}
+ * Distinct from the HTTP-level {@see \PressSentinel\Core\Middleware\MiddlewareInterface}
  * because the payload here is a typed {@see DetectionContext} rather than a generic
  * associative array, and the return shape is a typed {@see Decision} rather than a
  * mutated context.

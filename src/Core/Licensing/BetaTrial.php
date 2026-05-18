@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Licensing;
+namespace PressSentinel\Core\Licensing;
 
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Time-boxed Pro access for public beta installs that do not yet have a paid
  * license key.
  *
- * The trial window is stored in the WordPress database (`securepress_beta_trial_started_at`
+ * The trial window is stored in the WordPress database (`presssentinel_beta_trial_started_at`
  * option + duration from config), not in a short-lived transient, so object-cache
  * flushes cannot silently reset the clock. The clock starts the first time
  * {@see self::trialEndsAt()} runs with an empty license key and trial mode enabled
@@ -20,13 +20,13 @@ use SecurePress\Core\Support\WpHelper;
  *
  * Operators can disable the programme entirely via
  * `pro_license.beta_trial.enabled` in `config/plugin.php`, or override at
- * deploy time with the `SECUREPRESS_BETA_TRIAL_ENABLED` environment variable
+ * deploy time with the `PRESS_SENTINEL_BETA_TRIAL_ENABLED` environment variable
  * (the test suite sets this to `false` so unit tests never accidentally flip
  * into Pro mode).
  */
 final class BetaTrial
 {
-    public const STARTED_AT_OPTION = 'securepress_beta_trial_started_at';
+    public const STARTED_AT_OPTION = 'presssentinel_beta_trial_started_at';
 
     public static function isProgrammeEnabled(Config $config): bool
     {

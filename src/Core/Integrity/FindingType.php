@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity;
+namespace PressSentinel\Core\Integrity;
 
 /**
  * The set of finding categories the integrity scanner can produce.

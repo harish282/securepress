@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Sessions;
+namespace PressSentinel\Core\Auth\Sessions;
 
 /**
  * No-op destroyer used in tests / environments where WP session tokens aren't

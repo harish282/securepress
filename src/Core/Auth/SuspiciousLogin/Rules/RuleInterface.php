@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\SuspiciousLogin\Rules;
+namespace PressSentinel\Core\Auth\SuspiciousLogin\Rules;
 
-use SecurePress\Core\Auth\SuspiciousLogin\LoginContext;
+use PressSentinel\Core\Auth\SuspiciousLogin\LoginContext;
 
 /**
  * Contract for individual suspicion rules.

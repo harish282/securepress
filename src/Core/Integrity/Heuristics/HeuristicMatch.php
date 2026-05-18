@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity\Heuristics;
+namespace PressSentinel\Core\Integrity\Heuristics;
 
 /**
  * Single hit produced by a {@see HeuristicInterface} scan.

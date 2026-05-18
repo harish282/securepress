@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * @var array{
@@ -72,7 +72,7 @@ $protectionLabel = static function (string $state): string {
         <div class="notice notice-warning" style="margin:12px 0;">
             <p><strong>Safe mode is active.</strong>
                 Emergency bypasses: <?php echo WpHelper::escapeHtml(implode(', ', $report['safe_mode']['bypasses'])); ?>.
-                Remove <code>SECUREPRESS_SAFE_MODE</code> from wp-config or <code>.env</code> when recovery is complete.</p>
+                Remove <code>PRESS_SENTINEL_SAFE_MODE</code> from wp-config or <code>.env</code> when recovery is complete.</p>
         </div>
     <?php endif; ?>
 

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity\Heuristics;
+namespace PressSentinel\Core\Integrity\Heuristics;
 
-use SecurePress\Core\Integrity\FindingSeverity;
+use PressSentinel\Core\Integrity\FindingSeverity;
 
 /**
  * Detects the `preg_replace('/pattern/e', ...)` form, where the `e` modifier silently

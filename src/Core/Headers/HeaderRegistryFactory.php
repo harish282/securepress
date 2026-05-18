@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Headers;
+namespace PressSentinel\Core\Headers;
 
 /**
  * Builds a populated {@see HeaderRegistry} from {@see SecurityHeadersOptions}.

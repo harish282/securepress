@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Integrity;
+namespace PressSentinel\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Integrity\ArrayManifestRepository;
-use SecurePress\Core\Integrity\FindingType;
-use SecurePress\Core\Integrity\ManifestBuilder;
-use SecurePress\Core\Integrity\Scanners\ManifestDiffScanner;
+use PressSentinel\Core\Integrity\ArrayManifestRepository;
+use PressSentinel\Core\Integrity\FindingType;
+use PressSentinel\Core\Integrity\ManifestBuilder;
+use PressSentinel\Core\Integrity\Scanners\ManifestDiffScanner;
 
 /**
- * @see \SecurePress\Core\Integrity\Scanners\ManifestDiffScanner
+ * @see \PressSentinel\Core\Integrity\Scanners\ManifestDiffScanner
  */
 final class ManifestDiffScannerTest extends TestCase
 {

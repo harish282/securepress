@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Middleware;
+namespace PressSentinel\Middleware;
 
-use SecurePress\Core\Headers\HeaderRegistryFactory;
-use SecurePress\Core\Middleware\MiddlewareInterface;
+use PressSentinel\Core\Headers\HeaderRegistryFactory;
+use PressSentinel\Core\Middleware\MiddlewareInterface;
 
 /**
  * Adds configured security headers to the pipeline's response payload.
@@ -13,7 +13,7 @@ use SecurePress\Core\Middleware\MiddlewareInterface;
  * Use this middleware when an HTTP/kernel layer is going to emit headers from
  * `$context['response']['headers']`. For unconditionally applying headers to *every*
  * WordPress response — including those that don't go through the pipeline — use
- * {@see \SecurePress\Core\Headers\SecurityHeadersDispatcher} instead. Most installs want
+ * {@see \PressSentinel\Core\Headers\SecurityHeadersDispatcher} instead. Most installs want
  * the dispatcher; the middleware is here for advanced flows that need different headers
  * per route.
  *

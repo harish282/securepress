@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity;
+namespace PressSentinel\Core\Integrity;
 
 /**
  * One row in a {@see Manifest} — represents a single tracked file.

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Notifications;
+namespace PressSentinel\Core\Auth\Notifications;
 
-use SecurePress\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\LoggerInterface;
 
 /**
  * Renders and dispatches authentication-related emails.

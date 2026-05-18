@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * Lightweight stand-ins for the WordPress functions consumed via {@see SecurePress\Core\Support\WpHelper}.
+ * Lightweight stand-ins for the WordPress functions consumed via {@see PressSentinel\Core\Support\WpHelper}.
  *
  * Behavior is driven by {@see WpStubState}; tests reset and configure that state per-case so the
  * helper's `function_exists` checks pass and exercise the real WP-aware code paths.

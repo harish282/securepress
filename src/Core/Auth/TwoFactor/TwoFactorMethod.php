@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\TwoFactor;
+namespace PressSentinel\Core\Auth\TwoFactor;
 
 /**
  * The set of 2FA methods the plugin can enrol a user into.

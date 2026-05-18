@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit;
+namespace PressSentinel\Tests\Unit;
 
 use Closure;
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\RateLimit\ArrayStore;
-use SecurePress\Core\RateLimit\RateLimiter;
-use SecurePress\Middleware\RateLimitMiddleware;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\RateLimit\ArrayStore;
+use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Middleware\RateLimitMiddleware;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 final class RateLimitMiddlewareTest extends TestCase
 {

@@ -2,152 +2,152 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core;
+namespace PressSentinel\Core;
 
-use SecurePress\Admin\AuditLogPage;
-use SecurePress\Admin\AuditLogSettingsPage;
-use SecurePress\Admin\AuthHardeningSettingsPage;
-use SecurePress\Admin\Diagnostics\HealthDiagnosticsCollector;
-use SecurePress\Admin\FeatureRegistry;
-use SecurePress\Admin\FileIntegrityPage;
-use SecurePress\Admin\HealthDiagnosticsPage;
-use SecurePress\Admin\LicensePage;
-use SecurePress\Admin\MuLoaderDownloadController;
-use SecurePress\Admin\MuLoaderStatus;
-use SecurePress\Admin\RateLimitSettingsPage;
-use SecurePress\Admin\SecurePressMenuPage;
-use SecurePress\Admin\UrlDisguiseSettingsPage;
-use SecurePress\Admin\SecurityHeadersSettingsPage;
-use SecurePress\Admin\UserSecurityProfilePage;
-use SecurePress\Auth\AuthenticationHardeningKernel;
-use SecurePress\Auth\TwoFactorChallengeController;
-use SecurePress\Core\Audit\AuditLogger;
-use SecurePress\Core\Audit\AuditLoggerInterface;
-use SecurePress\Core\Audit\AuditLogOptions;
-use SecurePress\Core\Audit\AuditLogPruner;
-use SecurePress\Core\Audit\AuditLogRepositoryInterface;
-use SecurePress\Core\Audit\AuditLogSchema;
-use SecurePress\Core\Audit\Listeners\AuthListener;
-use SecurePress\Core\Audit\Listeners\FileEditorListener;
-use SecurePress\Core\Audit\Listeners\ListenerInterface;
-use SecurePress\Core\Audit\Listeners\OptionsListener;
-use SecurePress\Core\Audit\Listeners\PluginListener;
-use SecurePress\Core\Audit\Listeners\UserRoleListener;
-use SecurePress\Core\Audit\Listeners\WooCommerceListener;
-use SecurePress\Core\Audit\WpdbAuditLogRepository;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Auth\Lockout\LockoutStoreInterface;
-use SecurePress\Core\Auth\Lockout\LoginLockoutPolicy;
-use SecurePress\Core\Auth\Lockout\LoginLockoutService;
-use SecurePress\Core\Auth\Lockout\TransientLockoutStore;
-use SecurePress\Core\Auth\Notifications\AuthNotifier;
-use SecurePress\Core\Auth\Notifications\MailerInterface;
-use SecurePress\Core\Auth\Notifications\WpMailer;
-use SecurePress\Core\Auth\Sessions\WpSessionDestroyer;
-use SecurePress\Core\Auth\Sessions\SessionDestroyerInterface;
-use SecurePress\Core\Auth\Sessions\SessionFingerprinter;
-use SecurePress\Core\Auth\Sessions\SessionPruner;
-use SecurePress\Core\Auth\Sessions\SessionRepositoryInterface;
-use SecurePress\Core\Auth\Sessions\SessionSchema;
-use SecurePress\Core\Auth\Sessions\SessionService;
-use SecurePress\Core\Auth\Sessions\WpdbSessionRepository;
-use SecurePress\Core\Auth\SuspiciousLogin\Rules\NewDeviceRule;
-use SecurePress\Core\Auth\SuspiciousLogin\SuspicionDetector;
-use SecurePress\Core\Auth\TwoFactor\ChallengeStoreInterface;
-use SecurePress\Core\Auth\TwoFactor\EmailOtpProvider;
-use SecurePress\Core\Auth\TwoFactor\RecoveryCodeService;
-use SecurePress\Core\Auth\TwoFactor\TotpProvider;
-use SecurePress\Core\Auth\TwoFactor\TransientChallengeStore;
-use SecurePress\Core\Auth\TwoFactor\TwoFactorService;
-use SecurePress\Core\Auth\TwoFactor\TwoFactorUserRepositoryInterface;
-use SecurePress\Core\Auth\TwoFactor\UserMetaTwoFactorRepository;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Headers\HeaderRegistryFactory;
-use SecurePress\Core\Headers\SecurityHeadersDispatcher;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\Licensing\LicenseHmacSecretProvisioner;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Licensing\LicenseValidatorInterface;
-use SecurePress\Core\Licensing\LocalLicenseValidator;
-use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
-use SecurePress\WooCommerce\Admin\WooCommerceProtectionPage;
-use SecurePress\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
-use SecurePress\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware;
-use SecurePress\WooCommerce\Middleware\Cart\CartVelocityMiddleware;
-use SecurePress\WooCommerce\Middleware\Cart\CouponAbuseMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware as CheckoutDisposableEmailMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\FraudScoreMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware;
-use SecurePress\WooCommerce\Middleware\Registration\HoneypotMiddleware;
-use SecurePress\WooCommerce\Middleware\Registration\RegistrationDisposableEmailMiddleware;
-use SecurePress\WooCommerce\Middleware\Registration\RegistrationRateLimitMiddleware;
-use SecurePress\WooCommerce\Pipelines\ApiPipeline;
-use SecurePress\WooCommerce\Pipelines\CartPipeline;
-use SecurePress\WooCommerce\Pipelines\CheckoutPipeline;
-use SecurePress\WooCommerce\Pipelines\RegistrationPipeline;
-use SecurePress\WooCommerce\Services\BehaviorClock;
-use SecurePress\WooCommerce\Services\CartFingerprinter;
-use SecurePress\WooCommerce\Services\DisposableEmailRegistry;
-use SecurePress\WooCommerce\Services\FraudScoreService;
-use SecurePress\WooCommerce\Storage\AbuseCounterStoreInterface;
-use SecurePress\WooCommerce\Storage\TransientAbuseCounterStore;
-use SecurePress\WooCommerce\WooCommerceModule;
-use SecurePress\Core\Integrity\Checksums\ChecksumProviderInterface;
-use SecurePress\Core\Integrity\Checksums\WpOrgChecksumProvider;
-use SecurePress\Core\Integrity\FindingRepositoryInterface;
-use SecurePress\Core\Integrity\Heuristics\EvalBase64Heuristic;
-use SecurePress\Core\Integrity\Heuristics\HeuristicInterface;
-use SecurePress\Core\Integrity\Heuristics\ObfuscatedCallableHeuristic;
-use SecurePress\Core\Integrity\Heuristics\PregReplaceEvalHeuristic;
-use SecurePress\Core\Integrity\Heuristics\ShellExecHeuristic;
-use SecurePress\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
-use SecurePress\Core\Integrity\IntegrityOptions;
-use SecurePress\Core\Integrity\IntegrityScheduler;
-use SecurePress\Core\Integrity\IntegritySchema;
-use SecurePress\Core\Integrity\IntegrityService;
-use SecurePress\Core\Integrity\ManifestBuilder;
-use SecurePress\Core\Integrity\ManifestRepositoryInterface;
-use SecurePress\Core\Integrity\Scanners\CoreFilesScanner;
-use SecurePress\Core\Integrity\Scanners\ManifestDiffScanner;
-use SecurePress\Core\Integrity\Scanners\SuspiciousPhpScanner;
-use SecurePress\Core\Integrity\WpdbFindingRepository;
-use SecurePress\Core\Integrity\WpdbManifestRepository;
-use SecurePress\Core\Logging\FileLogger;
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Core\Http\RouteGuardRegistry;
-use SecurePress\Core\Middleware\MiddlewareManager;
-use SecurePress\Core\Middleware\MiddlewarePipeline;
-use SecurePress\Core\Middleware\MiddlewareRegistry;
-use SecurePress\Core\Middleware\MiddlewareStack;
-use SecurePress\Core\Recovery\SafeMode;
-use SecurePress\Core\RateLimit\GlobalRateLimitSubscriber;
-use SecurePress\Core\RateLimit\RateLimiter;
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Core\RateLimit\RateLimitStoreInterface;
-use SecurePress\Core\RateLimit\TransientStore;
-use SecurePress\Core\UrlDisguise\UrlDisguiseModule;
-use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\Core\Url\NonceStoreInterface;
-use SecurePress\Core\Url\SecretProviderInterface;
-use SecurePress\Core\Url\TransientNonceStore;
-use SecurePress\Core\Url\UrlSigner;
-use SecurePress\Core\Url\WpSaltSecretProvider;
-use SecurePress\Middleware\CsrfProtectionMiddleware;
-use SecurePress\Middleware\RateLimitMiddleware;
-use SecurePress\Middleware\SecurityHeadersMiddleware;
-use SecurePress\Middleware\SignedUrlMiddleware;
-use SecurePress\Sdk\Csrf\CsrfTokenManager;
-use SecurePress\Sdk\Events\EventDispatcher;
-use SecurePress\Core\Requirements\SystemRequirementsChecker;
-use SecurePress\Core\Support\RequestContext;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\View\View;
-use SecurePress\Facades\AuditLog;
-use SecurePress\Facades\Security;
+use PressSentinel\Admin\AuditLogPage;
+use PressSentinel\Admin\AuditLogSettingsPage;
+use PressSentinel\Admin\AuthHardeningSettingsPage;
+use PressSentinel\Admin\Diagnostics\HealthDiagnosticsCollector;
+use PressSentinel\Admin\FeatureRegistry;
+use PressSentinel\Admin\FileIntegrityPage;
+use PressSentinel\Admin\HealthDiagnosticsPage;
+use PressSentinel\Admin\LicensePage;
+use PressSentinel\Admin\MuLoaderDownloadController;
+use PressSentinel\Admin\MuLoaderStatus;
+use PressSentinel\Admin\RateLimitSettingsPage;
+use PressSentinel\Admin\PressSentinelMenuPage;
+use PressSentinel\Admin\UrlDisguiseSettingsPage;
+use PressSentinel\Admin\SecurityHeadersSettingsPage;
+use PressSentinel\Admin\UserSecurityProfilePage;
+use PressSentinel\Auth\AuthenticationHardeningKernel;
+use PressSentinel\Auth\TwoFactorChallengeController;
+use PressSentinel\Core\Audit\AuditLogger;
+use PressSentinel\Core\Audit\AuditLoggerInterface;
+use PressSentinel\Core\Audit\AuditLogOptions;
+use PressSentinel\Core\Audit\AuditLogPruner;
+use PressSentinel\Core\Audit\AuditLogRepositoryInterface;
+use PressSentinel\Core\Audit\AuditLogSchema;
+use PressSentinel\Core\Audit\Listeners\AuthListener;
+use PressSentinel\Core\Audit\Listeners\FileEditorListener;
+use PressSentinel\Core\Audit\Listeners\ListenerInterface;
+use PressSentinel\Core\Audit\Listeners\OptionsListener;
+use PressSentinel\Core\Audit\Listeners\PluginListener;
+use PressSentinel\Core\Audit\Listeners\UserRoleListener;
+use PressSentinel\Core\Audit\Listeners\WooCommerceListener;
+use PressSentinel\Core\Audit\WpdbAuditLogRepository;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Auth\Lockout\LockoutStoreInterface;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
+use PressSentinel\Core\Auth\Lockout\TransientLockoutStore;
+use PressSentinel\Core\Auth\Notifications\AuthNotifier;
+use PressSentinel\Core\Auth\Notifications\MailerInterface;
+use PressSentinel\Core\Auth\Notifications\WpMailer;
+use PressSentinel\Core\Auth\Sessions\WpSessionDestroyer;
+use PressSentinel\Core\Auth\Sessions\SessionDestroyerInterface;
+use PressSentinel\Core\Auth\Sessions\SessionFingerprinter;
+use PressSentinel\Core\Auth\Sessions\SessionPruner;
+use PressSentinel\Core\Auth\Sessions\SessionRepositoryInterface;
+use PressSentinel\Core\Auth\Sessions\SessionSchema;
+use PressSentinel\Core\Auth\Sessions\SessionService;
+use PressSentinel\Core\Auth\Sessions\WpdbSessionRepository;
+use PressSentinel\Core\Auth\SuspiciousLogin\Rules\NewDeviceRule;
+use PressSentinel\Core\Auth\SuspiciousLogin\SuspicionDetector;
+use PressSentinel\Core\Auth\TwoFactor\ChallengeStoreInterface;
+use PressSentinel\Core\Auth\TwoFactor\EmailOtpProvider;
+use PressSentinel\Core\Auth\TwoFactor\RecoveryCodeService;
+use PressSentinel\Core\Auth\TwoFactor\TotpProvider;
+use PressSentinel\Core\Auth\TwoFactor\TransientChallengeStore;
+use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
+use PressSentinel\Core\Auth\TwoFactor\TwoFactorUserRepositoryInterface;
+use PressSentinel\Core\Auth\TwoFactor\UserMetaTwoFactorRepository;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Headers\HeaderRegistryFactory;
+use PressSentinel\Core\Headers\SecurityHeadersDispatcher;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\Licensing\LicenseValidatorInterface;
+use PressSentinel\Core\Licensing\LocalLicenseValidator;
+use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
+use PressSentinel\WooCommerce\Admin\WooCommerceProtectionPage;
+use PressSentinel\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
+use PressSentinel\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware;
+use PressSentinel\WooCommerce\Middleware\Cart\CartVelocityMiddleware;
+use PressSentinel\WooCommerce\Middleware\Cart\CouponAbuseMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware as CheckoutDisposableEmailMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\FraudScoreMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware;
+use PressSentinel\WooCommerce\Middleware\Registration\HoneypotMiddleware;
+use PressSentinel\WooCommerce\Middleware\Registration\RegistrationDisposableEmailMiddleware;
+use PressSentinel\WooCommerce\Middleware\Registration\RegistrationRateLimitMiddleware;
+use PressSentinel\WooCommerce\Pipelines\ApiPipeline;
+use PressSentinel\WooCommerce\Pipelines\CartPipeline;
+use PressSentinel\WooCommerce\Pipelines\CheckoutPipeline;
+use PressSentinel\WooCommerce\Pipelines\RegistrationPipeline;
+use PressSentinel\WooCommerce\Services\BehaviorClock;
+use PressSentinel\WooCommerce\Services\CartFingerprinter;
+use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
+use PressSentinel\WooCommerce\Services\FraudScoreService;
+use PressSentinel\WooCommerce\Storage\AbuseCounterStoreInterface;
+use PressSentinel\WooCommerce\Storage\TransientAbuseCounterStore;
+use PressSentinel\WooCommerce\WooCommerceModule;
+use PressSentinel\Core\Integrity\Checksums\ChecksumProviderInterface;
+use PressSentinel\Core\Integrity\Checksums\WpOrgChecksumProvider;
+use PressSentinel\Core\Integrity\FindingRepositoryInterface;
+use PressSentinel\Core\Integrity\Heuristics\EvalBase64Heuristic;
+use PressSentinel\Core\Integrity\Heuristics\HeuristicInterface;
+use PressSentinel\Core\Integrity\Heuristics\ObfuscatedCallableHeuristic;
+use PressSentinel\Core\Integrity\Heuristics\PregReplaceEvalHeuristic;
+use PressSentinel\Core\Integrity\Heuristics\ShellExecHeuristic;
+use PressSentinel\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
+use PressSentinel\Core\Integrity\IntegrityOptions;
+use PressSentinel\Core\Integrity\IntegrityScheduler;
+use PressSentinel\Core\Integrity\IntegritySchema;
+use PressSentinel\Core\Integrity\IntegrityService;
+use PressSentinel\Core\Integrity\ManifestBuilder;
+use PressSentinel\Core\Integrity\ManifestRepositoryInterface;
+use PressSentinel\Core\Integrity\Scanners\CoreFilesScanner;
+use PressSentinel\Core\Integrity\Scanners\ManifestDiffScanner;
+use PressSentinel\Core\Integrity\Scanners\SuspiciousPhpScanner;
+use PressSentinel\Core\Integrity\WpdbFindingRepository;
+use PressSentinel\Core\Integrity\WpdbManifestRepository;
+use PressSentinel\Core\Logging\FileLogger;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Core\Http\RouteGuardRegistry;
+use PressSentinel\Core\Middleware\MiddlewareManager;
+use PressSentinel\Core\Middleware\MiddlewarePipeline;
+use PressSentinel\Core\Middleware\MiddlewareRegistry;
+use PressSentinel\Core\Middleware\MiddlewareStack;
+use PressSentinel\Core\Recovery\SafeMode;
+use PressSentinel\Core\RateLimit\GlobalRateLimitSubscriber;
+use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Core\RateLimit\RateLimitStoreInterface;
+use PressSentinel\Core\RateLimit\TransientStore;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseModule;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
+use PressSentinel\Core\Url\NonceStoreInterface;
+use PressSentinel\Core\Url\SecretProviderInterface;
+use PressSentinel\Core\Url\TransientNonceStore;
+use PressSentinel\Core\Url\UrlSigner;
+use PressSentinel\Core\Url\WpSaltSecretProvider;
+use PressSentinel\Middleware\CsrfProtectionMiddleware;
+use PressSentinel\Middleware\RateLimitMiddleware;
+use PressSentinel\Middleware\SecurityHeadersMiddleware;
+use PressSentinel\Middleware\SignedUrlMiddleware;
+use PressSentinel\Sdk\Csrf\CsrfTokenManager;
+use PressSentinel\Sdk\Events\EventDispatcher;
+use PressSentinel\Core\Requirements\SystemRequirementsChecker;
+use PressSentinel\Core\Support\RequestContext;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\View\View;
+use PressSentinel\Facades\AuditLog;
+use PressSentinel\Facades\Security;
 
 final class Plugin
 {
@@ -169,10 +169,10 @@ final class Plugin
         }
 
         $logger = $this->container->get(LoggerInterface::class);
-        $logger->info('SecurePress plugin booted.');
+        $logger->info('PressSentinel plugin booted.');
         if (SafeMode::isActive()) {
             $logger->warning(
-                'SecurePress safe mode is active — emergency bypasses: '
+                'PressSentinel safe mode is active — emergency bypasses: '
                 . implode(', ', SafeMode::activeBypasses())
             );
             WpHelper::addAction('admin_notices', [$this, 'renderSafeModeNotice']);
@@ -298,7 +298,7 @@ final class Plugin
             return;
         }
 
-        echo '<div class="notice notice-warning is-dismissible"><p><strong>SecurePress logging:</strong> '
+        echo '<div class="notice notice-warning is-dismissible"><p><strong>PressSentinel logging:</strong> '
             . WpHelper::escapeHtml($error)
             . '</p></div>';
     }
@@ -318,12 +318,12 @@ final class Plugin
             return;
         }
 
-        echo '<div class="notice notice-error"><p><strong>SecurePress licensing:</strong> '
+        echo '<div class="notice notice-error"><p><strong>PressSentinel licensing:</strong> '
             . 'The install could not establish a strong signing secret for offline license keys. '
             . 'Check that the database is writable and PHP can use <code>random_bytes()</code> or '
             . '<code>wp_generate_password()</code>. Optional overrides: '
-            . '<code>define(\'SECUREPRESS_LICENSE_SECRET\', \'…\');</code> in <code>wp-config.php</code> '
-            . 'or <code>SECUREPRESS_LICENSE_SECRET</code> in environment / <code>.env</code>.</p></div>';
+            . '<code>define(\'PRESS_SENTINEL_LICENSE_SECRET\', \'…\');</code> in <code>wp-config.php</code> '
+            . 'or <code>PRESS_SENTINEL_LICENSE_SECRET</code> in environment / <code>.env</code>.</p></div>';
     }
 
     public function renderMuLoaderNotice(): void
@@ -342,7 +342,7 @@ final class Plugin
             return;
         }
 
-        $guidePath = SECUREPRESS_PATH . '/docs/MU_LOADER_INSTALL.md';
+        $guidePath = PRESS_SENTINEL_PATH . '/docs/MU_LOADER_INSTALL.md';
 
         $this->container->get(View::class)->render('admin.notices.mu-loader-missing', [
             'templatePath' => $status->templatePath(),
@@ -360,7 +360,7 @@ final class Plugin
     {
         unset($pluginData, $status);
 
-        if ($pluginFile !== WpHelper::pluginBasename(SECUREPRESS_FILE)) {
+        if ($pluginFile !== WpHelper::pluginBasename(PRESS_SENTINEL_FILE)) {
             return $pluginMeta;
         }
 
@@ -378,14 +378,14 @@ final class Plugin
         $this->container->singleton(Config::class, static fn (): Config => new Config());
         $this->container->singleton(
             View::class,
-            static fn (): View => new View(SECUREPRESS_VIEWS_PATH)
+            static fn (): View => new View(PRESS_SENTINEL_VIEWS_PATH)
         );
 
         $this->container->singleton(LoggerInterface::class, function (Container $container): LoggerInterface {
             $config = $container->get(Config::class);
             $channel = (string) $config->get('logging.channel', 'file');
-            $filename = (string) $config->get('logging.file', 'securepress.log');
-            $logPath = SECUREPRESS_LOG_PATH . '/' . ltrim($filename, '/');
+            $filename = (string) $config->get('logging.file', 'presssentinel.log');
+            $logPath = PRESS_SENTINEL_LOG_PATH . '/' . ltrim($filename, '/');
 
             return $channel === 'file' ? new FileLogger($logPath) : new NullLogger();
         });
@@ -575,7 +575,7 @@ final class Plugin
         );
         // The audit logger and pruner now resolve their `enabled`/retention
         // values from AuditLogOptions, which overlays a wp_option on top of
-        // config/plugin.php. That makes the SecurePress dashboard toggle
+        // config/plugin.php. That makes the PressSentinel dashboard toggle
         // (which writes only that option) effective immediately on the next
         // request without any cache flush or plugin reactivation.
         $this->container->singleton(
@@ -723,7 +723,7 @@ final class Plugin
                     $container->get(RecoveryCodeService::class),
                     $container->get(AuthNotifier::class),
                     $container->get(LoggerInterface::class),
-                    (string) ($opts['two_factor']['issuer'] ?? 'SecurePress'),
+                    (string) ($opts['two_factor']['issuer'] ?? 'PressSentinel'),
                     (int) ($opts['two_factor']['challenge_ttl_seconds'] ?? TwoFactorService::CHALLENGE_TTL_SECONDS),
                 );
             }
@@ -1009,8 +1009,8 @@ final class Plugin
             )
         );
         $this->container->singleton(
-            SecurePressMenuPage::class,
-            static fn (Container $container): SecurePressMenuPage => new SecurePressMenuPage(
+            PressSentinelMenuPage::class,
+            static fn (Container $container): PressSentinelMenuPage => new PressSentinelMenuPage(
                 $container->get(LicenseManager::class),
                 $container->get(AuthHardeningOptions::class),
                 $container->get(SecurityHeadersOptions::class),
@@ -1122,7 +1122,7 @@ final class Plugin
                     // touch the disposable-email registry / cart fingerprinter.
                     new BotCheckoutMiddleware(
                         $container->get(BehaviorClock::class),
-                        honeypotField: (string) ($c['honeypot_field_name'] ?? 'securepress_hp'),
+                        honeypotField: (string) ($c['honeypot_field_name'] ?? 'presssentinel_hp'),
                         minSecondsToSubmit: (int) ($c['min_seconds_to_submit'] ?? 0),
                         timingAction: (string) ($c['timing_action'] ?? BotCheckoutMiddleware::TIMING_REPORT),
                         extraScannerUas: is_array($bot['extra_scanner_uas'] ?? null) ? $bot['extra_scanner_uas'] : [],
@@ -1286,7 +1286,7 @@ final class Plugin
         // entries whose `parent_slug` doesn't yet exist — so we hook into
         // `admin_menu` outside of the priority-1 submenu callback. The page
         // itself does this internally at priority 0.
-        $this->container->get(SecurePressMenuPage::class)->register();
+        $this->container->get(PressSentinelMenuPage::class)->register();
 
         // The MU loader zip-download controller registers an admin_post_*
         // hook only (no menu page), so it can live right next to the
@@ -1340,9 +1340,9 @@ final class Plugin
             $this->container->get(LicensePage::class)->register();
 
             // Account Security stays as its own top-level menu (separate from
-            // the SecurePress parent menu above): it's gated by the `read`
+            // the PressSentinel parent menu above): it's gated by the `read`
             // capability so every logged-in user can manage their own 2FA, while
-            // the SecurePress parent menu requires `manage_options`.
+            // the PressSentinel parent menu requires `manage_options`.
             if ($this->container->get(AuthHardeningOptions::class)->isEnabled()) {
                 $this->container->get(UserSecurityProfilePage::class)->register();
             }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Pipelines;
+namespace PressSentinel\WooCommerce\Pipelines;
 
 /**
  * Pipeline configured for WooCommerce cart abuse protection.

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Pipelines;
+namespace PressSentinel\WooCommerce\Pipelines;
 
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Middleware\WcMiddlewareInterface;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
 
 /**
  * Reusable feature-pipeline base.
@@ -19,7 +19,7 @@ use SecurePress\WooCommerce\Middleware\WcMiddlewareInterface;
  *  - giving each middleware a `$next` it can call OR short-circuit by returning a
  *    `Decision::deny(...)` directly.
  *
- * Why not reuse the existing {@see \SecurePress\Core\Middleware\MiddlewarePipeline}:
+ * Why not reuse the existing {@see \PressSentinel\Core\Middleware\MiddlewarePipeline}:
  * the existing one threads a generic `array<string, mixed>` payload, which is fine
  * for HTTP-shaped middleware but forces every WC middleware to re-parse signals out
  * of and back into an untyped bag. With a domain-specific payload + result we get

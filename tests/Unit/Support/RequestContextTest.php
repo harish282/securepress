@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Support;
+namespace PressSentinel\Tests\Unit\Support;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Support\RequestContext;
+use PressSentinel\Core\Support\RequestContext;
 
 /**
- * @see \SecurePress\Core\Support\RequestContext
+ * @see \PressSentinel\Core\Support\RequestContext
  */
 final class RequestContextTest extends TestCase
 {

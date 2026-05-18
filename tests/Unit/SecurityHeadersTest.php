@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit;
+namespace PressSentinel\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Headers\CspHeader;
-use SecurePress\Core\Headers\HeaderRegistry;
-use SecurePress\Core\Headers\HstsHeader;
-use SecurePress\Core\Headers\PermissionsPolicyHeader;
-use SecurePress\Core\Headers\ReferrerPolicyHeader;
-use SecurePress\Core\Headers\XContentTypeOptionsHeader;
-use SecurePress\Core\Headers\XFrameOptionsHeader;
+use PressSentinel\Core\Headers\CspHeader;
+use PressSentinel\Core\Headers\HeaderRegistry;
+use PressSentinel\Core\Headers\HstsHeader;
+use PressSentinel\Core\Headers\PermissionsPolicyHeader;
+use PressSentinel\Core\Headers\ReferrerPolicyHeader;
+use PressSentinel\Core\Headers\XContentTypeOptionsHeader;
+use PressSentinel\Core\Headers\XFrameOptionsHeader;
 
 final class SecurityHeadersTest extends TestCase
 {

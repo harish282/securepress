@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Middleware\Registration;
+namespace PressSentinel\WooCommerce\Middleware\Registration;
 
-use SecurePress\Core\Recovery\SafeMode;
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Signal;
-use SecurePress\WooCommerce\Middleware\WcMiddlewareInterface;
-use SecurePress\WooCommerce\Storage\AbuseCounterStoreInterface;
+use PressSentinel\Core\Recovery\SafeMode;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Signal;
+use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
+use PressSentinel\WooCommerce\Storage\AbuseCounterStoreInterface;
 
 /**
  * Per-IP registration throttle.

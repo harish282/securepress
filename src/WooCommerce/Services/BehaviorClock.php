@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Services;
+namespace PressSentinel\WooCommerce\Services;
 
 use Closure;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Tracks "when did the user start this flow?" for impossible-timing detection.

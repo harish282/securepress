@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
-use SecurePress\Core\Audit\AuditEventLevel;
-use SecurePress\Core\Audit\AuditLogOptions;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\View\View;
+use PressSentinel\Core\Audit\AuditEventLevel;
+use PressSentinel\Core\Audit\AuditLogOptions;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\View\View;
 
 /**
- * SecurePress → Audit log settings: retention, automatic pruning, and minimum DB level.
+ * PressSentinel → Audit log settings: retention, automatic pruning, and minimum DB level.
  */
 final class AuditLogSettingsPage
 {
-    public const PAGE_SLUG = 'securepress-audit-settings';
+    public const PAGE_SLUG = 'presssentinel-audit-settings';
 
-    public const OPTION_GROUP = 'securepress_audit_log_group';
+    public const OPTION_GROUP = 'presssentinel_audit_log_group';
 
-    public const SECTION = 'securepress_section_audit_log';
+    public const SECTION = 'presssentinel_section_audit_log';
 
     public function __construct(
         private readonly AuditLogOptions $options,
@@ -35,8 +35,8 @@ final class AuditLogSettingsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            SecurePressMenuPage::PARENT_SLUG,
-            'SecurePress Audit Log Settings',
+            PressSentinelMenuPage::PARENT_SLUG,
+            'PressSentinel Audit Log Settings',
             'Audit log settings',
             'manage_options',
             self::PAGE_SLUG,
@@ -133,7 +133,7 @@ final class AuditLogSettingsPage
             );
         }
         echo '</select>';
-        echo '<p class="description">Events below this severity are not written to <code>wp_securepress_audit_logs</code> '
+        echo '<p class="description">Events below this severity are not written to <code>wp_presssentinel_audit_logs</code> '
             . '(recommended: <code>notice</code> or higher for production). They can still be mirrored to the file log below.</p>';
     }
 
@@ -142,7 +142,7 @@ final class AuditLogSettingsPage
         $checked = $this->options->mirrorToFileLogger() ? ' checked' : '';
         $name = AuditLogOptions::OPTION_NAME . '[mirror_to_file_logger]';
         printf(
-            '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Also write stored (and sub-threshold) events to <code>storage/logs/securepress.log</code></label>',
+            '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Also write stored (and sub-threshold) events to <code>storage/logs/presssentinel.log</code></label>',
             WpHelper::escapeAttribute($name),
             $checked
         );

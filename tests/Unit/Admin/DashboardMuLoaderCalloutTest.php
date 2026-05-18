@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Admin;
+namespace PressSentinel\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Admin\FeatureRegistry;
-use SecurePress\Admin\MuLoaderDownloadController;
-use SecurePress\Admin\MuLoaderStatus;
-use SecurePress\Admin\SecurePressMenuPage;
-use SecurePress\Core\Audit\ArrayAuditLogRepository;
-use SecurePress\Core\Audit\AuditLogOptions;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\Integrity\ArrayFindingRepository;
-use SecurePress\Core\Integrity\IntegrityOptions;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Licensing\LicenseStatus;
-use SecurePress\Core\Licensing\LicenseValidatorInterface;
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\Core\View\View;
-use SecurePress\Tests\Stubs\WpStubState;
-use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
+use PressSentinel\Admin\FeatureRegistry;
+use PressSentinel\Admin\MuLoaderDownloadController;
+use PressSentinel\Admin\MuLoaderStatus;
+use PressSentinel\Admin\PressSentinelMenuPage;
+use PressSentinel\Core\Audit\ArrayAuditLogRepository;
+use PressSentinel\Core\Audit\AuditLogOptions;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\Integrity\ArrayFindingRepository;
+use PressSentinel\Core\Integrity\IntegrityOptions;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\Licensing\LicenseStatus;
+use PressSentinel\Core\Licensing\LicenseValidatorInterface;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
+use PressSentinel\Core\View\View;
+use PressSentinel\Tests\Stubs\WpStubState;
+use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
  * Verifies the dashboard renders the "MU loader not installed" callout when
@@ -74,7 +74,7 @@ final class DashboardMuLoaderCalloutTest extends TestCase
 
         // Setup steps name the expected destination directory + filename so
         // admins know exactly where to drop the extracted file.
-        self::assertStringContainsString('00-securepress-loader.php', $html);
+        self::assertStringContainsString('00-press-sentinel-loader.php', $html);
         self::assertStringContainsString('mu-plugins', $html);
     }
 
@@ -88,7 +88,7 @@ final class DashboardMuLoaderCalloutTest extends TestCase
         self::assertStringNotContainsString('Download MU loader (.zip)', $html);
     }
 
-    private function captureRender(SecurePressMenuPage $page): string
+    private function captureRender(PressSentinelMenuPage $page): string
     {
         \ob_start();
         $page->render();
@@ -98,22 +98,22 @@ final class DashboardMuLoaderCalloutTest extends TestCase
     }
 
     /**
-     * Builds a SecurePressMenuPage with real dependencies. We need a real
+     * Builds a PressSentinelMenuPage with real dependencies. We need a real
      * View to render the template (the whole point of the test is the
      * template's output), and real Options/Registry instances so render()
      * doesn't blow up reaching for their methods.
      */
-    private function makePage(bool $isInstalled): SecurePressMenuPage
+    private function makePage(bool $isInstalled): PressSentinelMenuPage
     {
         $config = new Config();
 
         $muDir = $this->makeFixtureDir();
-        $template = $muDir . '/00-securepress-loader.php';
+        $template = $muDir . '/00-press-sentinel-loader.php';
         \file_put_contents($template, "<?php // test fixture\n");
 
         $muPluginsDir = $this->makeFixtureDir();
         if ($isInstalled) {
-            \file_put_contents($muPluginsDir . '/00-securepress-loader.php', "<?php // installed\n");
+            \file_put_contents($muPluginsDir . '/00-press-sentinel-loader.php', "<?php // installed\n");
         }
 
         $status = new MuLoaderStatus($template, $muPluginsDir);
@@ -139,7 +139,7 @@ final class DashboardMuLoaderCalloutTest extends TestCase
 
         $viewsDir = \dirname(__DIR__, 3) . '/resources/views';
 
-        return new SecurePressMenuPage(
+        return new PressSentinelMenuPage(
             $license,
             new AuthHardeningOptions($config),
             new SecurityHeadersOptions($config),
@@ -154,7 +154,7 @@ final class DashboardMuLoaderCalloutTest extends TestCase
 
     private function makeFixtureDir(): string
     {
-        $dir = \sys_get_temp_dir() . '/securepress-dash-mu-' . \uniqid('', true);
+        $dir = \sys_get_temp_dir() . '/presssentinel-dash-mu-' . \uniqid('', true);
         \mkdir($dir, 0700, true);
         $this->tempDirs[] = $dir;
 

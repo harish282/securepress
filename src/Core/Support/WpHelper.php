@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Support;
+namespace PressSentinel\Core\Support;
 
 final class WpHelper
 {
@@ -182,7 +182,7 @@ final class WpHelper
      *
      * Used by the integrity-monitoring checksum provider. Routed through the helper
      * (rather than calling `wp_remote_get` directly) so tests can stub the network call
-     * via {@see \SecurePress\Tests\Stubs\WpStubState}.
+     * via {@see \PressSentinel\Tests\Stubs\WpStubState}.
      */
     public static function remoteGet(string $url, int $timeoutSeconds = 10): ?string
     {
@@ -470,7 +470,7 @@ final class WpHelper
      * `$parentSlug` must already have been registered via {@see addMenuPage()} (or be
      * a core WP slug like `tools.php`). Passing the same value for `$parentSlug` and
      * `$menuSlug` is the standard way to override the auto-created first submenu's
-     * label — used by {@see \SecurePress\Admin\SecurePressMenuPage} to rename the
+     * label — used by {@see \PressSentinel\Admin\PressSentinelMenuPage} to rename the
      * landing item from "Secure Press" to "Dashboard".
      */
     public static function addSubmenuPage(
@@ -703,7 +703,7 @@ final class WpHelper
     }
 
     /**
-     * Fires a WordPress action with the given arguments. Used by SecurePress to
+     * Fires a WordPress action with the given arguments. Used by PressSentinel to
      * synthesise `wp_login` after a 2FA-verified login so other listeners (the audit
      * logger, third-party plugins) see the same hook they would on a vanilla flow.
      */

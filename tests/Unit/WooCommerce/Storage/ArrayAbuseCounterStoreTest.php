@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\WooCommerce\Storage;
+namespace PressSentinel\Tests\Unit\WooCommerce\Storage;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\WooCommerce\Storage\ArrayAbuseCounterStore;
+use PressSentinel\WooCommerce\Storage\ArrayAbuseCounterStore;
 
 /**
- * @see \SecurePress\WooCommerce\Storage\ArrayAbuseCounterStore
+ * @see \PressSentinel\WooCommerce\Storage\ArrayAbuseCounterStore
  */
 final class ArrayAbuseCounterStoreTest extends TestCase
 {

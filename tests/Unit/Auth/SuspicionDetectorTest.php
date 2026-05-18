@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\Sessions\ArraySessionRepository;
-use SecurePress\Core\Auth\Sessions\SessionFingerprinter;
-use SecurePress\Core\Auth\Sessions\SessionRecord;
-use SecurePress\Core\Auth\SuspiciousLogin\LoginContext;
-use SecurePress\Core\Auth\SuspiciousLogin\Rules\NewDeviceRule;
-use SecurePress\Core\Auth\SuspiciousLogin\SuspicionDetector;
+use PressSentinel\Core\Auth\Sessions\ArraySessionRepository;
+use PressSentinel\Core\Auth\Sessions\SessionFingerprinter;
+use PressSentinel\Core\Auth\Sessions\SessionRecord;
+use PressSentinel\Core\Auth\SuspiciousLogin\LoginContext;
+use PressSentinel\Core\Auth\SuspiciousLogin\Rules\NewDeviceRule;
+use PressSentinel\Core\Auth\SuspiciousLogin\SuspicionDetector;
 
 final class SuspicionDetectorTest extends TestCase
 {

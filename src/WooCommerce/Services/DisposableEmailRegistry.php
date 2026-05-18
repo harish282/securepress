@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Services;
+namespace PressSentinel\WooCommerce\Services;
 
 /**
  * Knows whether an email domain is a known disposable / throwaway mailbox provider.
@@ -20,9 +20,9 @@ namespace SecurePress\WooCommerce\Services;
  *  - **`allow($domain)`** to mark a domain as always-acceptable — useful for SaaS
  *    vendors whose customers legitimately use one of the bundled disposable domains
  *    (e.g., the rare team that uses Mailinator for testing).
- *  - **WordPress filter `securepress.disposable_email_domains`** — applied lazily on
+ *  - **WordPress filter `presssentinel.disposable_email_domains`** — applied lazily on
  *    first lookup; lets sites manage the list from a feature plugin or `mu-plugins/`
- *    without modifying SecurePress directly.
+ *    without modifying PressSentinel directly.
  *
  * Lookup is O(1) via an internal hash set. Domain comparison is case-insensitive and
  * IDN-aware: `gMail.com` and `xn--zfr164b.com` both work, the registry stores ASCII
@@ -101,11 +101,11 @@ final class DisposableEmailRegistry
             $this->filtersApplied = true;
             return;
         }
-        $extra = \call_user_func('apply_filters', 'securepress.disposable_email_domains', []);
+        $extra = \call_user_func('apply_filters', 'presssentinel.disposable_email_domains', []);
         if (is_array($extra)) {
             $this->addDomains(array_values(array_filter($extra, 'is_string')));
         }
-        $allowed = \call_user_func('apply_filters', 'securepress.disposable_email_allowed_domains', []);
+        $allowed = \call_user_func('apply_filters', 'presssentinel.disposable_email_allowed_domains', []);
         if (is_array($allowed)) {
             foreach ($allowed as $domain) {
                 if (is_string($domain)) {

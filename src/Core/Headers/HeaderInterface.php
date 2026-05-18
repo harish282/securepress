@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Headers;
+namespace PressSentinel\Core\Headers;
 
 /**
  * Contract for a configurable HTTP security header.

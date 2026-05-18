@@ -1,16 +1,16 @@
-# SecurePress
+# PressSentinel
 
 > Laravel-inspired security infrastructure for WordPress.
 
-SecurePress is a modern security framework plugin for WordPress focused on middleware-based protection, developer experience, WooCommerce security, and lightweight architecture.
+PressSentinel is a modern security framework plugin for WordPress focused on middleware-based protection, developer experience, WooCommerce security, and lightweight architecture.
 
-Unlike traditional bloated firewall plugins, SecurePress focuses on application-layer security inspired by modern PHP frameworks like Laravel.
+Unlike traditional bloated firewall plugins, PressSentinel focuses on application-layer security inspired by modern PHP frameworks like Laravel.
 
 ---
 
 # Vision
 
-SecurePress aims to become:
+PressSentinel aims to become:
 
 > "The Laravel-style security framework for WordPress developers."
 
@@ -44,10 +44,10 @@ Core principles:
 
 ## MU Loader (Early Load)
 
-To make SecurePress load earlier in WordPress lifecycle, install the MU loader:
+To make PressSentinel load earlier in WordPress lifecycle, install the MU loader:
 
-* [ ] Copy `mu-loader/00-securepress-loader.php` to `wp-content/mu-plugins/00-securepress-loader.php`
-* [ ] Keep `SecurePress` active in normal plugin list
+* [ ] Copy `mu-loader/00-press-sentinel-loader.php` to `wp-content/mu-plugins/00-press-sentinel-loader.php`
+* [ ] Keep `PressSentinel` active in normal plugin list
 * [ ] Verify plugin list shows: `MU Loader: Installed`
 
 Install guide: [`docs/MU_LOADER_INSTALL.md`](docs/MU_LOADER_INSTALL.md)
@@ -250,7 +250,7 @@ Security::protectRoute('/admin/export');
 # Suggested Folder Structure
 
 ```txt
-securepress/
+presssentinel/
 ├── bootstrap/
 ├── config/
 ├── resources/
@@ -270,7 +270,7 @@ securepress/
 │   └── cache/
 ├── tests/
 ├── vendor/
-├── securepress.php
+├── press-sentinel.php
 └── composer.json
 ```
 
@@ -473,7 +473,7 @@ securepress/
 
 # Future Vision
 
-SecurePress evolves into:
+PressSentinel evolves into:
 
 * Security framework for WordPress
 * Developer infrastructure layer
@@ -505,6 +505,6 @@ Inspired by:
 
 # Final Goal
 
-SecurePress should feel like:
+PressSentinel should feel like:
 
 > "What WordPress security would look like if Laravel designed it today."

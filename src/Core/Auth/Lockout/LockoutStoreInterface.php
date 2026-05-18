@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Lockout;
+namespace PressSentinel\Core\Auth\Lockout;
 
 /**
  * Persistence contract for failed-login counters.

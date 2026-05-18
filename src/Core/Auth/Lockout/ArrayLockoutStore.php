@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Lockout;
+namespace PressSentinel\Core\Auth\Lockout;
 
 /**
  * In-memory {@see LockoutStoreInterface} for tests.

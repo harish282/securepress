@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Licensing;
+namespace PressSentinel\Tests\Unit\Licensing;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Licensing\BetaTrial;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Licensing\LicenseStatus;
-use SecurePress\Core\Licensing\LicenseValidatorInterface;
-use SecurePress\Core\Licensing\LocalLicenseValidator;
-use SecurePress\Core\Licensing\StaticLicenseValidator;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Licensing\BetaTrial;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\Licensing\LicenseStatus;
+use PressSentinel\Core\Licensing\LicenseValidatorInterface;
+use PressSentinel\Core\Licensing\LocalLicenseValidator;
+use PressSentinel\Core\Licensing\StaticLicenseValidator;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Core\Licensing\LicenseManager
+ * @see \PressSentinel\Core\Licensing\LicenseManager
  */
 final class LicenseManagerTest extends TestCase
 {
@@ -23,15 +23,15 @@ final class LicenseManagerTest extends TestCase
     {
         WpStubState::$options = [];
         putenv(LicenseManager::ENV_VAR);
-        putenv('SECUREPRESS_BETA_TRIAL_ENABLED=false');
-        putenv('SECUREPRESS_EARLY_ACCESS=false');
+        putenv('PRESS_SENTINEL_BETA_TRIAL_ENABLED=false');
+        putenv('PRESS_SENTINEL_EARLY_ACCESS=false');
     }
 
     protected function tearDown(): void
     {
         putenv(LicenseManager::ENV_VAR);
-        putenv('SECUREPRESS_BETA_TRIAL_ENABLED=false');
-        putenv('SECUREPRESS_EARLY_ACCESS=false');
+        putenv('PRESS_SENTINEL_BETA_TRIAL_ENABLED=false');
+        putenv('PRESS_SENTINEL_EARLY_ACCESS=false');
         WpStubState::$options = [];
     }
 
@@ -121,7 +121,7 @@ final class LicenseManagerTest extends TestCase
 
     public function test_status_is_cached_within_request(): void
     {
-        $validator = new class implements \SecurePress\Core\Licensing\LicenseValidatorInterface {
+        $validator = new class implements \PressSentinel\Core\Licensing\LicenseValidatorInterface {
             public int $calls = 0;
             public function validate(string $key): LicenseStatus
             {
@@ -141,8 +141,8 @@ final class LicenseManagerTest extends TestCase
 
     public function test_beta_trial_unlocks_pro_without_a_key_when_programme_enabled(): void
     {
-        putenv('SECUREPRESS_BETA_TRIAL_ENABLED=true');
-        putenv('SECUREPRESS_BETA_TRIAL_DURATION_DAYS=14');
+        putenv('PRESS_SENTINEL_BETA_TRIAL_ENABLED=true');
+        putenv('PRESS_SENTINEL_BETA_TRIAL_DURATION_DAYS=14');
 
         $manager = $this->manager(new LocalLicenseValidator('secret'));
 
@@ -155,8 +155,8 @@ final class LicenseManagerTest extends TestCase
 
     public function test_expired_beta_trial_does_not_grant_pro(): void
     {
-        putenv('SECUREPRESS_BETA_TRIAL_ENABLED=true');
-        putenv('SECUREPRESS_BETA_TRIAL_DURATION_DAYS=30');
+        putenv('PRESS_SENTINEL_BETA_TRIAL_ENABLED=true');
+        putenv('PRESS_SENTINEL_BETA_TRIAL_DURATION_DAYS=30');
         WpStubState::$options[BetaTrial::STARTED_AT_OPTION] = time() - (400 * 86400);
 
         $manager = $this->manager(new LocalLicenseValidator('secret'));
@@ -167,7 +167,7 @@ final class LicenseManagerTest extends TestCase
 
     public function test_early_access_unlocks_pro_without_a_key(): void
     {
-        putenv('SECUREPRESS_EARLY_ACCESS=true');
+        putenv('PRESS_SENTINEL_EARLY_ACCESS=true');
 
         $manager = $this->manager(new LocalLicenseValidator('secret'));
 
@@ -180,9 +180,9 @@ final class LicenseManagerTest extends TestCase
 
     public function test_early_access_takes_precedence_over_beta_trial(): void
     {
-        putenv('SECUREPRESS_EARLY_ACCESS=true');
-        putenv('SECUREPRESS_BETA_TRIAL_ENABLED=true');
-        putenv('SECUREPRESS_BETA_TRIAL_DURATION_DAYS=14');
+        putenv('PRESS_SENTINEL_EARLY_ACCESS=true');
+        putenv('PRESS_SENTINEL_BETA_TRIAL_ENABLED=true');
+        putenv('PRESS_SENTINEL_BETA_TRIAL_DURATION_DAYS=14');
 
         $manager = $this->manager(new LocalLicenseValidator('secret'));
 

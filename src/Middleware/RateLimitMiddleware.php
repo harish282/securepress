@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Middleware;
+namespace PressSentinel\Middleware;
 
 use Closure;
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Core\Middleware\MiddlewareInterface;
-use SecurePress\Core\RateLimit\RateLimiter;
-use SecurePress\Core\Recovery\SafeMode;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Core\Middleware\MiddlewareInterface;
+use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Core\Recovery\SafeMode;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Enforces request-rate limits via {@see RateLimiter}.

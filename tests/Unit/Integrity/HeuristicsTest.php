@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Integrity;
+namespace PressSentinel\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Integrity\FindingSeverity;
-use SecurePress\Core\Integrity\Heuristics\EvalBase64Heuristic;
-use SecurePress\Core\Integrity\Heuristics\ObfuscatedCallableHeuristic;
-use SecurePress\Core\Integrity\Heuristics\PregReplaceEvalHeuristic;
-use SecurePress\Core\Integrity\Heuristics\ShellExecHeuristic;
-use SecurePress\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
+use PressSentinel\Core\Integrity\FindingSeverity;
+use PressSentinel\Core\Integrity\Heuristics\EvalBase64Heuristic;
+use PressSentinel\Core\Integrity\Heuristics\ObfuscatedCallableHeuristic;
+use PressSentinel\Core\Integrity\Heuristics\PregReplaceEvalHeuristic;
+use PressSentinel\Core\Integrity\Heuristics\ShellExecHeuristic;
+use PressSentinel\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
 
 /**
- * @see \SecurePress\Core\Integrity\Heuristics\AbstractRegexHeuristic
+ * @see \PressSentinel\Core\Integrity\Heuristics\AbstractRegexHeuristic
  */
 final class HeuristicsTest extends TestCase
 {

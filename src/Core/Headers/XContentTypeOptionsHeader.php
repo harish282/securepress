@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Headers;
+namespace PressSentinel\Core\Headers;
 
 /**
  * Disables MIME sniffing — browsers honor the declared `Content-Type` instead of guessing.

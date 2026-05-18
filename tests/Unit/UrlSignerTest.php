@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit;
+namespace PressSentinel\Tests\Unit;
 
 use Closure;
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Url\ArraySecretProvider;
-use SecurePress\Core\Url\SignedUrlException;
-use SecurePress\Core\Url\UrlSigner;
+use PressSentinel\Core\Url\ArraySecretProvider;
+use PressSentinel\Core\Url\SignedUrlException;
+use PressSentinel\Core\Url\UrlSigner;
 
 final class UrlSignerTest extends TestCase
 {

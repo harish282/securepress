@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\View;
+namespace PressSentinel\Core\View;
 
 use RuntimeException;
 

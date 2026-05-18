@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Stubs;
+namespace PressSentinel\Tests\Stubs;
 
 use RuntimeException;
 

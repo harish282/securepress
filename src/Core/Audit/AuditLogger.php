@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Audit;
+namespace PressSentinel\Core\Audit;
 
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Support\WpHelper;
 use Throwable;
 
 /**

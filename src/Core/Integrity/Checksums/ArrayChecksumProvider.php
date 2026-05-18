@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity\Checksums;
+namespace PressSentinel\Core\Integrity\Checksums;
 
 /**
  * Deterministic, in-memory {@see ChecksumProviderInterface} for tests.
  *
  * Callers seed the table via the constructor; unknown identifiers return an empty map,
- * which the {@see \SecurePress\Core\Integrity\Scanners\CoreFilesScanner} interprets as
+ * which the {@see \PressSentinel\Core\Integrity\Scanners\CoreFilesScanner} interprets as
  * "no baseline available — skip silently". That matches production behaviour when
  * WordPress.org is unreachable.
  */

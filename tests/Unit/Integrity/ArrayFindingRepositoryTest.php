@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Integrity;
+namespace PressSentinel\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Integrity\ArrayFindingRepository;
-use SecurePress\Core\Integrity\Finding;
-use SecurePress\Core\Integrity\FindingSeverity;
-use SecurePress\Core\Integrity\FindingType;
+use PressSentinel\Core\Integrity\ArrayFindingRepository;
+use PressSentinel\Core\Integrity\Finding;
+use PressSentinel\Core\Integrity\FindingSeverity;
+use PressSentinel\Core\Integrity\FindingType;
 
 /**
- * @see \SecurePress\Core\Integrity\ArrayFindingRepository
+ * @see \PressSentinel\Core\Integrity\ArrayFindingRepository
  */
 final class ArrayFindingRepositoryTest extends TestCase
 {

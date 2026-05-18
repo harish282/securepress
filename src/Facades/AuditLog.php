@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Facades;
+namespace PressSentinel\Facades;
 
 use LogicException;
-use SecurePress\Core\Audit\AuditEvent;
-use SecurePress\Core\Audit\AuditEventCategory;
-use SecurePress\Core\Audit\AuditEventLevel;
-use SecurePress\Core\Audit\AuditEventBuilder;
-use SecurePress\Core\Audit\AuditLoggerInterface;
-use SecurePress\Core\Container;
+use PressSentinel\Core\Audit\AuditEvent;
+use PressSentinel\Core\Audit\AuditEventCategory;
+use PressSentinel\Core\Audit\AuditEventLevel;
+use PressSentinel\Core\Audit\AuditEventBuilder;
+use PressSentinel\Core\Audit\AuditLoggerInterface;
+use PressSentinel\Core\Container;
 
 /**
  * Laravel-style facade for recording audit events.
@@ -127,7 +127,7 @@ final class AuditLog
     private static function logger(): AuditLoggerInterface
     {
         if (self::$container === null) {
-            throw new LogicException('SecurePress AuditLog has not been bootstrapped. Call AuditLog::bootstrap() from the plugin.');
+            throw new LogicException('PressSentinel AuditLog has not been bootstrapped. Call AuditLog::bootstrap() from the plugin.');
         }
 
         return self::$container->get(AuditLoggerInterface::class);

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Sessions;
+namespace PressSentinel\Core\Auth\Sessions;
 
 /**
- * Plugs SecurePress session revocation into the *real* WordPress session-token store.
+ * Plugs PressSentinel session revocation into the *real* WordPress session-token store.
  *
  * Without this, {@see SessionService::revoke()} only marks our row as revoked — the
  * user's WP session cookie would keep working until WP's own expiry. The default

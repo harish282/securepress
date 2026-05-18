@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\TwoFactor\EmailOtpProvider;
+use PressSentinel\Core\Auth\TwoFactor\EmailOtpProvider;
 
 final class EmailOtpProviderTest extends TestCase
 {

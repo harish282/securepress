@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Licensing;
+namespace PressSentinel\Core\Licensing;
 
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Persists a per-install HMAC secret in the WordPress options table so offline
  * license keys work without wp-config edits or hosting environment variables.
  *
  * The secret is created on first {@see ensure()} (plugin activation and each
- * boot before {@see \SecurePress\Core\Config\Config} resolves). Your issuance tooling
- * must sign keys with the same material shown on SecurePress → License.
+ * boot before {@see \PressSentinel\Core\Config\Config} resolves). Your issuance tooling
+ * must sign keys with the same material shown on PressSentinel → License.
  */
 final class LicenseHmacSecretProvisioner
 {
-    public const OPTION_NAME = 'securepress_license_hmac_secret';
+    public const OPTION_NAME = 'presssentinel_license_hmac_secret';
 
     private const MIN_LENGTH = 24;
 

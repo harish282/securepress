@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit;
+namespace PressSentinel\Tests\Unit;
 
 use Closure;
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Url\ArrayNonceStore;
-use SecurePress\Core\Url\ArraySecretProvider;
-use SecurePress\Core\Url\UrlSigner;
-use SecurePress\Middleware\SignedUrlMiddleware;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Url\ArrayNonceStore;
+use PressSentinel\Core\Url\ArraySecretProvider;
+use PressSentinel\Core\Url\UrlSigner;
+use PressSentinel\Middleware\SignedUrlMiddleware;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 final class SignedUrlMiddlewareTest extends TestCase
 {

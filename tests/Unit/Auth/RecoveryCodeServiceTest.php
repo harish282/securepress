@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\TwoFactor\RecoveryCodeService;
+use PressSentinel\Core\Auth\TwoFactor\RecoveryCodeService;
 
 final class RecoveryCodeServiceTest extends TestCase
 {

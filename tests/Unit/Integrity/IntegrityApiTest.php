@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Integrity;
+namespace PressSentinel\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Container;
-use SecurePress\Core\Integrity\ArrayFindingRepository;
-use SecurePress\Core\Integrity\ArrayManifestRepository;
-use SecurePress\Core\Integrity\Finding;
-use SecurePress\Core\Integrity\FindingRepositoryInterface;
-use SecurePress\Core\Integrity\FindingSeverity;
-use SecurePress\Core\Integrity\FindingType;
-use SecurePress\Core\Integrity\IntegrityOptions;
-use SecurePress\Core\Integrity\IntegrityService;
-use SecurePress\Core\Integrity\ManifestRepositoryInterface;
-use SecurePress\Core\Integrity\Scanners\ScannerInterface;
-use SecurePress\Core\Config\Config;
-use SecurePress\Facades\Security;
-use SecurePress\Sdk\IntegrityApi;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Integrity\ArrayFindingRepository;
+use PressSentinel\Core\Integrity\ArrayManifestRepository;
+use PressSentinel\Core\Integrity\Finding;
+use PressSentinel\Core\Integrity\FindingRepositoryInterface;
+use PressSentinel\Core\Integrity\FindingSeverity;
+use PressSentinel\Core\Integrity\FindingType;
+use PressSentinel\Core\Integrity\IntegrityOptions;
+use PressSentinel\Core\Integrity\IntegrityService;
+use PressSentinel\Core\Integrity\ManifestRepositoryInterface;
+use PressSentinel\Core\Integrity\Scanners\ScannerInterface;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Facades\Security;
+use PressSentinel\Sdk\IntegrityApi;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Sdk\IntegrityApi
- * @see \SecurePress\Facades\Security::integrity()
+ * @see \PressSentinel\Sdk\IntegrityApi
+ * @see \PressSentinel\Facades\Security::integrity()
  */
 final class IntegrityApiTest extends TestCase
 {
@@ -87,8 +87,8 @@ final class IntegrityApiTest extends TestCase
 
         /** @var ManifestRepositoryInterface $manifests */
         $manifests = $container->get(ManifestRepositoryInterface::class);
-        $manifests->save(\SecurePress\Core\Integrity\Manifest::empty('plugins', '/x'));
-        $manifests->save(\SecurePress\Core\Integrity\Manifest::empty('themes', '/y'));
+        $manifests->save(\PressSentinel\Core\Integrity\Manifest::empty('plugins', '/x'));
+        $manifests->save(\PressSentinel\Core\Integrity\Manifest::empty('themes', '/y'));
 
         Security::integrity()->resetBaseline('plugins');
         self::assertNull($manifests->load('plugins'));

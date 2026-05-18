@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use SecurePress\Admin\SecurePressMenuPage;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Admin\PressSentinelMenuPage;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * @var string $pageSlug
@@ -12,7 +12,7 @@ use SecurePress\Core\Support\WpHelper;
  */
 ?>
 <div class="wrap">
-    <h1>SecurePress Rate Limiting</h1>
+    <h1>PressSentinel Rate Limiting</h1>
     <p>Cap the request rate per user / IP. Configured here, enforced globally by the rate-limit middleware on every request.</p>
 
     <?php if (!$masterEnabled): ?>
@@ -22,16 +22,16 @@ use SecurePress\Core\Support\WpHelper;
                 The master switch below (also available on the
                 <a href="<?= WpHelper::escapeAttribute(
                     \function_exists('admin_url')
-                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . SecurePressMenuPage::PARENT_SLUG)
+                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . PressSentinelMenuPage::PARENT_SLUG)
                         : '#'
-                ) ?>">SecurePress dashboard</a>)
+                ) ?>">PressSentinel dashboard</a>)
                 is disabled, so no global throttling is applied. Per-route SDK limits (<code>Security::rateLimit(...)</code>) are unaffected.
             </p>
         </div>
     <?php endif; ?>
 
     <p class="description">
-        Locked out or throttled? Set <code>SECUREPRESS_SAFE_MODE=true</code> in the plugin <code>.env</code> (see <code>.env.example</code>) or add the constant to <code>wp-config.php</code> to bypass global rate limiting and login lockouts until you regain access.
+        Locked out or throttled? Set <code>PRESS_SENTINEL_SAFE_MODE=true</code> in the plugin <code>.env</code> (see <code>.env.example</code>) or add the constant to <code>wp-config.php</code> to bypass global rate limiting and login lockouts until you regain access.
     </p>
 
     <form method="post" action="options.php">

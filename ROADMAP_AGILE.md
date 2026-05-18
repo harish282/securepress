@@ -1,6 +1,6 @@
-# SecurePress AI Agile Roadmap
+# PressSentinel AI Agile Roadmap
 
-This document is the execution roadmap for building SecurePress as a modern WordPress security solution with AI-assisted development.
+This document is the execution roadmap for building PressSentinel as a modern WordPress security solution with AI-assisted development.
 
 ---
 

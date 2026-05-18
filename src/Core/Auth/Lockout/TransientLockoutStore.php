@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Lockout;
+namespace PressSentinel\Core\Auth\Lockout;
 
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Transient-backed implementation. Uses two namespaced keys per logical lockout

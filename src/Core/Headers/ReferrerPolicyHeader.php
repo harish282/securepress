@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Headers;
+namespace PressSentinel\Core\Headers;
 
 /**
  * Controls how much referrer information browsers send on outbound navigations / requests.

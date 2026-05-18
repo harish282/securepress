@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Middleware\Checkout;
+namespace PressSentinel\WooCommerce\Middleware\Checkout;
 
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Signal;
-use SecurePress\WooCommerce\Middleware\WcMiddlewareInterface;
-use SecurePress\WooCommerce\Services\DisposableEmailRegistry;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Signal;
+use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
+use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
 
 /**
  * Flags checkouts using disposable / throwaway email addresses.
@@ -18,7 +18,7 @@ use SecurePress\WooCommerce\Services\DisposableEmailRegistry;
  * (privacy-conscious customers, devs testing prod, returning customers who lost
  * their account email). Denying on this signal alone is the textbook
  * false-positive trap — instead, we contribute weight and let
- * {@see \SecurePress\WooCommerce\Services\FraudScoreService} make the final call by
+ * {@see \PressSentinel\WooCommerce\Services\FraudScoreService} make the final call by
  * combining with other signals.
  *
  * `weight` is configurable so operators can dial sensitivity from the admin page.

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\RateLimit;
+namespace PressSentinel\Core\RateLimit;
 
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Recovery\SafeMode;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Recovery\SafeMode;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Resolves the effective rate-limit configuration for the current request.
@@ -22,7 +22,7 @@ use SecurePress\Core\Support\WpHelper;
  *    calls.
  *  - Atomic save semantics — partial writes can't leave the system in an
  *    inconsistent "enabled but limit=0" state.
- *  - Mirrors the {@see \SecurePress\Core\Auth\AuthHardeningOptions} contract
+ *  - Mirrors the {@see \PressSentinel\Core\Auth\AuthHardeningOptions} contract
  *    so the settings-page glue is familiar.
  *
  * Storage shape (single autoloaded option):
@@ -39,7 +39,7 @@ use SecurePress\Core\Support\WpHelper;
  */
 final class RateLimitOptions
 {
-    public const OPTION_NAME = 'securepress_rate_limit';
+    public const OPTION_NAME = 'presssentinel_rate_limit';
 
     /** Hard limit bounds — `limit` is requests per window. */
     public const LIMIT_MIN = 1;
@@ -93,7 +93,7 @@ final class RateLimitOptions
 
     /**
      * Flips just the master `enabled` flag, preserving the configured limit
-     * and window. Used by the SecurePress dashboard's feature-toggle form so
+     * and window. Used by the PressSentinel dashboard's feature-toggle form so
      * the admin doesn't have to dig into the dedicated settings page to
      * temporarily disable the limiter.
      */

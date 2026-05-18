@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity;
+namespace PressSentinel\Core\Integrity;
 
 /**
  * Path-indexed collection of {@see ManifestEntry} objects.

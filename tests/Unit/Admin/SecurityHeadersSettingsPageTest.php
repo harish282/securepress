@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Admin;
+namespace PressSentinel\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Admin\SecurityHeadersSettingsPage;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\View\View;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Admin\SecurityHeadersSettingsPage;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\View\View;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
  * Covers the wiring that keeps the Security Headers settings page in sync

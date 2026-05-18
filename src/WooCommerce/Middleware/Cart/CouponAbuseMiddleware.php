@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Middleware\Cart;
+namespace PressSentinel\WooCommerce\Middleware\Cart;
 
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Signal;
-use SecurePress\WooCommerce\Middleware\WcMiddlewareInterface;
-use SecurePress\WooCommerce\Storage\AbuseCounterStoreInterface;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Signal;
+use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
+use PressSentinel\WooCommerce\Storage\AbuseCounterStoreInterface;
 
 /**
  * Detects coupon-brute-forcing.

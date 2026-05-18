@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Url;
+namespace PressSentinel\Core\Url;
 
 /**
  * In-memory {@see SecretProviderInterface} for tests and bootstrap fixtures.

@@ -11,8 +11,8 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 OUT_DIR="${1:-$ROOT/build}"
-PLUGIN_SLUG="securepress"
-MAIN_FILE="$ROOT/securepress.php"
+PLUGIN_SLUG="presssentinel"
+MAIN_FILE="$ROOT/press-sentinel.php"
 
 if [[ ! -f "$MAIN_FILE" ]]; then
   echo "error: expected $MAIN_FILE" >&2
@@ -30,7 +30,7 @@ if [[ -z "$VERSION" ]]; then
   exit 1
 fi
 
-STAGE="$(mktemp -d "${TMPDIR:-/tmp}/securepress-release.XXXXXX")"
+STAGE="$(mktemp -d "${TMPDIR:-/tmp}/presssentinel-release.XXXXXX")"
 trap 'rm -rf "$STAGE"' EXIT
 
 DEST="$STAGE/$PLUGIN_SLUG"
@@ -46,7 +46,7 @@ copy_if_exists() {
   fi
 }
 
-copy_if_exists "securepress.php"
+copy_if_exists "press-sentinel.php"
 copy_if_exists "bootstrap"
 copy_if_exists "config"
 copy_if_exists "src"

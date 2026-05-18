@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
 use Closure;
 
 /**
- * Immutable descriptor for one toggleable SecurePress feature.
+ * Immutable descriptor for one toggleable PressSentinel feature.
  *
  * Closures are used for `isEnabled` / `setEnabled` instead of an interface so
  * the FeatureRegistry can wire up existing Options classes (which were not

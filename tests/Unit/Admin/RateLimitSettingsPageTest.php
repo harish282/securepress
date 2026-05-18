@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Admin;
+namespace PressSentinel\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Admin\RateLimitSettingsPage;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Core\View\View;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Admin\RateLimitSettingsPage;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Core\View\View;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
  * Confirms the Rate Limiting settings page registers the right

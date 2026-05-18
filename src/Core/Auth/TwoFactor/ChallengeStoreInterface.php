@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\TwoFactor;
+namespace PressSentinel\Core\Auth\TwoFactor;
 
 /**
  * Persistence contract for the short-lived "halfway through login" record.

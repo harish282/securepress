@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\Sessions\ArraySessionRepository;
-use SecurePress\Core\Auth\Sessions\NullSessionDestroyer;
-use SecurePress\Core\Auth\Sessions\SessionFingerprinter;
-use SecurePress\Core\Auth\Sessions\SessionService;
-use SecurePress\Core\Logging\NullLogger;
+use PressSentinel\Core\Auth\Sessions\ArraySessionRepository;
+use PressSentinel\Core\Auth\Sessions\NullSessionDestroyer;
+use PressSentinel\Core\Auth\Sessions\SessionFingerprinter;
+use PressSentinel\Core\Auth\Sessions\SessionService;
+use PressSentinel\Core\Logging\NullLogger;
 
 final class SessionServiceTest extends TestCase
 {
@@ -18,7 +18,7 @@ final class SessionServiceTest extends TestCase
         $repo = new ArraySessionRepository();
         $service = new SessionService($repo, new SessionFingerprinter(), new NullLogger(), new NullSessionDestroyer());
 
-        $record = $service->track(42, '203.0.113.10', 'SecurePressTest/1', null, 1_700_000_000);
+        $record = $service->track(42, '203.0.113.10', 'PressSentinelTest/1', null, 1_700_000_000);
 
         self::assertNotNull($record->id);
         self::assertSame(42, $record->userId);

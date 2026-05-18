@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Core\RateLimit;
+namespace PressSentinel\Tests\Unit\Core\RateLimit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\RateLimit\ArrayStore;
-use SecurePress\Core\RateLimit\GlobalRateLimitSubscriber;
-use SecurePress\Core\RateLimit\RateLimiter;
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Core\Support\RequestContext;
-use SecurePress\Middleware\RateLimitMiddleware;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\RateLimit\ArrayStore;
+use PressSentinel\Core\RateLimit\GlobalRateLimitSubscriber;
+use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Core\Support\RequestContext;
+use PressSentinel\Middleware\RateLimitMiddleware;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Core\RateLimit\GlobalRateLimitSubscriber
+ * @see \PressSentinel\Core\RateLimit\GlobalRateLimitSubscriber
  */
 final class GlobalRateLimitSubscriberTest extends TestCase
 {
@@ -66,7 +66,7 @@ final class GlobalRateLimitSubscriberTest extends TestCase
         self::assertNull($subscriber->onRestPreDispatch(null, null, null));
         $err = $subscriber->onRestPreDispatch(null, null, null);
         self::assertInstanceOf(\WP_Error::class, $err);
-        self::assertSame('securepress_rate_limit', $err->code);
+        self::assertSame('presssentinel_rate_limit', $err->code);
         self::assertSame(429, $err->data['status'] ?? null);
     }
 

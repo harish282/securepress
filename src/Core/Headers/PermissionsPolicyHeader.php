@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Headers;
+namespace PressSentinel\Core\Headers;
 
 /**
  * Browser feature opt-out via `Permissions-Policy` (the successor to `Feature-Policy`).

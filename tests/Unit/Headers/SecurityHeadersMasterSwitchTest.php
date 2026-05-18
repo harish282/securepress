@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Headers;
+namespace PressSentinel\Tests\Unit\Headers;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Headers\HeaderRegistryFactory;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Headers\HeaderRegistryFactory;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
  * The security-headers feature gained a master `enabled` switch so the
- * SecurePress dashboard can turn the whole module off in one click without
+ * PressSentinel dashboard can turn the whole module off in one click without
  * zeroing out the per-header sub-config. These tests pin down:
  *
  *  - the master defaults to ON (preserves backwards compatibility — every
@@ -105,7 +105,7 @@ final class SecurityHeadersMasterSwitchTest extends TestCase
         $sanitized = $options->sanitize($formPayload);
 
         // Persist it the way WordPress would on a register_setting save.
-        \SecurePress\Tests\Stubs\WpStubState::$options[SecurityHeadersOptions::OPTION_NAME] = $sanitized;
+        \PressSentinel\Tests\Stubs\WpStubState::$options[SecurityHeadersOptions::OPTION_NAME] = $sanitized;
 
         $reloaded = new SecurityHeadersOptions(new Config());
 

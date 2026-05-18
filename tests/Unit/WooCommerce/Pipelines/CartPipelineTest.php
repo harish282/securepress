@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\WooCommerce\Pipelines;
+namespace PressSentinel\Tests\Unit\WooCommerce\Pipelines;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Middleware\Cart\CartVelocityMiddleware;
-use SecurePress\WooCommerce\Middleware\Cart\CouponAbuseMiddleware;
-use SecurePress\WooCommerce\Pipelines\CartPipeline;
-use SecurePress\WooCommerce\Storage\ArrayAbuseCounterStore;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Middleware\Cart\CartVelocityMiddleware;
+use PressSentinel\WooCommerce\Middleware\Cart\CouponAbuseMiddleware;
+use PressSentinel\WooCommerce\Pipelines\CartPipeline;
+use PressSentinel\WooCommerce\Storage\ArrayAbuseCounterStore;
 
 /**
- * @see \SecurePress\WooCommerce\Pipelines\CartPipeline
- * @see \SecurePress\WooCommerce\Middleware\Cart\CartVelocityMiddleware
- * @see \SecurePress\WooCommerce\Middleware\Cart\CouponAbuseMiddleware
+ * @see \PressSentinel\WooCommerce\Pipelines\CartPipeline
+ * @see \PressSentinel\WooCommerce\Middleware\Cart\CartVelocityMiddleware
+ * @see \PressSentinel\WooCommerce\Middleware\Cart\CouponAbuseMiddleware
  */
 final class CartPipelineTest extends TestCase
 {

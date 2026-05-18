@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\Lockout\ArrayLockoutStore;
-use SecurePress\Core\Auth\Lockout\LoginLockoutPolicy;
-use SecurePress\Core\Auth\Lockout\LoginLockoutService;
+use PressSentinel\Core\Auth\Lockout\ArrayLockoutStore;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
 
 final class LoginLockoutServiceTest extends TestCase
 {

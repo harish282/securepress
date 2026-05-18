@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Sdk\Exceptions;
+namespace PressSentinel\Sdk\Exceptions;
 
 use RuntimeException;
-use SecurePress\Core\RateLimit\RateLimitResult;
+use PressSentinel\Core\RateLimit\RateLimitResult;
 
 /**
- * Thrown by {@see \SecurePress\Facades\Security::throttle()} when the limit has been
+ * Thrown by {@see \PressSentinel\Facades\Security::throttle()} when the limit has been
  * exceeded for the supplied key.
  *
  * The full {@see RateLimitResult} is preserved on the exception so error handlers can

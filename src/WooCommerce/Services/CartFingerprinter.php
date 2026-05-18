@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Services;
+namespace PressSentinel\WooCommerce\Services;
 
 /**
  * Produces a stable, deterministic hash of a cart's *content*, independent of order

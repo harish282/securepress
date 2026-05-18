@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Sdk\Csrf;
+namespace PressSentinel\Sdk\Csrf;
 
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Middleware\CsrfProtectionMiddleware;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Middleware\CsrfProtectionMiddleware;
 
 /**
  * Developer-facing wrapper around WordPress's nonce API.
@@ -17,10 +17,10 @@ use SecurePress\Middleware\CsrfProtectionMiddleware;
  *  - **Per-action HTML helper.** {@see field()} produces a hidden `<input>` ready to drop
  *    into custom forms, with proper escaping baked in.
  *  - **Test seam.** Routes through {@see WpHelper} so the test suite can deterministically
- *    stub `wp_verify_nonce` / `wp_create_nonce` via {@see \SecurePress\Tests\Stubs\WpStubState}.
+ *    stub `wp_verify_nonce` / `wp_create_nonce` via {@see \PressSentinel\Tests\Stubs\WpStubState}.
  *
  * Tokens are NOT one-use — that's a WordPress nonce property (12-/24-hour lifecycle ticks).
- * For single-use semantics use {@see \SecurePress\Facades\Security::signedUrl(...,
+ * For single-use semantics use {@see \PressSentinel\Facades\Security::signedUrl(...,
  * oneTime: true)} instead.
  */
 final class CsrfTokenManager

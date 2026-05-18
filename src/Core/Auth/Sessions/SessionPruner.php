@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Sessions;
+namespace PressSentinel\Core\Auth\Sessions;
 
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
- * Deletes stale rows from the SecurePress sessions table on a daily cron tick.
+ * Deletes stale rows from the PressSentinel sessions table on a daily cron tick.
  *
- * Mirrors {@see \SecurePress\Core\Audit\AuditLogPruner}. Without pruning, revoked /
+ * Mirrors {@see \PressSentinel\Core\Audit\AuditLogPruner}. Without pruning, revoked /
  * expired sessions accumulate indefinitely — rare but measurable on busy membership sites.
  */
 final class SessionPruner
 {
-    public const CRON_HOOK = 'securepress_sessions_prune';
+    public const CRON_HOOK = 'presssentinel_sessions_prune';
 
     public function __construct(
         private readonly SessionRepositoryInterface $repository,

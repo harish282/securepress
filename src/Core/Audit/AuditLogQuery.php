@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Audit;
+namespace PressSentinel\Core\Audit;
 
 /**
  * Filter / pagination criteria for {@see AuditLogRepositoryInterface::paginate()}.

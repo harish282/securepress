@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Licensing;
+namespace PressSentinel\Core\Licensing;
 
 /**
  * Outcome of a single license-key validation attempt.

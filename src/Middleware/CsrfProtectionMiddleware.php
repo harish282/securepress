@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Middleware;
+namespace PressSentinel\Middleware;
 
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Core\Middleware\MiddlewareInterface;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Core\Middleware\MiddlewareInterface;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Verifies WordPress nonces on state-changing requests.
@@ -35,7 +35,7 @@ use SecurePress\Core\Support\WpHelper;
  */
 final class CsrfProtectionMiddleware implements MiddlewareInterface
 {
-    public const DEFAULT_ACTION = 'securepress_csrf';
+    public const DEFAULT_ACTION = 'presssentinel_csrf';
 
     public const REST_ACTION = 'wp_rest';
 

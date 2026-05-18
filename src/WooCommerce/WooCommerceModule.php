@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce;
+namespace PressSentinel\WooCommerce;
 
-use SecurePress\Core\Container;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Core\Support\RequestContext;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Facades\AuditLog;
-use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Pipelines\ApiPipeline;
-use SecurePress\WooCommerce\Pipelines\CartPipeline;
-use SecurePress\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
-use SecurePress\WooCommerce\Pipelines\CheckoutPipeline;
-use SecurePress\WooCommerce\Pipelines\PipelineResult;
-use SecurePress\WooCommerce\Pipelines\RegistrationPipeline;
-use SecurePress\WooCommerce\Services\BehaviorClock;
-use SecurePress\WooCommerce\Storage\AbuseCounterStoreInterface;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Core\Support\RequestContext;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Facades\AuditLog;
+use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Pipelines\ApiPipeline;
+use PressSentinel\WooCommerce\Pipelines\CartPipeline;
+use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
+use PressSentinel\WooCommerce\Pipelines\CheckoutPipeline;
+use PressSentinel\WooCommerce\Pipelines\PipelineResult;
+use PressSentinel\WooCommerce\Pipelines\RegistrationPipeline;
+use PressSentinel\WooCommerce\Services\BehaviorClock;
+use PressSentinel\WooCommerce\Storage\AbuseCounterStoreInterface;
 use Throwable;
 
 /**
@@ -170,7 +170,7 @@ final class WooCommerceModule
         $result = $pipeline->run($context);
 
         if ($result->blocked() && is_object($errors) && method_exists($errors, 'add')) {
-            $errors->add('securepress_registration_blocked', $this->safeMessage($result->decision));
+            $errors->add('presssentinel_registration_blocked', $this->safeMessage($result->decision));
         }
         $this->record($result);
     }
@@ -198,7 +198,7 @@ final class WooCommerceModule
             $this->record($outcome);
             if (\class_exists('\\WP_Error')) {
                 return new \WP_Error(
-                    'securepress_api_blocked',
+                    'presssentinel_api_blocked',
                     $this->safeMessage($outcome->decision),
                     ['status' => 429]
                 );
@@ -245,8 +245,8 @@ final class WooCommerceModule
     public function onRenderCheckoutToken(): void
     {
         $token = $this->clock()->startToken();
-        $field = (string) ($this->options->all()['registration']['honeypot_field_name'] ?? 'securepress_hp');
-        echo '<input type="hidden" name="securepress_clock_token" value="' . WpHelper::escapeAttribute($token) . '" />';
+        $field = (string) ($this->options->all()['registration']['honeypot_field_name'] ?? 'presssentinel_hp');
+        echo '<input type="hidden" name="presssentinel_clock_token" value="' . WpHelper::escapeAttribute($token) . '" />';
         echo '<input type="text" name="' . WpHelper::escapeAttribute($field) . '" value="" autocomplete="off" tabindex="-1" '
             . 'aria-hidden="true" style="position:absolute !important; left:-9999px !important; height:0; width:0; opacity:0;" />';
     }
@@ -268,7 +268,7 @@ final class WooCommerceModule
         $shippingCountry = (string) ($post['shipping_country'] ?? '');
         $useShipping = !empty($post['ship_to_different_address']);
         $cartItems = $this->currentCartItems();
-        $token = (string) ($post['securepress_clock_token'] ?? '');
+        $token = (string) ($post['presssentinel_clock_token'] ?? '');
 
         return new DetectionContext(
             kind: DetectionContext::KIND_CHECKOUT,
@@ -291,8 +291,8 @@ final class WooCommerceModule
     private function buildRegistrationContext(string $username, string $email): DetectionContext
     {
         $post = $this->postArray();
-        $honeypotField = (string) ($this->options->all()['registration']['honeypot_field_name'] ?? 'securepress_hp');
-        $token = (string) ($post['securepress_clock_token'] ?? '');
+        $honeypotField = (string) ($this->options->all()['registration']['honeypot_field_name'] ?? 'presssentinel_hp');
+        $token = (string) ($post['presssentinel_clock_token'] ?? '');
         $elapsed = $token !== '' ? $this->clock()->elapsedSeconds($token) : null;
 
         return new DetectionContext(

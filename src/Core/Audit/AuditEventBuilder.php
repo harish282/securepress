@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Audit;
+namespace PressSentinel\Core\Audit;
 
 /**
  * Fluent builder for {@see AuditEvent} that finalizes by recording through an

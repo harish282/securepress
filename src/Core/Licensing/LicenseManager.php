@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Licensing;
+namespace PressSentinel\Core\Licensing;
 
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * The plugin's single source of truth for "is this install Pro?".
  *
  * Resolution order (first match wins, low priority → high):
  *
- *   1. `wp_option('securepress_pro_license')` — the admin-managed key on the Settings → License page.
- *   2. `SECUREPRESS_PRO_LICENSE` environment variable — handy for CI / containerised installs.
- *   3. `SECUREPRESS_PRO_LICENSE` constant — for hard-coded staging boxes.
- *   4. `apply_filters('securepress.pro_license', '')` — programmatic override (extensions, tests).
+ *   1. `wp_option('presssentinel_pro_license')` — the admin-managed key on the Settings → License page.
+ *   2. `PRESS_SENTINEL_PRO_LICENSE` environment variable — handy for CI / containerised installs.
+ *   3. `PRESS_SENTINEL_PRO_LICENSE` constant — for hard-coded staging boxes.
+ *   4. `apply_filters('presssentinel.pro_license', '')` — programmatic override (extensions, tests).
  *
  * After resolution the key is validated through the injected
  * {@see LicenseValidatorInterface}. When there is **no** resolvable key (or an
@@ -25,22 +25,22 @@ use SecurePress\Core\Support\WpHelper;
  * see `config/plugin.php` (`pro_license.early_access`, `pro_license.beta_trial.*`)
  * and {@see BetaTrial}. Early access is evaluated before the beta trial window.
  *
- * The "is Pro" check is wrapped in a filter (`securepress.is_pro`) so:
+ * The "is Pro" check is wrapped in a filter (`presssentinel.is_pro`) so:
  *  - test suites can flip behaviour without faking a license key;
  *  - integration packs (e.g., a future "Pro Bundle" plugin) can flip behaviour for
  *    the whole site without rewriting the manager.
  */
 final class LicenseManager
 {
-    public const OPTION_NAME = 'securepress_pro_license';
+    public const OPTION_NAME = 'presssentinel_pro_license';
 
-    public const ENV_VAR = 'SECUREPRESS_PRO_LICENSE';
+    public const ENV_VAR = 'PRESS_SENTINEL_PRO_LICENSE';
 
-    public const PHP_CONSTANT = 'SECUREPRESS_PRO_LICENSE';
+    public const PHP_CONSTANT = 'PRESS_SENTINEL_PRO_LICENSE';
 
-    public const FILTER_LICENSE = 'securepress.pro_license';
+    public const FILTER_LICENSE = 'presssentinel.pro_license';
 
-    public const FILTER_IS_PRO = 'securepress.is_pro';
+    public const FILTER_IS_PRO = 'presssentinel.is_pro';
 
     private ?LicenseStatus $cached = null;
 

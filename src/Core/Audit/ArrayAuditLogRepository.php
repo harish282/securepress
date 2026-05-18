@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Audit;
+namespace PressSentinel\Core\Audit;
 
 /**
  * In-memory implementation of {@see AuditLogRepositoryInterface} for tests.

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Notifications;
+namespace PressSentinel\Core\Auth\Notifications;
 
 /**
- * `wp_mail`-backed implementation. Adds a `From: SecurePress <…>` header by default
+ * `wp_mail`-backed implementation. Adds a `From: PressSentinel <…>` header by default
  * so authentication emails are recognisable when they land in users' inboxes —
  * operators can override the From address through their site's mail SMTP plugin since
  * `wp_mail` ultimately respects the `wp_mail_from` and `wp_mail_from_name` filters.

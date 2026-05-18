@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Headers;
+namespace PressSentinel\Core\Headers;
 
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Resolves the effective security-headers configuration for the current request.
@@ -37,14 +37,14 @@ use SecurePress\Core\Support\WpHelper;
  *         'x_content_type_options' => ['enabled' => bool],
  *     ]
  *
- * The master `enabled` flag was added so the centralized SecurePress dashboard can
+ * The master `enabled` flag was added so the centralized PressSentinel dashboard can
  * turn the entire feature off in one click without zeroing out the per-header
  * sub-config (which would force the admin to re-pick CSP / HSTS values when they
  * later turn it back on).
  */
 final class SecurityHeadersOptions
 {
-    public const OPTION_NAME = 'securepress_security_headers';
+    public const OPTION_NAME = 'presssentinel_security_headers';
 
     public function __construct(
         private readonly Config $config,
@@ -81,7 +81,7 @@ final class SecurityHeadersOptions
 
     /**
      * Flips just the master `enabled` flag, preserving every per-header
-     * sub-setting. Used by the centralized SecurePress dashboard.
+     * sub-setting. Used by the centralized PressSentinel dashboard.
      */
     public function setEnabled(bool $enabled): void
     {

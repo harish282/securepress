@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\TwoFactor\Base32;
+use PressSentinel\Core\Auth\TwoFactor\Base32;
 
 final class Base32Test extends TestCase
 {

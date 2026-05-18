@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity;
+namespace PressSentinel\Core\Integrity;
 
-use SecurePress\Core\Integrity\Scanners\ScannerInterface;
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Logging\NullLogger;
+use PressSentinel\Core\Integrity\Scanners\ScannerInterface;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\NullLogger;
 
 /**
  * The application-level orchestrator for file-integrity scanning.

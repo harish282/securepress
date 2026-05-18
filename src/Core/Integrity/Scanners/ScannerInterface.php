@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity\Scanners;
+namespace PressSentinel\Core\Integrity\Scanners;
 
-use SecurePress\Core\Integrity\Finding;
+use PressSentinel\Core\Integrity\Finding;
 
 /**
  * Common contract for every integrity scanner.
  *
  * Scanners are stateless — given a root path, they produce a list of {@see Finding}s
  * and nothing else. Persistence, scheduling, and notification are out-of-scope here
- * (the {@see \SecurePress\Core\Integrity\IntegrityService} orchestrates those concerns).
+ * (the {@see \PressSentinel\Core\Integrity\IntegrityService} orchestrates those concerns).
  *
  * Implementations:
  *  - {@see SuspiciousPhpScanner} — runs heuristics over PHP files.

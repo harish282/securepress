@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Audit\Listeners;
+namespace PressSentinel\Core\Audit\Listeners;
 
-use SecurePress\Core\Audit\AuditEvent;
-use SecurePress\Core\Audit\AuditEventCategory;
-use SecurePress\Core\Audit\AuditEventLevel;
-use SecurePress\Core\Audit\AuditLoggerInterface;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Audit\AuditEvent;
+use PressSentinel\Core\Audit\AuditEventCategory;
+use PressSentinel\Core\Audit\AuditEventLevel;
+use PressSentinel\Core\Audit\AuditLoggerInterface;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Tracks lifecycle changes to WordPress plugins and themes.

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
-use SecurePress\Core\Integrity\FindingRepositoryInterface;
-use SecurePress\Core\Integrity\FindingSeverity;
-use SecurePress\Core\Integrity\FindingType;
-use SecurePress\Core\Integrity\IntegrityScheduler;
-use SecurePress\Core\Integrity\IntegrityService;
-use SecurePress\Core\Integrity\ManifestRepositoryInterface;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\View\View;
+use PressSentinel\Core\Integrity\FindingRepositoryInterface;
+use PressSentinel\Core\Integrity\FindingSeverity;
+use PressSentinel\Core\Integrity\FindingType;
+use PressSentinel\Core\Integrity\IntegrityScheduler;
+use PressSentinel\Core\Integrity\IntegrityService;
+use PressSentinel\Core\Integrity\ManifestRepositoryInterface;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\View\View;
 
 /**
  * Admin "Tools → File Integrity" page.
@@ -30,9 +30,9 @@ use SecurePress\Core\View\View;
  */
 final class FileIntegrityPage
 {
-    public const PAGE_SLUG = 'securepress-file-integrity';
-    public const NONCE_ACTION = 'securepress_file_integrity';
-    public const STATUS_QUERY_KEY = 'securepress_status';
+    public const PAGE_SLUG = 'presssentinel-file-integrity';
+    public const NONCE_ACTION = 'presssentinel_file_integrity';
+    public const STATUS_QUERY_KEY = 'presssentinel_status';
 
     public function __construct(
         private readonly FindingRepositoryInterface $findings,
@@ -46,18 +46,18 @@ final class FileIntegrityPage
     public function register(): void
     {
         WpHelper::addAction('admin_menu', [$this, 'addMenu']);
-        WpHelper::addAction('admin_post_securepress_integrity_rescan', [$this, 'handleRescan']);
-        WpHelper::addAction('admin_post_securepress_integrity_review', [$this, 'handleReview']);
-        WpHelper::addAction('admin_post_securepress_integrity_delete', [$this, 'handleDelete']);
-        WpHelper::addAction('admin_post_securepress_integrity_clear', [$this, 'handleClear']);
-        WpHelper::addAction('admin_post_securepress_integrity_reset_baseline', [$this, 'handleResetBaseline']);
+        WpHelper::addAction('admin_post_presssentinel_integrity_rescan', [$this, 'handleRescan']);
+        WpHelper::addAction('admin_post_presssentinel_integrity_review', [$this, 'handleReview']);
+        WpHelper::addAction('admin_post_presssentinel_integrity_delete', [$this, 'handleDelete']);
+        WpHelper::addAction('admin_post_presssentinel_integrity_clear', [$this, 'handleClear']);
+        WpHelper::addAction('admin_post_presssentinel_integrity_reset_baseline', [$this, 'handleResetBaseline']);
     }
 
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            SecurePressMenuPage::PARENT_SLUG,
-            'SecurePress File Integrity',
+            PressSentinelMenuPage::PARENT_SLUG,
+            'PressSentinel File Integrity',
             'File Integrity',
             'manage_options',
             self::PAGE_SLUG,
@@ -200,7 +200,7 @@ final class FileIntegrityPage
         $url = $base . '?' . http_build_query($args);
 
         WpHelper::safeRedirect($url);
-        if (!\defined('SECUREPRESS_TESTING')) {
+        if (!\defined('PRESS_SENTINEL_TESTING')) {
             exit; // @codeCoverageIgnore
         }
     }

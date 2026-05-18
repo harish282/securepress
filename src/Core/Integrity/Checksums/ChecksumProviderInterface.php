@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity\Checksums;
+namespace PressSentinel\Core\Integrity\Checksums;
 
 /**
  * Provides "expected" file checksums for a given software bundle.

@@ -2,26 +2,26 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Recovery;
+namespace PressSentinel\Core\Recovery;
 
 /**
  * Emergency recovery when operators lock themselves out of wp-login or wp-admin.
  *
  * Enable via the plugin `.env` file (copy from `.env.example`):
  *
- *     SECUREPRESS_SAFE_MODE=true
+ *     PRESS_SENTINEL_SAFE_MODE=true
  *
  * Or in `wp-config.php` **before** WordPress loads plugins (above
  * `require_once ABSPATH . 'wp-settings.php';`):
  *
- *     define('SECUREPRESS_SAFE_MODE', true);
+ *     define('PRESS_SENTINEL_SAFE_MODE', true);
  *
  * A wp-config `define()` takes precedence when it is loaded before the plugin.
  *
  * While active, configured bypasses disable the highest-risk lockout paths without
  * changing stored options — remove or set the constant to `false` once recovery is done.
  *
- * Tests may enable safe mode via the {@see 'securepress_safe_mode'} filter.
+ * Tests may enable safe mode via the {@see 'presssentinel_safe_mode'} filter.
  */
 final class SafeMode
 {
@@ -40,7 +40,7 @@ final class SafeMode
 
     public static function isActive(): bool
     {
-        if (defined('SECUREPRESS_SAFE_MODE') && SECUREPRESS_SAFE_MODE) {
+        if (defined('PRESS_SENTINEL_SAFE_MODE') && PRESS_SENTINEL_SAFE_MODE) {
             return true;
         }
 
@@ -48,7 +48,7 @@ final class SafeMode
             return false;
         }
 
-        return (bool) \apply_filters('securepress_safe_mode', false);
+        return (bool) \apply_filters('presssentinel_safe_mode', false);
     }
 
     /**
@@ -62,7 +62,7 @@ final class SafeMode
 
         $bypasses = self::DEFAULT_BYPASSES;
         if (\function_exists('apply_filters')) {
-            $filtered = \apply_filters('securepress_safe_mode_bypasses', $bypasses);
+            $filtered = \apply_filters('presssentinel_safe_mode_bypasses', $bypasses);
             if (is_array($filtered)) {
                 $bypasses = $filtered;
             }
@@ -82,7 +82,7 @@ final class SafeMode
 
         $bypasses = self::DEFAULT_BYPASSES;
         if (\function_exists('apply_filters')) {
-            $filtered = \apply_filters('securepress_safe_mode_bypasses', $bypasses);
+            $filtered = \apply_filters('presssentinel_safe_mode_bypasses', $bypasses);
             if (is_array($filtered)) {
                 $bypasses = $filtered;
             }

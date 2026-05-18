@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
 /**
- * Single source of truth for "is the SecurePress MU loader installed?".
+ * Single source of truth for "is the PressSentinel MU loader installed?".
  *
  * The MU (Must-Use) loader is a tiny shim under `wp-content/mu-plugins/` that
- * requires SecurePress's main bootstrap. WordPress loads mu-plugins before
- * regular plugins, so when the shim is present SecurePress can intercept
+ * requires PressSentinel's main bootstrap. WordPress loads mu-plugins before
+ * regular plugins, so when the shim is present PressSentinel can intercept
  * requests earlier in the lifecycle — useful for catching attacks that
  * target plugins-loaded-but-init-not-yet timing windows.
  *
@@ -35,20 +35,20 @@ final class MuLoaderStatus
         ?string $muPluginsDir = null,
         ?string $loaderFilename = null,
     ) {
-        $this->loaderFilename = $loaderFilename ?? (\defined('SECUREPRESS_MU_LOADER_FILENAME')
-            ? (string) \constant('SECUREPRESS_MU_LOADER_FILENAME')
-            : '00-securepress-loader.php');
+        $this->loaderFilename = $loaderFilename ?? (\defined('PRESS_SENTINEL_MU_LOADER_FILENAME')
+            ? (string) \constant('PRESS_SENTINEL_MU_LOADER_FILENAME')
+            : '00-press-sentinel-loader.php');
 
-        $this->templatePath = $templatePath ?? (\defined('SECUREPRESS_MU_LOADER_TEMPLATE_PATH')
-            ? (string) \constant('SECUREPRESS_MU_LOADER_TEMPLATE_PATH')
+        $this->templatePath = $templatePath ?? (\defined('PRESS_SENTINEL_MU_LOADER_TEMPLATE_PATH')
+            ? (string) \constant('PRESS_SENTINEL_MU_LOADER_TEMPLATE_PATH')
             : '');
 
         $this->expectedDirectory = rtrim(
             $muPluginsDir
                 ?? (\defined('WPMU_PLUGIN_DIR')
                     ? (string) \constant('WPMU_PLUGIN_DIR')
-                    : (\defined('SECUREPRESS_PATH')
-                        ? \dirname((string) \constant('SECUREPRESS_PATH')) . '/mu-plugins'
+                    : (\defined('PRESS_SENTINEL_PATH')
+                        ? \dirname((string) \constant('PRESS_SENTINEL_PATH')) . '/mu-plugins'
                         : '')),
             '/'
         );

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Sdk\Events;
+namespace PressSentinel\Sdk\Events;
 
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
- * Tiny in-process event bus for the SecurePress SDK.
+ * Tiny in-process event bus for the PressSentinel SDK.
  *
  * Two reasons we ship our own bus instead of fully delegating to WordPress hooks:
  *
@@ -16,11 +16,11 @@ use SecurePress\Core\Support\WpHelper;
  *     bus is plain PHP — listeners registered via {@see listen()} are guaranteed to
  *     fire on the matching {@see fire()}.
  *  2. **Namespaced events.** Application code calls e.g. `Security::on('login.failed', …)`
- *     without having to know that the WordPress equivalent would be `securepress.login.failed`.
- *     The bus owns the namespace and applies the `securepress.` prefix when it bridges
+ *     without having to know that the WordPress equivalent would be `presssentinel.login.failed`.
+ *     The bus owns the namespace and applies the `presssentinel.` prefix when it bridges
  *     into the WP hook system.
  *
- * Each {@see fire()} also issues a `do_action('securepress.<event>', …)` so WordPress
+ * Each {@see fire()} also issues a `do_action('presssentinel.<event>', …)` so WordPress
  * plugins that prefer the native hook API can hook into the same stream. The bridge is
  * one-way — listeners registered via WP's `add_action()` are NOT visible to internal
  * fires that happen while the WP runtime is absent (e.g., during unit tests).
@@ -31,7 +31,7 @@ use SecurePress\Core\Support\WpHelper;
  */
 final class EventDispatcher
 {
-    public const HOOK_PREFIX = 'securepress.';
+    public const HOOK_PREFIX = 'presssentinel.';
 
     /** @var array<string, list<callable>> */
     private array $listeners = [];

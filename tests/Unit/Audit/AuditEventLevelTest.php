@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Audit;
+namespace PressSentinel\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Audit\AuditEventLevel;
+use PressSentinel\Core\Audit\AuditEventLevel;
 
 final class AuditEventLevelTest extends TestCase
 {

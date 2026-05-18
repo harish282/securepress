@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Integrity;
+namespace PressSentinel\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Integrity\Checksums\ArrayChecksumProvider;
-use SecurePress\Core\Integrity\FindingType;
-use SecurePress\Core\Integrity\IntegrityScope;
-use SecurePress\Core\Integrity\Scanners\CoreFilesScanner;
+use PressSentinel\Core\Integrity\Checksums\ArrayChecksumProvider;
+use PressSentinel\Core\Integrity\FindingType;
+use PressSentinel\Core\Integrity\IntegrityScope;
+use PressSentinel\Core\Integrity\Scanners\CoreFilesScanner;
 
 /**
- * @see \SecurePress\Core\Integrity\Scanners\CoreFilesScanner
+ * @see \PressSentinel\Core\Integrity\Scanners\CoreFilesScanner
  */
 final class CoreFilesScannerTest extends TestCase
 {

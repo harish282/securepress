@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Audit;
+namespace PressSentinel\Core\Audit;
 
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Resolves the effective audit-log configuration for the current request.
@@ -24,7 +24,7 @@ use SecurePress\Core\Support\WpHelper;
  */
 final class AuditLogOptions
 {
-    public const OPTION_NAME = 'securepress_audit_log';
+    public const OPTION_NAME = 'presssentinel_audit_log';
 
     public const RETENTION_MIN = 0;
 

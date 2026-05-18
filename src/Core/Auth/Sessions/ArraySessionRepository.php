@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Sessions;
+namespace PressSentinel\Core\Auth\Sessions;
 
 /**
  * In-memory {@see SessionRepositoryInterface} for tests and ephemeral environments.

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity;
+namespace PressSentinel\Core\Integrity;
 
 /**
  * DDL + idempotent migration for the two integrity-monitoring tables.
  *
  * Two tables instead of one because their access patterns are completely different:
  *
- *  - `wp_securepress_integrity_baselines` is a wide, write-heavy table: every scan
+ *  - `wp_presssentinel_integrity_baselines` is a wide, write-heavy table: every scan
  *    re-writes the entire baseline rows for one scope. Indexed by `(scope, path)` so
  *    diff lookups are O(log n).
- *  - `wp_securepress_integrity_findings` is append-mostly and read by the admin UI.
+ *  - `wp_presssentinel_integrity_findings` is append-mostly and read by the admin UI.
  *    Indexed by `(severity, created_at)` for the default "highest severity, newest
  *    first" listing.
  *
@@ -21,10 +21,10 @@ namespace SecurePress\Core\Integrity;
  */
 final class IntegritySchema
 {
-    public const BASELINE_TABLE = 'securepress_integrity_baselines';
-    public const FINDING_TABLE = 'securepress_integrity_findings';
+    public const BASELINE_TABLE = 'presssentinel_integrity_baselines';
+    public const FINDING_TABLE = 'presssentinel_integrity_findings';
 
-    public const VERSION_OPTION = 'securepress_integrity_db_version';
+    public const VERSION_OPTION = 'presssentinel_integrity_db_version';
     public const VERSION = 1;
 
     public function baselineTable(): string

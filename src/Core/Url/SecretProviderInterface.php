@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Url;
+namespace PressSentinel\Core\Url;
 
 /**
  * Supplies the HMAC secret used by {@see UrlSigner}.

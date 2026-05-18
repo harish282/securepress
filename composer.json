@@ -1,5 +1,5 @@
 {
-    "name": "securepress/securepress",
+    "name": "presssentinel/press-sentinel",
     "description": "Laravel-inspired security infrastructure for WordPress",
     "license": "GPL-2.0-or-later",
     "type": "wordpress-plugin",
@@ -11,12 +11,12 @@
     },
     "autoload": {
         "psr-4": {
-            "SecurePress\\": "src/"
+            "PressSentinel\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "SecurePress\\Tests\\": "tests/"
+            "PressSentinel\\Tests\\": "tests/"
         }
     },
     "config": {

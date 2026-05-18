@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Sessions;
+namespace PressSentinel\Core\Auth\Sessions;
 
 /**
- * DDL for the SecurePress sessions table, mirrored on the audit-log schema pattern.
+ * DDL for the PressSentinel sessions table, mirrored on the audit-log schema pattern.
  *
  * Stored separately from `wp_user_meta['session_tokens']` because that field is
  * (a) opaque/serialised, (b) overwritten on every login, and (c) not designed for
@@ -13,8 +13,8 @@ namespace SecurePress\Core\Auth\Sessions;
  */
 final class SessionSchema
 {
-    public const TABLE = 'securepress_sessions';
-    public const VERSION_OPTION = 'securepress_sessions_db_version';
+    public const TABLE = 'presssentinel_sessions';
+    public const VERSION_OPTION = 'presssentinel_sessions_db_version';
     public const VERSION = 1;
 
     public function tableName(): string

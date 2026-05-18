@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity\Scanners;
+namespace PressSentinel\Core\Integrity\Scanners;
 
-use SecurePress\Core\Integrity\Finding;
-use SecurePress\Core\Integrity\FindingSeverity;
-use SecurePress\Core\Integrity\FindingType;
-use SecurePress\Core\Integrity\Manifest;
-use SecurePress\Core\Integrity\ManifestBuilder;
-use SecurePress\Core\Integrity\ManifestDiff;
-use SecurePress\Core\Integrity\ManifestRepositoryInterface;
+use PressSentinel\Core\Integrity\Finding;
+use PressSentinel\Core\Integrity\FindingSeverity;
+use PressSentinel\Core\Integrity\FindingType;
+use PressSentinel\Core\Integrity\Manifest;
+use PressSentinel\Core\Integrity\ManifestBuilder;
+use PressSentinel\Core\Integrity\ManifestDiff;
+use PressSentinel\Core\Integrity\ManifestRepositoryInterface;
 
 /**
  * Diffs the live filesystem against a stored baseline for one scope.

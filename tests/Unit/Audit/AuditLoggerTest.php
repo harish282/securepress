@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Audit;
+namespace PressSentinel\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
-use SecurePress\Core\Audit\ArrayAuditLogRepository;
-use SecurePress\Core\Audit\AuditEvent;
-use SecurePress\Core\Audit\AuditEventLevel;
-use SecurePress\Core\Audit\AuditLogger;
-use SecurePress\Core\Audit\AuditLogRepositoryInterface;
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Audit\ArrayAuditLogRepository;
+use PressSentinel\Core\Audit\AuditEvent;
+use PressSentinel\Core\Audit\AuditEventLevel;
+use PressSentinel\Core\Audit\AuditLogger;
+use PressSentinel\Core\Audit\AuditLogRepositoryInterface;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 final class AuditLoggerTest extends TestCase
 {
@@ -26,7 +26,7 @@ final class AuditLoggerTest extends TestCase
         $this->serverBackup = $_SERVER;
         $_SERVER = [
             'REMOTE_ADDR' => '203.0.113.10',
-            'HTTP_USER_AGENT' => 'SecurePressTest/1.0',
+            'HTTP_USER_AGENT' => 'PressSentinelTest/1.0',
             'REQUEST_URI' => '/wp-admin/options-general.php',
         ];
     }
@@ -50,7 +50,7 @@ final class AuditLoggerTest extends TestCase
         self::assertSame(7, $stored->actorId);
         self::assertSame('Alice Example', $stored->actorName);
         self::assertSame('203.0.113.10', $stored->ip);
-        self::assertSame('SecurePressTest/1.0', $stored->userAgent);
+        self::assertSame('PressSentinelTest/1.0', $stored->userAgent);
         self::assertSame('/wp-admin/options-general.php', $stored->requestUri);
     }
 
@@ -142,7 +142,7 @@ final class AuditLoggerTest extends TestCase
         $logger->error('event.error');
         $logger->critical('event.critical');
 
-        $page = $repo->paginate(new \SecurePress\Core\Audit\AuditLogQuery());
+        $page = $repo->paginate(new \PressSentinel\Core\Audit\AuditLogQuery());
 
         $byAction = [];
         foreach ($page->items as $event) {
@@ -168,9 +168,9 @@ final class AuditLoggerTest extends TestCase
                 return null;
             }
 
-            public function paginate(\SecurePress\Core\Audit\AuditLogQuery $query): \SecurePress\Core\Audit\AuditLogPage
+            public function paginate(\PressSentinel\Core\Audit\AuditLogQuery $query): \PressSentinel\Core\Audit\AuditLogPage
             {
-                return new \SecurePress\Core\Audit\AuditLogPage([], 0, 1, 25);
+                return new \PressSentinel\Core\Audit\AuditLogPage([], 0, 1, 25);
             }
 
             public function count(): int

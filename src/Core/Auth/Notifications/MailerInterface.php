@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Notifications;
+namespace PressSentinel\Core\Auth\Notifications;
 
 interface MailerInterface
 {

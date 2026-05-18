@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\RateLimit;
+namespace PressSentinel\Core\RateLimit;
 
 use Closure;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Persists rate-limit counters in WordPress transients.

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Auth;
+namespace PressSentinel\Auth;
 
-use SecurePress\Core\Auth\Lockout\LoginLockoutService;
-use SecurePress\Core\Auth\Notifications\AuthNotifier;
-use SecurePress\Core\Auth\Sessions\SessionFingerprinter;
-use SecurePress\Core\Auth\Sessions\SessionService;
-use SecurePress\Core\Auth\SuspiciousLogin\LoginContext;
-use SecurePress\Core\Auth\SuspiciousLogin\SuspicionDetector;
-use SecurePress\Core\Auth\TwoFactor\TwoFactorService;
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Recovery\SafeMode;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
+use PressSentinel\Core\Auth\Notifications\AuthNotifier;
+use PressSentinel\Core\Auth\Sessions\SessionFingerprinter;
+use PressSentinel\Core\Auth\Sessions\SessionService;
+use PressSentinel\Core\Auth\SuspiciousLogin\LoginContext;
+use PressSentinel\Core\Auth\SuspiciousLogin\SuspicionDetector;
+use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Recovery\SafeMode;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Registers all the WordPress hooks that make up the authentication-hardening flow.

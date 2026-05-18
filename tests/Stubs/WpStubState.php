@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Stubs;
+namespace PressSentinel\Tests\Stubs;
 
-use SecurePress\Tests\Stubs\WpDieException;
+use PressSentinel\Tests\Stubs\WpDieException;
 
 /**
  * Mutable state backing the WordPress function stubs in tests/Stubs/wp-functions.php.
@@ -66,7 +66,7 @@ final class WpStubState
     public static array $registeredFilters = [];
 
     /**
-     * URLs passed to {@see \SecurePress\Core\Support\WpHelper::safeRedirect()}
+     * URLs passed to {@see \PressSentinel\Core\Support\WpHelper::safeRedirect()}
      * during the current test scope. We capture instead of redirecting so
      * admin_post handler tests can assert the destination.
      *

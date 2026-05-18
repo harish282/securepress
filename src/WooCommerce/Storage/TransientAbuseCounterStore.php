@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Storage;
+namespace PressSentinel\WooCommerce\Storage;
 
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Production abuse counter store, backed by WordPress transients.

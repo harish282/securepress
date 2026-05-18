@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Middleware\Checkout;
+namespace PressSentinel\WooCommerce\Middleware\Checkout;
 
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Signal;
-use SecurePress\WooCommerce\Middleware\WcMiddlewareInterface;
-use SecurePress\WooCommerce\Storage\AbuseCounterStoreInterface;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Signal;
+use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
+use PressSentinel\WooCommerce\Storage\AbuseCounterStoreInterface;
 
 /**
  * "How many checkout attempts has this IP/email tried in the last window?"

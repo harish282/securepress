@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Middleware\Checkout;
+namespace PressSentinel\WooCommerce\Middleware\Checkout;
 
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Signal;
-use SecurePress\WooCommerce\Middleware\WcMiddlewareInterface;
-use SecurePress\WooCommerce\Services\BehaviorClock;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Signal;
+use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
+use PressSentinel\WooCommerce\Services\BehaviorClock;
 
 /**
  * Bot-vs-human discrimination for checkout submissions.
@@ -88,7 +88,7 @@ final class BotCheckoutMiddleware implements WcMiddlewareInterface
      */
     public function __construct(
         private readonly BehaviorClock $clock,
-        private readonly string $honeypotField = 'securepress_hp',
+        private readonly string $honeypotField = 'presssentinel_hp',
         private readonly int $minSecondsToSubmit = 0,
         private readonly string $timingAction = self::TIMING_REPORT,
         private readonly array $extraScannerUas = [],

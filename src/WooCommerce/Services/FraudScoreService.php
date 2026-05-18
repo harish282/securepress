@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Services;
+namespace PressSentinel\WooCommerce\Services;
 
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
 
 /**
- * Turns an accumulated set of {@see \SecurePress\WooCommerce\Detection\Signal}s into
+ * Turns an accumulated set of {@see \PressSentinel\WooCommerce\Detection\Signal}s into
  * a final {@see Decision}.
  *
  * Two configurable thresholds:

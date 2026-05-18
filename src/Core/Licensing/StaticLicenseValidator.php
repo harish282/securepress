@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Licensing;
+namespace PressSentinel\Core\Licensing;
 
 /**
  * Validator backed by a static allowlist of known-good keys.

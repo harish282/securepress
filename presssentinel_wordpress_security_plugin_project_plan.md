@@ -1,10 +1,10 @@
-# SecurePress — Project Plan
+# PressSentinel — Project Plan
 
 ## Vision
 
-SecurePress aims to become a modern security infrastructure layer for WordPress inspired by Laravel’s architecture and developer experience.
+PressSentinel aims to become a modern security infrastructure layer for WordPress inspired by Laravel’s architecture and developer experience.
 
-Instead of competing as another traditional firewall or malware scanner, SecurePress will focus on:
+Instead of competing as another traditional firewall or malware scanner, PressSentinel will focus on:
 
 - Middleware-based security
 - Developer-first APIs
@@ -105,7 +105,7 @@ Avoid building these in the first versions:
 # 4. Proposed Folder Structure
 
 ```txt
-securepress/
+presssentinel/
 ├── bootstrap/
 ├── config/
 ├── resources/
@@ -125,7 +125,7 @@ securepress/
 │   └── cache/
 ├── tests/
 ├── vendor/
-├── securepress.php
+├── press-sentinel.php
 └── composer.json
 ```
 
@@ -154,7 +154,7 @@ $app->bind(LoggerInterface::class, MonologLogger::class);
 
 ## 5.2 Middleware Pipeline
 
-The middleware system becomes the foundation of SecurePress.
+The middleware system becomes the foundation of PressSentinel.
 
 Example:
 
@@ -630,7 +630,7 @@ Potential keywords:
 
 # 15. Long-Term Vision
 
-SecurePress evolves into:
+PressSentinel evolves into:
 
 > "The modern security and infrastructure framework for WordPress applications."
 
@@ -704,7 +704,7 @@ The opportunity is:
 - middleware-based protection
 - Laravel-inspired APIs
 
-If executed correctly, SecurePress can become:
+If executed correctly, PressSentinel can become:
 
 > "The Laravel-style security framework for WordPress developers."
 

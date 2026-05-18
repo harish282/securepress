@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\WooCommerce\Services;
+namespace PressSentinel\Tests\Unit\WooCommerce\Services;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Signal;
-use SecurePress\WooCommerce\Services\FraudScoreService;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Signal;
+use PressSentinel\WooCommerce\Services\FraudScoreService;
 
 /**
- * @see \SecurePress\WooCommerce\Services\FraudScoreService
+ * @see \PressSentinel\WooCommerce\Services\FraudScoreService
  */
 final class FraudScoreServiceTest extends TestCase
 {

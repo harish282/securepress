@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Integrity;
+namespace PressSentinel\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Integrity\Manifest;
-use SecurePress\Core\Integrity\ManifestDiff;
-use SecurePress\Core\Integrity\ManifestEntry;
+use PressSentinel\Core\Integrity\Manifest;
+use PressSentinel\Core\Integrity\ManifestDiff;
+use PressSentinel\Core\Integrity\ManifestEntry;
 
 /**
- * @see \SecurePress\Core\Integrity\ManifestDiff
+ * @see \PressSentinel\Core\Integrity\ManifestDiff
  */
 final class ManifestDiffTest extends TestCase
 {

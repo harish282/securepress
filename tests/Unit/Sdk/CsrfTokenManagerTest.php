@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Sdk;
+namespace PressSentinel\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Middleware\CsrfProtectionMiddleware;
-use SecurePress\Sdk\Csrf\CsrfTokenManager;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Middleware\CsrfProtectionMiddleware;
+use PressSentinel\Sdk\Csrf\CsrfTokenManager;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Sdk\Csrf\CsrfTokenManager
+ * @see \PressSentinel\Sdk\Csrf\CsrfTokenManager
  */
 final class CsrfTokenManagerTest extends TestCase
 {

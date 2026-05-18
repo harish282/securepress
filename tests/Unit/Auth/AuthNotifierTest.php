@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\Notifications\AuthNotifier;
-use SecurePress\Core\Auth\Notifications\ArrayMailer;
-use SecurePress\Core\Logging\NullLogger;
+use PressSentinel\Core\Auth\Notifications\AuthNotifier;
+use PressSentinel\Core\Auth\Notifications\ArrayMailer;
+use PressSentinel\Core\Logging\NullLogger;
 
 final class AuthNotifierTest extends TestCase
 {

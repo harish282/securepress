@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\UrlDisguise;
+namespace PressSentinel\Core\UrlDisguise;
 
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Registers rewrite rules for a custom login path, optionally answers direct
  * `wp-login.php` with HTTP 404 when blocking is enabled, and loads the real
  * login bootstrap on the custom slug.
  *
- * A top rewrite maps `/{login_slug}/` to `index.php?securepress_ud_login=1`,
+ * A top rewrite maps `/{login_slug}/` to `index.php?presssentinel_ud_login=1`,
  * then this module `require`s `wp-login.php` and exits.
  *
  * After changing the slug or toggling the feature, WordPress rewrite rules must
- * be flushed — {@see \SecurePress\Core\Plugin} hooks `update_option_*` to
+ * be flushed — {@see \PressSentinel\Core\Plugin} hooks `update_option_*` to
  * re-register rules and call {@see WpHelper::flushRewriteRules()}.
  */
 final class UrlDisguiseModule
 {
-    public const QUERY_LOGIN = 'securepress_ud_login';
+    public const QUERY_LOGIN = 'presssentinel_ud_login';
 
     private static bool $loginBootstrapStarted = false;
 
@@ -246,12 +246,12 @@ final class UrlDisguiseModule
         }
         self::$loginBootstrapStarted = true;
 
-        \do_action('securepress_url_disguise_before_wp_login');
+        \do_action('presssentinel_url_disguise_before_wp_login');
         // Included `wp-login.php` runs in this method's scope; core omits these on plain GET.
         $user_login = '';
         $error = '';
         require_once $loginPhp;
-        if (!\defined('SECUREPRESS_TESTING')) {
+        if (!\defined('PRESS_SENTINEL_TESTING')) {
             exit; // @codeCoverageIgnore
         }
     }
@@ -411,7 +411,7 @@ final class UrlDisguiseModule
             WpHelper::statusHeader(404);
             \header('Content-Type: text/html; charset=UTF-8');
         }
-        if (!\defined('SECUREPRESS_TESTING')) {
+        if (!\defined('PRESS_SENTINEL_TESTING')) {
             echo '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Not Found</title></head>'
                 . '<body><h1>Not Found</h1><p>The requested URL was not found on this server.</p></body></html>';
             exit; // @codeCoverageIgnore

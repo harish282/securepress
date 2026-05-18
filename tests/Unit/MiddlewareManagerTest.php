@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit;
+namespace PressSentinel\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Container;
-use SecurePress\Core\Middleware\MiddlewareException;
-use SecurePress\Core\Middleware\MiddlewareInterface;
-use SecurePress\Core\Middleware\MiddlewareManager;
-use SecurePress\Core\Middleware\MiddlewarePipeline;
-use SecurePress\Core\Middleware\MiddlewareRegistry;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Middleware\MiddlewareException;
+use PressSentinel\Core\Middleware\MiddlewareInterface;
+use PressSentinel\Core\Middleware\MiddlewareManager;
+use PressSentinel\Core\Middleware\MiddlewarePipeline;
+use PressSentinel\Core\Middleware\MiddlewareRegistry;
 
 final class MiddlewareManagerTest extends TestCase
 {

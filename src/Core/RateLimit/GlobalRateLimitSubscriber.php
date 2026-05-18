@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\RateLimit;
+namespace PressSentinel\Core\RateLimit;
 
-use SecurePress\Core\Support\RequestContext;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Middleware\RateLimitMiddleware;
+use PressSentinel\Core\Support\RequestContext;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Middleware\RateLimitMiddleware;
 
 /**
  * Wires {@see RateLimitMiddleware} into WordPress so the dashboard / settings
@@ -69,7 +69,7 @@ final class GlobalRateLimitSubscriber
         $retry = (int) ($out['rate_limit']['retry_after'] ?? 60);
 
         return new \WP_Error(
-            'securepress_rate_limit',
+            'presssentinel_rate_limit',
             (string) (($out['response'] ?? [])['message'] ?? 'Too many requests.'),
             ['status' => 429, 'retry_after' => $retry]
         );
@@ -148,7 +148,7 @@ final class GlobalRateLimitSubscriber
             }
         }
 
-        if (\defined('SECUREPRESS_TESTING')) {
+        if (\defined('PRESS_SENTINEL_TESTING')) {
             return;
         }
 

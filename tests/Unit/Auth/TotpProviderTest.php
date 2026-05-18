@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\TwoFactor\Base32;
-use SecurePress\Core\Auth\TwoFactor\TotpProvider;
+use PressSentinel\Core\Auth\TwoFactor\Base32;
+use PressSentinel\Core\Auth\TwoFactor\TotpProvider;
 
 final class TotpProviderTest extends TestCase
 {
@@ -66,11 +66,11 @@ final class TotpProviderTest extends TestCase
     public function test_provisioning_uri_includes_required_parameters(): void
     {
         $totp = new TotpProvider();
-        $uri = $totp->provisioningUri('SecurePress', 'alice@example.com', 'JBSWY3DPEHPK3PXP');
+        $uri = $totp->provisioningUri('PressSentinel', 'alice@example.com', 'JBSWY3DPEHPK3PXP');
 
-        self::assertStringStartsWith('otpauth://totp/SecurePress:alice%40example.com?', $uri);
+        self::assertStringStartsWith('otpauth://totp/PressSentinel:alice%40example.com?', $uri);
         self::assertStringContainsString('secret=JBSWY3DPEHPK3PXP', $uri);
-        self::assertStringContainsString('issuer=SecurePress', $uri);
+        self::assertStringContainsString('issuer=PressSentinel', $uri);
         self::assertStringContainsString('algorithm=SHA1', $uri);
         self::assertStringContainsString('digits=6', $uri);
         self::assertStringContainsString('period=30', $uri);

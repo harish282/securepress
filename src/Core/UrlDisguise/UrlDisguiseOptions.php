@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\UrlDisguise;
+namespace PressSentinel\Core\UrlDisguise;
 
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Recovery\SafeMode;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Recovery\SafeMode;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Configuration for disguising the default WordPress login URL behind a custom path slug.
@@ -18,13 +18,13 @@ use SecurePress\Core\Support\WpHelper;
  */
 final class UrlDisguiseOptions
 {
-    public const OPTION_NAME = 'securepress_url_disguise';
+    public const OPTION_NAME = 'presssentinel_url_disguise';
 
     /** @var list<string> */
     public const RESERVED_SLUGS = [
         'wp-admin', 'wp-login', 'wp-content', 'wp-includes', 'wp-json',
         'feed', 'page', 'comments', 'search', 'author', 'category', 'tag',
-        'securepress', 'admin', 'login', 'xmlrpc', 'robots',
+        'presssentinel', 'admin', 'login', 'xmlrpc', 'robots',
     ];
 
     public function __construct(private readonly Config $config)

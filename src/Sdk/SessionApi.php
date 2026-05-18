@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Sdk;
+namespace PressSentinel\Sdk;
 
-use SecurePress\Core\Auth\Sessions\SessionRecord;
-use SecurePress\Core\Auth\Sessions\SessionService;
-use SecurePress\Core\Container;
+use PressSentinel\Core\Auth\Sessions\SessionRecord;
+use PressSentinel\Core\Auth\Sessions\SessionService;
+use PressSentinel\Core\Container;
 
 /**
  * Public surface for session tracking & revocation.

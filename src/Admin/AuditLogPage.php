@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
-use SecurePress\Core\Audit\AuditEventCategory;
-use SecurePress\Core\Audit\AuditEventLevel;
-use SecurePress\Core\Audit\AuditLogPruner;
-use SecurePress\Core\Audit\AuditLogQuery;
-use SecurePress\Core\Audit\AuditLogRepositoryInterface;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\View\View;
+use PressSentinel\Core\Audit\AuditEventCategory;
+use PressSentinel\Core\Audit\AuditEventLevel;
+use PressSentinel\Core\Audit\AuditLogPruner;
+use PressSentinel\Core\Audit\AuditLogQuery;
+use PressSentinel\Core\Audit\AuditLogRepositoryInterface;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\View\View;
 
 /**
  * Admin "Tools → Audit Logs" page.
@@ -27,11 +27,11 @@ use SecurePress\Core\View\View;
  */
 final class AuditLogPage
 {
-    public const PAGE_SLUG = 'securepress-audit-logs';
+    public const PAGE_SLUG = 'presssentinel-audit-logs';
 
-    public const NONCE_ACTION = 'securepress_audit_logs';
+    public const NONCE_ACTION = 'presssentinel_audit_logs';
 
-    public const STATUS_QUERY_KEY = 'securepress_status';
+    public const STATUS_QUERY_KEY = 'presssentinel_status';
 
     public function __construct(
         private readonly AuditLogRepositoryInterface $repository,
@@ -43,15 +43,15 @@ final class AuditLogPage
     public function register(): void
     {
         WpHelper::addAction('admin_menu', [$this, 'addMenu']);
-        WpHelper::addAction('admin_post_securepress_clear_audit_logs', [$this, 'handleClear']);
-        WpHelper::addAction('admin_post_securepress_prune_audit_logs', [$this, 'handlePrune']);
+        WpHelper::addAction('admin_post_presssentinel_clear_audit_logs', [$this, 'handleClear']);
+        WpHelper::addAction('admin_post_presssentinel_prune_audit_logs', [$this, 'handlePrune']);
     }
 
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            SecurePressMenuPage::PARENT_SLUG,
-            'SecurePress Audit Logs',
+            PressSentinelMenuPage::PARENT_SLUG,
+            'PressSentinel Audit Logs',
             'Audit Logs',
             'manage_options',
             self::PAGE_SLUG,
@@ -157,7 +157,7 @@ final class AuditLogPage
         $url = $base . '?' . http_build_query($args);
 
         WpHelper::safeRedirect($url);
-        if (!\defined('SECUREPRESS_TESTING')) {
+        if (!\defined('PRESS_SENTINEL_TESTING')) {
             exit; // @codeCoverageIgnore
         }
     }

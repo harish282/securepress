@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use SecurePress\Admin\SecurePressMenuPage;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Admin\PressSentinelMenuPage;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * @var string $pageSlug
@@ -16,7 +16,7 @@ use SecurePress\Core\Support\WpHelper;
  */
 ?>
 <div class="wrap">
-    <h1>SecurePress audit log settings</h1>
+    <h1>PressSentinel audit log settings</h1>
     <p>Manage database growth for the security audit trail before large deployments.</p>
 
     <?php if (!$masterEnabled): ?>
@@ -26,9 +26,9 @@ use SecurePress\Core\Support\WpHelper;
                 Events are not recorded until you enable the feature on the
                 <a href="<?= WpHelper::escapeAttribute(
                     \function_exists('admin_url')
-                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . SecurePressMenuPage::PARENT_SLUG)
+                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . PressSentinelMenuPage::PARENT_SLUG)
                         : '#'
-                ) ?>">SecurePress dashboard</a>.
+                ) ?>">PressSentinel dashboard</a>.
                 Retention and level settings below still apply once logging is turned back on.
             </p>
         </div>

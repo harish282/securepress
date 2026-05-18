@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Core\UrlDisguise;
+namespace PressSentinel\Tests\Unit\Core\UrlDisguise;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\UrlDisguise\UrlDisguiseModule;
-use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseModule;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 final class UrlDisguiseModuleTest extends TestCase
 {

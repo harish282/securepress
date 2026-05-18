@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Sdk;
+namespace PressSentinel\Sdk;
 
-use SecurePress\Core\Auth\Lockout\LoginLockoutPolicy;
-use SecurePress\Core\Auth\Lockout\LoginLockoutService;
-use SecurePress\Core\Container;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
+use PressSentinel\Core\Container;
 
 /**
  * Developer surface for the login-lockout subsystem.
  *
  * Useful for plugins that want to participate in the same brute-force defence as
- * SecurePress's own login kernel. For example, a custom REST login endpoint can:
+ * PressSentinel's own login kernel. For example, a custom REST login endpoint can:
  *
  * ```php
  * $api = Security::lockout();

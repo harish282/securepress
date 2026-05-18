@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Bootstrap;
+namespace PressSentinel\Tests\Unit\Bootstrap;
 
 use PHPUnit\Framework\Attributes\PreserveGlobalState;
 use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Recovery\SafeMode;
+use PressSentinel\Core\Recovery\SafeMode;
 
 final class SafeModeBootstrapTest extends TestCase
 {
@@ -18,18 +18,18 @@ final class SafeModeBootstrapTest extends TestCase
         if (!\defined('ABSPATH')) {
             \define('ABSPATH', __DIR__ . '/../../');
         }
-        if (!\defined('SECUREPRESS_BOOTSTRAP_PATH')) {
-            \define('SECUREPRESS_BOOTSTRAP_PATH', dirname(__DIR__, 3) . '/bootstrap');
+        if (!\defined('PRESS_SENTINEL_BOOTSTRAP_PATH')) {
+            \define('PRESS_SENTINEL_BOOTSTRAP_PATH', dirname(__DIR__, 3) . '/bootstrap');
         }
 
-        $_ENV['SECUREPRESS_SAFE_MODE'] = 'true';
-        $_SERVER['SECUREPRESS_SAFE_MODE'] = 'true';
-        putenv('SECUREPRESS_SAFE_MODE=true');
+        $_ENV['PRESS_SENTINEL_SAFE_MODE'] = 'true';
+        $_SERVER['PRESS_SENTINEL_SAFE_MODE'] = 'true';
+        putenv('PRESS_SENTINEL_SAFE_MODE=true');
 
-        require SECUREPRESS_BOOTSTRAP_PATH . '/safe-mode.php';
+        require PRESS_SENTINEL_BOOTSTRAP_PATH . '/safe-mode.php';
 
-        self::assertTrue(\defined('SECUREPRESS_SAFE_MODE'));
-        self::assertTrue(SECUREPRESS_SAFE_MODE);
+        self::assertTrue(\defined('PRESS_SENTINEL_SAFE_MODE'));
+        self::assertTrue(PRESS_SENTINEL_SAFE_MODE);
         self::assertTrue(SafeMode::isActive());
     }
 }

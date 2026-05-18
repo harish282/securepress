@@ -2,35 +2,35 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Performance;
+namespace PressSentinel\Tests\Performance;
 
 use Closure;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Audit\ArrayAuditLogRepository;
-use SecurePress\Core\Audit\AuditEvent;
-use SecurePress\Core\Audit\AuditLogger;
-use SecurePress\Core\Auth\Lockout\ArrayLockoutStore;
-use SecurePress\Core\Auth\Lockout\LoginLockoutPolicy;
-use SecurePress\Core\Auth\Lockout\LoginLockoutService;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Headers\HeaderRegistryFactory;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\Integrity\Heuristics\EvalBase64Heuristic;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Core\RateLimit\ArrayStore;
-use SecurePress\Core\RateLimit\RateLimiter;
-use SecurePress\Core\UrlDisguise\UrlDisguiseModule;
-use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\Middleware\RateLimitMiddleware;
-use SecurePress\Middleware\SecurityHeadersMiddleware;
-use SecurePress\Tests\Stubs\WpStubState;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Services\FraudScoreService;
+use PressSentinel\Core\Audit\ArrayAuditLogRepository;
+use PressSentinel\Core\Audit\AuditEvent;
+use PressSentinel\Core\Audit\AuditLogger;
+use PressSentinel\Core\Auth\Lockout\ArrayLockoutStore;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Headers\HeaderRegistryFactory;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\Integrity\Heuristics\EvalBase64Heuristic;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Core\RateLimit\ArrayStore;
+use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseModule;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
+use PressSentinel\Middleware\RateLimitMiddleware;
+use PressSentinel\Middleware\SecurityHeadersMiddleware;
+use PressSentinel\Tests\Stubs\WpStubState;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Services\FraudScoreService;
 
 /**
  * Micro-benchmarks for code paths that correspond to dashboard features in
- * {@see \SecurePress\Admin\FeatureRegistry}. These are not load tests; they
+ * {@see \PressSentinel\Admin\FeatureRegistry}. These are not load tests; they
  * measure repeated in-process work with in-memory stubs only.
  *
  * Thresholds are intentionally loose so CI and slower machines stay green;
@@ -59,7 +59,7 @@ final class FeaturePerformanceBenchTest extends TestCase
         $this->serverBackup = $_SERVER;
         $_SERVER = [
             'REMOTE_ADDR' => '203.0.113.10',
-            'HTTP_USER_AGENT' => 'SecurePressPerf/1.0',
+            'HTTP_USER_AGENT' => 'PressSentinelPerf/1.0',
             'REQUEST_URI' => '/',
         ];
         WpStubState::$homeUrl = 'https://example.test';
@@ -156,7 +156,7 @@ final class FeaturePerformanceBenchTest extends TestCase
         $logger = new AuditLogger(new ArrayAuditLogRepository(), new NullLogger());
         $event = AuditEvent::make('perf.probe', 'other', 'info')
             ->withActor(2, 'Perf User')
-            ->withRequest('203.0.113.10', 'SecurePressPerf/1.0', '/');
+            ->withRequest('203.0.113.10', 'PressSentinelPerf/1.0', '/');
 
         $seconds = $this->bench(static function () use ($logger, $event): void {
             $logger->record($event);

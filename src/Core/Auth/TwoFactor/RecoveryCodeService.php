@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\TwoFactor;
+namespace PressSentinel\Core\Auth\TwoFactor;
 
 /**
  * Generates, hashes, and verifies single-use recovery codes.

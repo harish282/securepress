@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity\Heuristics;
+namespace PressSentinel\Core\Integrity\Heuristics;
 
 /**
  * A single signature/rule that can flag a PHP file as suspicious.
  *
  * Heuristics are intentionally simple, pure functions: given the file's text content,
  * return a list of {@see HeuristicMatch} hits (empty for clean files). They do NOT see
- * the file path, ownership, or any side-channel info — the {@see \SecurePress\Core\Integrity\Scanners\SuspiciousPhpScanner}
+ * the file path, ownership, or any side-channel info — the {@see \PressSentinel\Core\Integrity\Scanners\SuspiciousPhpScanner}
  * is responsible for putting them in context (e.g., suppressing matches in /vendor/ or
  * known-good plugin directories).
  *

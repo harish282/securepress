@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core;
+namespace PressSentinel\Core;
 
 use Closure;
 use RuntimeException;

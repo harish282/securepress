@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Admin;
+namespace PressSentinel\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Admin\LicensePage;
-use SecurePress\Core\Licensing\LicenseStatus;
+use PressSentinel\Admin\LicensePage;
+use PressSentinel\Core\Licensing\LicenseStatus;
 
 /**
- * @see \SecurePress\Admin\LicensePage::shouldShowAdminMenu()
+ * @see \PressSentinel\Admin\LicensePage::shouldShowAdminMenu()
  */
 final class LicensePageMenuVisibilityTest extends TestCase
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Url;
+namespace PressSentinel\Core\Url;
 
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Resolves the URL-signing secret with the priority:
  *
- *  1. `SECUREPRESS_URL_SECRET` environment variable (recommended for production).
+ *  1. `PRESS_SENTINEL_URL_SECRET` environment variable (recommended for production).
  *     Pinning a stable secret means existing signed URLs survive WordPress salt rotation.
  *  2. `wp_salt('auth')` — zero-config fallback that works on any WordPress install.
  *  3. {@see SignedUrlException} — never falls back to a hardcoded value.
@@ -19,7 +19,7 @@ use SecurePress\Core\Support\WpHelper;
  */
 final class WpSaltSecretProvider implements SecretProviderInterface
 {
-    public const ENV_NAME = 'SECUREPRESS_URL_SECRET';
+    public const ENV_NAME = 'PRESS_SENTINEL_URL_SECRET';
 
     public const SALT_SCHEME = 'auth';
 

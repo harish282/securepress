@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Admin;
+namespace PressSentinel\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Admin\MuLoaderStatus;
+use PressSentinel\Admin\MuLoaderStatus;
 
 /**
  * Covers path resolution + presence detection for the MU loader. Both surfaces
@@ -41,7 +41,7 @@ final class MuLoaderStatusTest extends TestCase
     {
         $template = $this->makeTemplateFile();
         $muDir = $this->makeFixtureDir();
-        \file_put_contents($muDir . '/00-securepress-loader.php', "<?php // installed\n");
+        \file_put_contents($muDir . '/00-press-sentinel-loader.php', "<?php // installed\n");
 
         $status = new MuLoaderStatus($template, $muDir);
 
@@ -61,13 +61,13 @@ final class MuLoaderStatusTest extends TestCase
         $status = new MuLoaderStatus($this->makeTemplateFile(), '/tmp/some-mu-plugins/');
 
         self::assertSame('/tmp/some-mu-plugins', $status->expectedDirectory());
-        self::assertStringEndsWith('/00-securepress-loader.php', $status->expectedPath());
+        self::assertStringEndsWith('/00-press-sentinel-loader.php', $status->expectedPath());
     }
 
     public function test_is_installed_safely_returns_false_when_no_mu_directory_can_be_resolved(): void
     {
         // Empty string for muPluginsDir simulates a host that has neither
-        // WPMU_PLUGIN_DIR nor SECUREPRESS_PATH available (an edge case during
+        // WPMU_PLUGIN_DIR nor PRESS_SENTINEL_PATH available (an edge case during
         // very early bootstrap or in some CLI contexts).
         $status = new MuLoaderStatus($this->makeTemplateFile(), '');
 
@@ -78,7 +78,7 @@ final class MuLoaderStatusTest extends TestCase
     private function makeTemplateFile(): string
     {
         $dir = $this->makeFixtureDir();
-        $path = $dir . '/00-securepress-loader.php';
+        $path = $dir . '/00-press-sentinel-loader.php';
         \file_put_contents($path, "<?php\n// template\n");
 
         return $path;
@@ -86,7 +86,7 @@ final class MuLoaderStatusTest extends TestCase
 
     private function makeFixtureDir(): string
     {
-        $dir = \sys_get_temp_dir() . '/securepress-mu-status-' . \uniqid('', true);
+        $dir = \sys_get_temp_dir() . '/presssentinel-mu-status-' . \uniqid('', true);
         \mkdir($dir, 0700, true);
         $this->tempDirs[] = $dir;
 

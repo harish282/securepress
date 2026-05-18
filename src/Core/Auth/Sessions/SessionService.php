@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Sessions;
+namespace PressSentinel\Core\Auth\Sessions;
 
-use SecurePress\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\LoggerInterface;
 
 /**
  * High-level orchestration for session tracking and revocation.

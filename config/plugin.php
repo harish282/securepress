@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
     'app' => [
-        'name' => 'SecurePress',
+        'name' => 'PressSentinel',
         'env' => 'production',
         'debug' => false,
     ],
@@ -17,14 +17,14 @@ return [
      *
      * Beta trial: when `beta_trial.enabled` is true and there is no valid license key,
      * the install receives Pro capabilities for `duration_days` from the first
-     * request that evaluates licensing (`securepress_beta_trial_started_at` is set
-     * once). Override with `SECUREPRESS_BETA_TRIAL_ENABLED` and
-     * `SECUREPRESS_BETA_TRIAL_DURATION_DAYS`. PHPUnit forces the trial off in
+     * request that evaluates licensing (`presssentinel_beta_trial_started_at` is set
+     * once). Override with `PRESS_SENTINEL_BETA_TRIAL_ENABLED` and
+     * `PRESS_SENTINEL_BETA_TRIAL_DURATION_DAYS`. PHPUnit forces the trial off in
      * `tests/bootstrap.php` so the suite stays deterministic.
      *
      * Early access: when `early_access` is true and there is no valid key, Pro
      * unlocks with **no expiry** (use sparingly, e.g. private previews). When on, it
-     * wins over the beta trial. Override with `SECUREPRESS_EARLY_ACCESS`. PHPUnit
+     * wins over the beta trial. Override with `PRESS_SENTINEL_EARLY_ACCESS`. PHPUnit
      * forces it off in `tests/bootstrap.php`.
      */
     'pro_license' => [
@@ -42,12 +42,12 @@ return [
     'logging' => [
         'channel' => 'file',
         'level' => 'info',
-        'file' => 'securepress.log',
+        'file' => 'presssentinel.log',
     ],
     /**
      * Disguise default `wp-login.php` behind a custom URL slug. Master
      * `enabled` is mirrored on the dashboard; slug is configured on
-     * SecurePress → URL disguise. Off by default — enabling without saving
+     * PressSentinel → URL disguise. Off by default — enabling without saving
      * permalinks / slug can lock admins out.
      */
     'url_disguise' => [
@@ -57,7 +57,7 @@ return [
         'block_default_wp_login' => true,
     ],
     'rate_limit' => [
-        // Master switch. Mirrored on the SecurePress dashboard's feature
+        // Master switch. Mirrored on the PressSentinel dashboard's feature
         // toggle list and the dedicated Rate Limiting settings page.
         // Default off: enable after tuning — global HTTP enforcement skips wp-admin.
         'enabled' => false,
@@ -73,7 +73,7 @@ return [
         'enabled' => true,
         'retention_days' => 90,
         'auto_prune_enabled' => true,
-        // Events below this PSR-3 level are not inserted into wp_securepress_audit_logs.
+        // Events below this PSR-3 level are not inserted into wp_presssentinel_audit_logs.
         'min_storage_level' => 'notice',
         'mirror_to_file_logger' => false,
         'listeners' => [
@@ -103,8 +103,8 @@ return [
 
         'two_factor' => [
             // The HMAC issuer string baked into provisioning URIs — shows up in the
-            // user's authenticator app (e.g., "SecurePress: alice@example.com").
-            'issuer' => 'SecurePress',
+            // user's authenticator app (e.g., "PressSentinel: alice@example.com").
+            'issuer' => 'PressSentinel',
             // How long a pending 2FA challenge stays valid after the user submits
             // their password but before they enter the code.
             'challenge_ttl_seconds' => 600,
@@ -142,7 +142,7 @@ return [
     ],
     'licensing' => [
         // Offline HMAC keys use a per-install secret in the options table
-        // (`securepress_license_hmac_secret`), auto-created on activation — no
+        // (`presssentinel_license_hmac_secret`), auto-created on activation — no
         // wp-config required. This value is only a fallback before the option exists.
         'secret' => 'change-me-in-production',
     ],
@@ -164,7 +164,7 @@ return [
             // when the admin explicitly wants instant rejection.
             'min_seconds_to_submit' => 0,
             'timing_action' => 'report',
-            'honeypot_field_name' => 'securepress_hp',
+            'honeypot_field_name' => 'presssentinel_hp',
             'bot' => [
                 // Extra User-Agent substrings to flag as scanners. The middleware
                 // already ships with sqlmap/nikto/wpscan/curl/wget/etc.
@@ -192,7 +192,7 @@ return [
             // Hard-deny disposable email domains on registration.
             'deny_disposable_emails' => true,
             // HoneypotMiddleware: hidden field name + min seconds to submit.
-            'honeypot_field_name' => 'securepress_hp',
+            'honeypot_field_name' => 'presssentinel_hp',
             'min_seconds_to_submit' => 0,
         ],
 
@@ -252,7 +252,7 @@ return [
     ],
     'security_headers' => [
         // Master switch for the entire feature. When false, no header is emitted
-        // regardless of the per-header `enabled` flags. Lets the SecurePress
+        // regardless of the per-header `enabled` flags. Lets the PressSentinel
         // dashboard turn the whole module off in one click without zeroing the
         // per-header config (which an admin may want to keep for later).
         'enabled' => true,

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Middleware\Api;
+namespace PressSentinel\WooCommerce\Middleware\Api;
 
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Signal;
-use SecurePress\WooCommerce\Middleware\WcMiddlewareInterface;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Signal;
+use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
 
 /**
  * Cheap pre-filter that emits suspicion signals (and occasionally short-circuits)

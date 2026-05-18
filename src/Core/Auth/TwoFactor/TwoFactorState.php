@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\TwoFactor;
+namespace PressSentinel\Core\Auth\TwoFactor;
 
 /**
  * Immutable snapshot of a user's 2FA configuration as persisted by the repository.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Pipelines;
+namespace PressSentinel\WooCommerce\Pipelines;
 
 /**
  * The configured pipeline for WooCommerce checkout protection.

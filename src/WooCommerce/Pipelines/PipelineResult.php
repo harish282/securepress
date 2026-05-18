@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Pipelines;
+namespace PressSentinel\WooCommerce\Pipelines;
 
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Decision;
 
 /**
  * Bundles the original {@see DetectionContext}, the final {@see Decision}, and the

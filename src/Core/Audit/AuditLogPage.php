@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Audit;
+namespace PressSentinel\Core\Audit;
 
 /**
  * One page of audit log results — the items + pagination metadata for the admin UI.

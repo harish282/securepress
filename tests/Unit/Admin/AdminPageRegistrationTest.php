@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Admin;
+namespace PressSentinel\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use SecurePress\Admin\AuditLogPage;
-use SecurePress\Admin\FileIntegrityPage;
-use SecurePress\Admin\HealthDiagnosticsPage;
-use SecurePress\Admin\LicensePage;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Admin\AuditLogPage;
+use PressSentinel\Admin\FileIntegrityPage;
+use PressSentinel\Admin\HealthDiagnosticsPage;
+use PressSentinel\Admin\LicensePage;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
  * Regression coverage for the bug that left `Prune now` / `Clear all logs` /
@@ -47,12 +47,12 @@ final class AdminPageRegistrationTest extends TestCase
         $page->register();
 
         self::assertTrue(
-            WpStubState::hasAction('admin_post_securepress_clear_audit_logs'),
-            'AuditLogPage must register the admin_post_securepress_clear_audit_logs handler so the "Clear all logs" button works.'
+            WpStubState::hasAction('admin_post_presssentinel_clear_audit_logs'),
+            'AuditLogPage must register the admin_post_presssentinel_clear_audit_logs handler so the "Clear all logs" button works.'
         );
         self::assertTrue(
-            WpStubState::hasAction('admin_post_securepress_prune_audit_logs'),
-            'AuditLogPage must register the admin_post_securepress_prune_audit_logs handler so the "Run prune now" button works.'
+            WpStubState::hasAction('admin_post_presssentinel_prune_audit_logs'),
+            'AuditLogPage must register the admin_post_presssentinel_prune_audit_logs handler so the "Run prune now" button works.'
         );
         self::assertTrue(
             WpStubState::hasAction('admin_menu'),
@@ -66,11 +66,11 @@ final class AdminPageRegistrationTest extends TestCase
         $page->register();
 
         $expected = [
-            'admin_post_securepress_integrity_rescan',
-            'admin_post_securepress_integrity_review',
-            'admin_post_securepress_integrity_delete',
-            'admin_post_securepress_integrity_clear',
-            'admin_post_securepress_integrity_reset_baseline',
+            'admin_post_presssentinel_integrity_rescan',
+            'admin_post_presssentinel_integrity_review',
+            'admin_post_presssentinel_integrity_delete',
+            'admin_post_presssentinel_integrity_clear',
+            'admin_post_presssentinel_integrity_reset_baseline',
         ];
         foreach ($expected as $hook) {
             self::assertTrue(
@@ -96,8 +96,8 @@ final class AdminPageRegistrationTest extends TestCase
         $page = (new ReflectionClass(LicensePage::class))->newInstanceWithoutConstructor();
         $page->register();
 
-        self::assertTrue(WpStubState::hasAction('admin_post_securepress_license_save'));
-        self::assertTrue(WpStubState::hasAction('admin_post_securepress_license_clear'));
+        self::assertTrue(WpStubState::hasAction('admin_post_presssentinel_license_save'));
+        self::assertTrue(WpStubState::hasAction('admin_post_presssentinel_license_clear'));
     }
 
     /**
@@ -139,7 +139,7 @@ final class AdminPageRegistrationTest extends TestCase
         $invoked = false;
 
         \add_action('init', static function () use (&$invoked): void {
-            \add_action('admin_post_securepress_test', static function () use (&$invoked): void {
+            \add_action('admin_post_presssentinel_test', static function () use (&$invoked): void {
                 $invoked = true;
             });
         });
@@ -148,7 +148,7 @@ final class AdminPageRegistrationTest extends TestCase
         WpStubState::dispatchAction('init');
         // admin_menu is intentionally NOT fired here — admin-post.php skips it.
         WpStubState::dispatchAction('admin_init');
-        WpStubState::dispatchAction('admin_post_securepress_test');
+        WpStubState::dispatchAction('admin_post_presssentinel_test');
 
         self::assertTrue(
             $invoked,

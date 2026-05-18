@@ -2,36 +2,36 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
-use SecurePress\Core\Licensing\LicenseHmacSecretProvisioner;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Licensing\LicenseStatus;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\Licensing\LicenseStatus;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
- * Settings → SecurePress License admin page.
+ * Settings → PressSentinel License admin page.
  *
  * Three concerns:
  *  - **Show** the current status (active/expired/invalid/none) with a masked key.
  *  - **Submit** a new key (POST, nonce-checked, capability-gated). Persisted in
- *    the WordPress options table (`securepress_pro_license`).
+ *    the WordPress options table (`presssentinel_pro_license`).
  *  - **Clear** the key — useful for moving a license to a different site.
  *
  * The page intentionally does NOT contact the vendor server. Validation goes through
- * the injected {@see \SecurePress\Core\Licensing\LicenseValidatorInterface}, so the
+ * the injected {@see \PressSentinel\Core\Licensing\LicenseValidatorInterface}, so the
  * default offline-HMAC validator works fully air-gapped. Operators who want online
  * checks bind a different validator in `Plugin.php`.
  *
  * UI is deliberately minimal — no marketing, no upgrade comparison table. Pages
- * across SecurePress link to this one for license management, and this stays the
+ * across PressSentinel link to this one for license management, and this stays the
  * single source of truth for that workflow.
  */
 final class LicensePage
 {
-    public const PAGE_SLUG = 'securepress-license';
-    public const NONCE_ACTION = 'securepress_license';
-    public const STATUS_QUERY_KEY = 'securepress_license_status';
+    public const PAGE_SLUG = 'presssentinel-license';
+    public const NONCE_ACTION = 'presssentinel_license';
+    public const STATUS_QUERY_KEY = 'presssentinel_license_status';
 
     public function __construct(private readonly LicenseManager $license)
     {
@@ -40,8 +40,8 @@ final class LicensePage
     public function register(): void
     {
         WpHelper::addAction('admin_menu', [$this, 'addMenu']);
-        WpHelper::addAction('admin_post_securepress_license_save', [$this, 'handleSave']);
-        WpHelper::addAction('admin_post_securepress_license_clear', [$this, 'handleClear']);
+        WpHelper::addAction('admin_post_presssentinel_license_save', [$this, 'handleSave']);
+        WpHelper::addAction('admin_post_presssentinel_license_clear', [$this, 'handleClear']);
     }
 
     /**
@@ -61,8 +61,8 @@ final class LicensePage
         }
 
         WpHelper::addSubmenuPage(
-            SecurePressMenuPage::PARENT_SLUG,
-            'SecurePress License',
+            PressSentinelMenuPage::PARENT_SLUG,
+            'PressSentinel License',
             'License',
             'manage_options',
             self::PAGE_SLUG,
@@ -91,7 +91,7 @@ final class LicensePage
         };
 
         echo '<div class="wrap">';
-        echo '<h1>SecurePress &mdash; License</h1>';
+        echo '<h1>PressSentinel &mdash; License</h1>';
 
         if ($statusFlag !== '') {
             echo '<div class="notice notice-info is-dismissible"><p>'
@@ -106,11 +106,11 @@ final class LicensePage
         $isBetaTrial = $status->state === LicenseStatus::STATE_BETA_TRIAL;
         echo '<h2>' . ($isEarly ? 'License key (optional)' : 'Enter your license key') . '</h2>';
         echo '<form method="post" action="' . WpHelper::escapeUrl($adminUrl) . '">';
-        echo '<input type="hidden" name="action" value="securepress_license_save" />';
+        echo '<input type="hidden" name="action" value="presssentinel_license_save" />';
         echo $nonceField(self::NONCE_ACTION);
         echo '<table class="form-table" role="presentation"><tbody>';
-        echo '<tr><th scope="row"><label for="securepress-license-key">License key</label></th><td>';
-        echo '<input type="text" id="securepress-license-key" name="license_key" value="" class="regular-text" autocomplete="off" placeholder="SP-PRO-1714780800-1746316800-………" />';
+        echo '<tr><th scope="row"><label for="presssentinel-license-key">License key</label></th><td>';
+        echo '<input type="text" id="presssentinel-license-key" name="license_key" value="" class="regular-text" autocomplete="off" placeholder="SP-PRO-1714780800-1746316800-………" />';
         $keyHelp = 'Keys are signed offline. Paste a valid key when your organization issues one.';
         if ($isEarly) {
             $keyHelp = 'Commercial licensing is not required at this stage. If you already have a signed preview key, paste it here; a valid key takes over from early access automatically.';
@@ -133,7 +133,7 @@ final class LicensePage
 
         if ($mayClearStoredKey) {
             echo '<form method="post" action="' . WpHelper::escapeUrl($adminUrl) . '" style="margin-top: 1em;">';
-            echo '<input type="hidden" name="action" value="securepress_license_clear" />';
+            echo '<input type="hidden" name="action" value="presssentinel_license_clear" />';
             echo $nonceField(self::NONCE_ACTION);
             echo '<button type="submit" class="button" onclick="return confirm(\'Remove the current license?\');">Remove license</button>';
             echo '</form>';
@@ -260,7 +260,7 @@ final class LicensePage
             self::STATUS_QUERY_KEY => $message,
         ]);
         WpHelper::safeRedirect($url);
-        if (!\defined('SECUREPRESS_TESTING')) {
+        if (!\defined('PRESS_SENTINEL_TESTING')) {
             exit; // @codeCoverageIgnore
         }
     }

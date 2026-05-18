@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Lockout;
+namespace PressSentinel\Core\Auth\Lockout;
 
-use SecurePress\Core\Recovery\SafeMode;
+use PressSentinel\Core\Recovery\SafeMode;
 
 /**
  * Coordinates the failed-login counter / lockout lifecycle behind a friendly API.

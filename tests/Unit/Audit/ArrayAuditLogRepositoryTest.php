@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Audit;
+namespace PressSentinel\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Audit\ArrayAuditLogRepository;
-use SecurePress\Core\Audit\AuditEvent;
-use SecurePress\Core\Audit\AuditLogQuery;
+use PressSentinel\Core\Audit\ArrayAuditLogRepository;
+use PressSentinel\Core\Audit\AuditEvent;
+use PressSentinel\Core\Audit\AuditLogQuery;
 
 final class ArrayAuditLogRepositoryTest extends TestCase
 {

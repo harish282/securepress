@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit;
+namespace PressSentinel\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Headers\HeaderRegistryFactory;
-use SecurePress\Core\Headers\SecurityHeadersDispatcher;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Headers\HeaderRegistryFactory;
+use PressSentinel\Core\Headers\SecurityHeadersDispatcher;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 final class SecurityHeadersDispatcherTest extends TestCase
 {

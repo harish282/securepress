@@ -6,58 +6,58 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-if (!defined('SECUREPRESS_FILE')) {
-    define('SECUREPRESS_FILE', dirname(__DIR__) . '/securepress.php');
+if (!defined('PRESS_SENTINEL_FILE')) {
+    define('PRESS_SENTINEL_FILE', dirname(__DIR__) . '/press-sentinel.php');
 }
 
-if (!defined('SECUREPRESS_PATH')) {
-    define('SECUREPRESS_PATH', dirname(__DIR__));
+if (!defined('PRESS_SENTINEL_PATH')) {
+    define('PRESS_SENTINEL_PATH', dirname(__DIR__));
 }
 
-if (!defined('SECUREPRESS_BOOTSTRAP_PATH')) {
-    define('SECUREPRESS_BOOTSTRAP_PATH', SECUREPRESS_PATH . '/bootstrap');
+if (!defined('PRESS_SENTINEL_BOOTSTRAP_PATH')) {
+    define('PRESS_SENTINEL_BOOTSTRAP_PATH', PRESS_SENTINEL_PATH . '/bootstrap');
 }
 
-if (!defined('SECUREPRESS_CONFIG_PATH')) {
-    define('SECUREPRESS_CONFIG_PATH', SECUREPRESS_PATH . '/config');
+if (!defined('PRESS_SENTINEL_CONFIG_PATH')) {
+    define('PRESS_SENTINEL_CONFIG_PATH', PRESS_SENTINEL_PATH . '/config');
 }
 
-if (!defined('SECUREPRESS_SRC_PATH')) {
-    define('SECUREPRESS_SRC_PATH', SECUREPRESS_PATH . '/src');
+if (!defined('PRESS_SENTINEL_SRC_PATH')) {
+    define('PRESS_SENTINEL_SRC_PATH', PRESS_SENTINEL_PATH . '/src');
 }
 
-if (!defined('SECUREPRESS_STORAGE_PATH')) {
-    define('SECUREPRESS_STORAGE_PATH', SECUREPRESS_PATH . '/storage');
+if (!defined('PRESS_SENTINEL_STORAGE_PATH')) {
+    define('PRESS_SENTINEL_STORAGE_PATH', PRESS_SENTINEL_PATH . '/storage');
 }
 
-if (!defined('SECUREPRESS_LOG_PATH')) {
-    define('SECUREPRESS_LOG_PATH', SECUREPRESS_STORAGE_PATH . '/logs');
+if (!defined('PRESS_SENTINEL_LOG_PATH')) {
+    define('PRESS_SENTINEL_LOG_PATH', PRESS_SENTINEL_STORAGE_PATH . '/logs');
 }
 
-if (!defined('SECUREPRESS_RESOURCES_PATH')) {
-    define('SECUREPRESS_RESOURCES_PATH', SECUREPRESS_PATH . '/resources');
+if (!defined('PRESS_SENTINEL_RESOURCES_PATH')) {
+    define('PRESS_SENTINEL_RESOURCES_PATH', PRESS_SENTINEL_PATH . '/resources');
 }
 
-if (!defined('SECUREPRESS_VIEWS_PATH')) {
-    define('SECUREPRESS_VIEWS_PATH', SECUREPRESS_RESOURCES_PATH . '/views');
+if (!defined('PRESS_SENTINEL_VIEWS_PATH')) {
+    define('PRESS_SENTINEL_VIEWS_PATH', PRESS_SENTINEL_RESOURCES_PATH . '/views');
 }
 
-if (!defined('SECUREPRESS_MU_LOADER_FILENAME')) {
-    define('SECUREPRESS_MU_LOADER_FILENAME', '00-securepress-loader.php');
+if (!defined('PRESS_SENTINEL_MU_LOADER_FILENAME')) {
+    define('PRESS_SENTINEL_MU_LOADER_FILENAME', '00-press-sentinel-loader.php');
 }
 
-if (!defined('SECUREPRESS_MU_LOADER_TEMPLATE_PATH')) {
-    define('SECUREPRESS_MU_LOADER_TEMPLATE_PATH', SECUREPRESS_PATH . '/mu-loader/' . SECUREPRESS_MU_LOADER_FILENAME);
+if (!defined('PRESS_SENTINEL_MU_LOADER_TEMPLATE_PATH')) {
+    define('PRESS_SENTINEL_MU_LOADER_TEMPLATE_PATH', PRESS_SENTINEL_PATH . '/mu-loader/' . PRESS_SENTINEL_MU_LOADER_FILENAME);
 }
 
 /**
  * Emergency recovery: set in wp-config.php before wp-settings.php loads.
  *
- *     define('SECUREPRESS_SAFE_MODE', true);
+ *     define('PRESS_SENTINEL_SAFE_MODE', true);
  *
- * While true, SecurePress bypasses login URL disguise, login lockouts, and global
+ * While true, PressSentinel bypasses login URL disguise, login lockouts, and global
  * rate limiting without changing stored options. Remove after you regain access.
  *
- * You can also set `SECUREPRESS_SAFE_MODE=true` in the plugin `.env` file; see
- * `.env.example` and {@see SECUREPRESS_BOOTSTRAP_PATH}/safe-mode.php.
+ * You can also set `PRESS_SENTINEL_SAFE_MODE=true` in the plugin `.env` file; see
+ * `.env.example` and {@see PRESS_SENTINEL_BOOTSTRAP_PATH}/safe-mode.php.
  */

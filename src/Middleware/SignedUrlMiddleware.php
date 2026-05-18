@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Middleware;
+namespace PressSentinel\Middleware;
 
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Core\Middleware\MiddlewareInterface;
-use SecurePress\Core\Url\NonceStoreInterface;
-use SecurePress\Core\Url\SignedUrlResult;
-use SecurePress\Core\Url\UrlSigner;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Core\Middleware\MiddlewareInterface;
+use PressSentinel\Core\Url\NonceStoreInterface;
+use PressSentinel\Core\Url\SignedUrlResult;
+use PressSentinel\Core\Url\UrlSigner;
 
 /**
  * Verifies that the current request URL carries a valid signature minted by {@see UrlSigner}.

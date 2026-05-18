@@ -2,32 +2,32 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Admin;
+namespace PressSentinel\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Admin\Diagnostics\HealthDiagnosticsCollector;
-use SecurePress\Admin\FeatureRegistry;
-use SecurePress\Admin\MuLoaderStatus;
-use SecurePress\Core\Audit\AuditLogOptions;
-use SecurePress\Core\Audit\AuditLogPruner;
-use SecurePress\Core\Audit\AuditLogSchema;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Auth\Sessions\SessionSchema;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\Integrity\IntegrityOptions;
-use SecurePress\Core\Integrity\IntegritySchema;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Licensing\LicenseStatus;
-use SecurePress\Core\Licensing\LicenseValidatorInterface;
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\Tests\Stubs\WpStubState;
-use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
+use PressSentinel\Admin\Diagnostics\HealthDiagnosticsCollector;
+use PressSentinel\Admin\FeatureRegistry;
+use PressSentinel\Admin\MuLoaderStatus;
+use PressSentinel\Core\Audit\AuditLogOptions;
+use PressSentinel\Core\Audit\AuditLogPruner;
+use PressSentinel\Core\Audit\AuditLogSchema;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Auth\Sessions\SessionSchema;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\Integrity\IntegrityOptions;
+use PressSentinel\Core\Integrity\IntegritySchema;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\Licensing\LicenseStatus;
+use PressSentinel\Core\Licensing\LicenseValidatorInterface;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
+use PressSentinel\Tests\Stubs\WpStubState;
+use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
- * @see \SecurePress\Admin\Diagnostics\HealthDiagnosticsCollector
+ * @see \PressSentinel\Admin\Diagnostics\HealthDiagnosticsCollector
  */
 final class HealthDiagnosticsCollectorTest extends TestCase
 {

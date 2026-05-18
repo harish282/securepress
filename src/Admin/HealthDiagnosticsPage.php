@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
-use SecurePress\Admin\Diagnostics\HealthDiagnosticsCollector;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\View\View;
+use PressSentinel\Admin\Diagnostics\HealthDiagnosticsCollector;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\View\View;
 
 /**
- * SecurePress → Health: read-only operational snapshot.
+ * PressSentinel → Health: read-only operational snapshot.
  */
 final class HealthDiagnosticsPage
 {
-    public const PAGE_SLUG = 'securepress-health';
+    public const PAGE_SLUG = 'presssentinel-health';
 
     public function __construct(
         private readonly HealthDiagnosticsCollector $collector,
@@ -29,8 +29,8 @@ final class HealthDiagnosticsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            SecurePressMenuPage::PARENT_SLUG,
-            'SecurePress Health',
+            PressSentinelMenuPage::PARENT_SLUG,
+            'PressSentinel Health',
             'Health',
             'manage_options',
             self::PAGE_SLUG,

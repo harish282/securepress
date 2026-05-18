@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Licensing;
+namespace PressSentinel\Tests\Unit\Licensing;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Licensing\LicenseStatus;
-use SecurePress\Core\Licensing\LocalLicenseValidator;
+use PressSentinel\Core\Licensing\LicenseStatus;
+use PressSentinel\Core\Licensing\LocalLicenseValidator;
 
 /**
- * @see \SecurePress\Core\Licensing\LocalLicenseValidator
+ * @see \PressSentinel\Core\Licensing\LocalLicenseValidator
  */
 final class LocalLicenseValidatorTest extends TestCase
 {

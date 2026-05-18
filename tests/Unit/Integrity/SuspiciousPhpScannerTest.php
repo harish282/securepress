@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Integrity;
+namespace PressSentinel\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Integrity\FindingType;
-use SecurePress\Core\Integrity\Heuristics\EvalBase64Heuristic;
-use SecurePress\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
-use SecurePress\Core\Integrity\Scanners\SuspiciousPhpScanner;
+use PressSentinel\Core\Integrity\FindingType;
+use PressSentinel\Core\Integrity\Heuristics\EvalBase64Heuristic;
+use PressSentinel\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
+use PressSentinel\Core\Integrity\Scanners\SuspiciousPhpScanner;
 
 /**
- * @see \SecurePress\Core\Integrity\Scanners\SuspiciousPhpScanner
+ * @see \PressSentinel\Core\Integrity\Scanners\SuspiciousPhpScanner
  */
 final class SuspiciousPhpScannerTest extends TestCase
 {

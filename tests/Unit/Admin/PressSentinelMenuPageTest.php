@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Admin;
+namespace PressSentinel\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use SecurePress\Admin\FeatureRegistry;
-use SecurePress\Admin\SecurePressMenuPage;
-use SecurePress\Core\Audit\AuditLogOptions;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\Integrity\IntegrityOptions;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Licensing\LicenseStatus;
-use SecurePress\Core\Licensing\LicenseValidatorInterface;
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\Tests\Stubs\WpDieException;
-use SecurePress\Tests\Stubs\WpStubState;
-use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
+use PressSentinel\Admin\FeatureRegistry;
+use PressSentinel\Admin\PressSentinelMenuPage;
+use PressSentinel\Core\Audit\AuditLogOptions;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\Integrity\IntegrityOptions;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\Licensing\LicenseStatus;
+use PressSentinel\Core\Licensing\LicenseValidatorInterface;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
+use PressSentinel\Tests\Stubs\WpDieException;
+use PressSentinel\Tests\Stubs\WpStubState;
+use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
  * End-to-end coverage for the dashboard's feature-toggle save handler.
@@ -36,7 +36,7 @@ use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
  * handler only touches `FeatureRegistry`, so we don't need to spin up the
  * full DI graph (license, dashboard tile data, audit repo, etc.).
  */
-final class SecurePressMenuPageTest extends TestCase
+final class PressSentinelMenuPageTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -52,7 +52,7 @@ final class SecurePressMenuPageTest extends TestCase
     }
 
     /**
-     * WordPress's `wp_verify_nonce()` (and SecurePress's wrapper) reads from
+     * WordPress's `wp_verify_nonce()` (and PressSentinel's wrapper) reads from
      * $_REQUEST. PHP only auto-populates $_REQUEST on real HTTP boots, so
      * tests have to set both $_POST AND $_REQUEST to model the same nonce
      * arriving via a real form submission.
@@ -70,7 +70,7 @@ final class SecurePressMenuPageTest extends TestCase
 
         // Grant cap + nonce so the guards pass.
         WpStubState::$currentUserCapabilities = ['manage_options' => true];
-        $this->presentNonce(SecurePressMenuPage::NONCE_ACTION, 'tk');
+        $this->presentNonce(PressSentinelMenuPage::NONCE_ACTION, 'tk');
 
         // Form payload: turn audit_log off, leave everything else checked.
         $_POST['features'] = [
@@ -92,8 +92,8 @@ final class SecurePressMenuPageTest extends TestCase
         // Redirect to the dashboard with the saved-count status flag.
         self::assertCount(1, WpStubState::$redirects);
         $url = WpStubState::$redirects[0];
-        self::assertStringContainsString('page=' . SecurePressMenuPage::DASHBOARD_SLUG, $url);
-        self::assertStringContainsString(SecurePressMenuPage::STATUS_QUERY_KEY . '=saved%3A2', $url);
+        self::assertStringContainsString('page=' . PressSentinelMenuPage::DASHBOARD_SLUG, $url);
+        self::assertStringContainsString(PressSentinelMenuPage::STATUS_QUERY_KEY . '=saved%3A2', $url);
 
         $rate = WpStubState::$options[RateLimitOptions::OPTION_NAME] ?? null;
         self::assertIsArray($rate);
@@ -104,7 +104,7 @@ final class SecurePressMenuPageTest extends TestCase
     {
         $page = $this->makePage();
         WpStubState::$currentUserCapabilities = ['manage_options' => true];
-        $this->presentNonce(SecurePressMenuPage::NONCE_ACTION, 'tk');
+        $this->presentNonce(PressSentinelMenuPage::NONCE_ACTION, 'tk');
         // Every master switch at its default config state (URL disguise defaults off).
         $_POST['features'] = [
             'auth_hardening' => '1',
@@ -124,7 +124,7 @@ final class SecurePressMenuPageTest extends TestCase
     {
         $page = $this->makePage();
         // No capability granted.
-        $this->presentNonce(SecurePressMenuPage::NONCE_ACTION, 'tk');
+        $this->presentNonce(PressSentinelMenuPage::NONCE_ACTION, 'tk');
         $_POST['features'] = ['audit_log' => '0'];
 
         try {
@@ -159,7 +159,7 @@ final class SecurePressMenuPageTest extends TestCase
     {
         $page = $this->makePage();
         WpStubState::$currentUserCapabilities = ['manage_options' => true];
-        $this->presentNonce(SecurePressMenuPage::NONCE_ACTION, 'tk');
+        $this->presentNonce(PressSentinelMenuPage::NONCE_ACTION, 'tk');
         $_POST['features'] = [
             'audit_log' => '1',
             'totally_made_up_feature' => '1',
@@ -174,12 +174,12 @@ final class SecurePressMenuPageTest extends TestCase
     }
 
     /**
-     * Builds a SecurePressMenuPage with a real FeatureRegistry but a dummy
+     * Builds a PressSentinelMenuPage with a real FeatureRegistry but a dummy
      * license manager. The handler doesn't touch any of the dashboard-render
      * dependencies, so we only need to inject what `handleSaveFeatures()` and
      * `redirect()` actually reach for.
      */
-    private function makePage(): SecurePressMenuPage
+    private function makePage(): PressSentinelMenuPage
     {
         $config = new Config();
         $validator = new class () implements LicenseValidatorInterface {
@@ -199,10 +199,10 @@ final class SecurePressMenuPageTest extends TestCase
             new LicenseManager($validator, $config),
         );
 
-        $page = (new ReflectionClass(SecurePressMenuPage::class))->newInstanceWithoutConstructor();
+        $page = (new ReflectionClass(PressSentinelMenuPage::class))->newInstanceWithoutConstructor();
         // The page's `register()` and dashboard render paths read other
         // properties, but `handleSaveFeatures()` only reads the registry.
-        $featuresProp = (new ReflectionClass(SecurePressMenuPage::class))->getProperty('features');
+        $featuresProp = (new ReflectionClass(PressSentinelMenuPage::class))->getProperty('features');
         $featuresProp->setValue($page, $registry);
 
         return $page;

@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Audit;
+namespace PressSentinel\Core\Audit;
 
 /**
  * DDL + idempotent migration for the audit log table.
  *
  * Uses {@see dbDelta()} so the migration can be re-run safely on plugin updates — `dbDelta`
  * compares the requested schema with the current one and emits only the necessary `ALTER`
- * statements. We track our own `securepress_db_version` option so we don't even call
+ * statements. We track our own `presssentinel_db_version` option so we don't even call
  * `dbDelta` when the schema is already current (saves a DB round-trip on every boot).
  */
 final class AuditLogSchema
 {
-    public const TABLE = 'securepress_audit_logs';
+    public const TABLE = 'presssentinel_audit_logs';
 
-    public const VERSION_OPTION = 'securepress_audit_log_db_version';
+    public const VERSION_OPTION = 'presssentinel_audit_log_db_version';
 
     /**
      * Bump this when the schema changes; the installer will re-run dbDelta.

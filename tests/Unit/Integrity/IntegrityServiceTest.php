@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Integrity;
+namespace PressSentinel\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Integrity\ArrayFindingRepository;
-use SecurePress\Core\Integrity\Finding;
-use SecurePress\Core\Integrity\FindingSeverity;
-use SecurePress\Core\Integrity\FindingType;
-use SecurePress\Core\Integrity\IntegrityService;
-use SecurePress\Core\Integrity\Scanners\ScannerInterface;
+use PressSentinel\Core\Integrity\ArrayFindingRepository;
+use PressSentinel\Core\Integrity\Finding;
+use PressSentinel\Core\Integrity\FindingSeverity;
+use PressSentinel\Core\Integrity\FindingType;
+use PressSentinel\Core\Integrity\IntegrityService;
+use PressSentinel\Core\Integrity\Scanners\ScannerInterface;
 
 /**
- * @see \SecurePress\Core\Integrity\IntegrityService
+ * @see \PressSentinel\Core\Integrity\IntegrityService
  */
 final class IntegrityServiceTest extends TestCase
 {

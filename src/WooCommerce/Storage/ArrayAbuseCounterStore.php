@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Storage;
+namespace PressSentinel\WooCommerce\Storage;
 
 use Closure;
 

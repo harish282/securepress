@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Auth;
+namespace PressSentinel\Auth;
 
-use SecurePress\Core\Auth\TwoFactor\PendingChallenge;
-use SecurePress\Core\Auth\TwoFactor\TwoFactorMethod;
-use SecurePress\Core\Auth\TwoFactor\TwoFactorService;
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\View\View;
+use PressSentinel\Core\Auth\TwoFactor\PendingChallenge;
+use PressSentinel\Core\Auth\TwoFactor\TwoFactorMethod;
+use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\View\View;
 
 /**
  * Handles the `wp-login.php?action=sp_2fa` route — both the GET (form) and POST (verify).

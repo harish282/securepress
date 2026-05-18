@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
-use SecurePress\Core\Audit\AuditLogOptions;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\Integrity\IntegrityOptions;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
+use PressSentinel\Core\Audit\AuditLogOptions;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\Integrity\IntegrityOptions;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
+use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
  * Source of truth for the "what features can the dashboard toggle?" question.

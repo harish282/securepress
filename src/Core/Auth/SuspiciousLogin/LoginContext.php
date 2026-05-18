@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\SuspiciousLogin;
+namespace PressSentinel\Core\Auth\SuspiciousLogin;
 
-use SecurePress\Core\Auth\Sessions\DeviceFingerprint;
+use PressSentinel\Core\Auth\Sessions\DeviceFingerprint;
 
 /**
  * Snapshot of "who is trying to log in, from where" passed to the rule engine.

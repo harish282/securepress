@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\WooCommerce\Detection;
+namespace PressSentinel\Tests\Unit\WooCommerce\Detection;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Detection\Signal;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Detection\Signal;
 
 /**
- * @see \SecurePress\WooCommerce\Detection\DetectionContext
- * @see \SecurePress\WooCommerce\Detection\Decision
+ * @see \PressSentinel\WooCommerce\Detection\DetectionContext
+ * @see \PressSentinel\WooCommerce\Detection\Decision
  */
 final class DetectionContextTest extends TestCase
 {

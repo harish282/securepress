@@ -2,30 +2,30 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Sdk;
+namespace PressSentinel\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Container;
-use SecurePress\Core\Http\RouteGuardRegistry;
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Core\Middleware\MiddlewareInterface;
-use SecurePress\Core\Middleware\MiddlewarePipeline;
-use SecurePress\Core\RateLimit\ArrayStore;
-use SecurePress\Core\RateLimit\RateLimitStoreInterface;
-use SecurePress\Core\RateLimit\RateLimiter;
-use SecurePress\Core\Url\ArrayNonceStore;
-use SecurePress\Core\Url\ArraySecretProvider;
-use SecurePress\Core\Url\NonceStoreInterface;
-use SecurePress\Core\Url\UrlSigner;
-use SecurePress\Facades\Security;
-use SecurePress\Sdk\Exceptions\RouteGuardException;
-use SecurePress\Sdk\Routing\RouteBuilder;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Http\RouteGuardRegistry;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Core\Middleware\MiddlewareInterface;
+use PressSentinel\Core\Middleware\MiddlewarePipeline;
+use PressSentinel\Core\RateLimit\ArrayStore;
+use PressSentinel\Core\RateLimit\RateLimitStoreInterface;
+use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Core\Url\ArrayNonceStore;
+use PressSentinel\Core\Url\ArraySecretProvider;
+use PressSentinel\Core\Url\NonceStoreInterface;
+use PressSentinel\Core\Url\UrlSigner;
+use PressSentinel\Facades\Security;
+use PressSentinel\Sdk\Exceptions\RouteGuardException;
+use PressSentinel\Sdk\Routing\RouteBuilder;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Sdk\Routing\RouteBuilder
- * @see \SecurePress\Facades\Security::route
+ * @see \PressSentinel\Sdk\Routing\RouteBuilder
+ * @see \PressSentinel\Facades\Security::route
  */
 final class RouteBuilderTest extends TestCase
 {

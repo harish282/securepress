@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Sdk;
+namespace PressSentinel\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Sdk\Events\EventDispatcher;
+use PressSentinel\Sdk\Events\EventDispatcher;
 
 /**
- * @see \SecurePress\Sdk\Events\EventDispatcher
+ * @see \PressSentinel\Sdk\Events\EventDispatcher
  */
 final class EventDispatcherTest extends TestCase
 {

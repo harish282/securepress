@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Config\Config;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Core\Auth\AuthHardeningOptions
+ * @see \PressSentinel\Core\Auth\AuthHardeningOptions
  */
 final class AuthHardeningOptionsTest extends TestCase
 {
@@ -43,7 +43,7 @@ final class AuthHardeningOptionsTest extends TestCase
         self::assertSame(50, $resolved['suspicion']['alert_threshold']);
         self::assertTrue($resolved['suspicion']['rules']['new_device']);
 
-        self::assertSame('SecurePress', $resolved['two_factor']['issuer']);
+        self::assertSame('PressSentinel', $resolved['two_factor']['issuer']);
         self::assertSame(600, $resolved['two_factor']['challenge_ttl_seconds']);
 
         self::assertTrue($resolved['notifications']['enabled']);
@@ -168,6 +168,6 @@ final class AuthHardeningOptionsTest extends TestCase
 
         $sanitized = $options->sanitize(['two_factor' => ['issuer' => '   ']]);
 
-        self::assertSame('SecurePress', $sanitized['two_factor']['issuer']);
+        self::assertSame('PressSentinel', $sanitized['two_factor']['issuer']);
     }
 }

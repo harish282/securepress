@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Audit;
+namespace PressSentinel\Tests\Unit\Audit;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Audit\AuditEvent;
-use SecurePress\Core\Audit\AuditEventCategory;
-use SecurePress\Core\Audit\AuditEventLevel;
+use PressSentinel\Core\Audit\AuditEvent;
+use PressSentinel\Core\Audit\AuditEventCategory;
+use PressSentinel\Core\Audit\AuditEventLevel;
 
 final class AuditEventTest extends TestCase
 {

@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Core\Recovery;
+namespace PressSentinel\Tests\Unit\Core\Recovery;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\Lockout\ArrayLockoutStore;
-use SecurePress\Core\Auth\Lockout\LoginLockoutPolicy;
-use SecurePress\Core\Auth\Lockout\LoginLockoutService;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\RateLimit\ArrayStore;
-use SecurePress\Core\RateLimit\RateLimiter;
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Core\Recovery\SafeMode;
-use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\Middleware\RateLimitMiddleware;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Auth\Lockout\ArrayLockoutStore;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\RateLimit\ArrayStore;
+use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Core\Recovery\SafeMode;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
+use PressSentinel\Middleware\RateLimitMiddleware;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 final class SafeModeRecoveryTest extends TestCase
 {
@@ -23,16 +23,16 @@ final class SafeModeRecoveryTest extends TestCase
     {
         WpStubState::reset();
         if (\function_exists('remove_all_filters')) {
-            \remove_all_filters('securepress_safe_mode');
-            \remove_all_filters('securepress_safe_mode_bypasses');
+            \remove_all_filters('presssentinel_safe_mode');
+            \remove_all_filters('presssentinel_safe_mode_bypasses');
         }
     }
 
     protected function tearDown(): void
     {
         if (\function_exists('remove_all_filters')) {
-            \remove_all_filters('securepress_safe_mode');
-            \remove_all_filters('securepress_safe_mode_bypasses');
+            \remove_all_filters('presssentinel_safe_mode');
+            \remove_all_filters('presssentinel_safe_mode_bypasses');
         }
         WpStubState::reset();
     }
@@ -42,7 +42,7 @@ final class SafeModeRecoveryTest extends TestCase
         if (!\function_exists('add_filter')) {
             self::markTestSkipped('WordPress filter API not available.');
         }
-        \add_filter('securepress_safe_mode', static fn (): bool => true);
+        \add_filter('presssentinel_safe_mode', static fn (): bool => true);
     }
 
     public function test_lockout_service_never_locks_in_safe_mode(): void

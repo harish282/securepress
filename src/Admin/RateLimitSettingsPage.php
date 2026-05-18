@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\View\View;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\View\View;
 
 /**
- * Settings → SecurePress Rate Limiting admin page.
+ * Settings → PressSentinel Rate Limiting admin page.
  *
  * Lets a site admin turn the global rate-limit middleware on/off and tune
  * its limit + window values without editing `config/plugin.php`. Mirrors
@@ -23,21 +23,21 @@ use SecurePress\Core\View\View;
  *    canonical and bounds-checked.
  *  - The page is a thin shell — form scaffolding lives in
  *    `resources/views/admin/settings/rate-limit.php`.
- *  - The same `enabled` flag is mirrored on the SecurePress dashboard's
+ *  - The same `enabled` flag is mirrored on the PressSentinel dashboard's
  *    feature-toggle form. Both surfaces read/write through `RateLimitOptions`
  *    so they never drift apart.
  */
 final class RateLimitSettingsPage
 {
-    public const PAGE_SLUG = 'securepress-rate-limit';
+    public const PAGE_SLUG = 'presssentinel-rate-limit';
 
-    public const OPTION_GROUP = 'securepress_rate_limit_group';
+    public const OPTION_GROUP = 'presssentinel_rate_limit_group';
 
     /**
      * Single section: there are only three fields and they're all part of
      * one logical concern. Splitting would be ceremonial.
      */
-    public const SECTION = 'securepress_section_rate_limit';
+    public const SECTION = 'presssentinel_section_rate_limit';
 
     /** @var array{enabled: bool, limit: int, window: int}|null */
     private ?array $cachedOptions = null;
@@ -57,8 +57,8 @@ final class RateLimitSettingsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            SecurePressMenuPage::PARENT_SLUG,
-            'SecurePress Rate Limiting',
+            PressSentinelMenuPage::PARENT_SLUG,
+            'PressSentinel Rate Limiting',
             'Rate Limiting',
             'manage_options',
             self::PAGE_SLUG,
@@ -103,7 +103,7 @@ final class RateLimitSettingsPage
 
     public function renderIntro(): void
     {
-        echo '<p>Caps how many requests a single client may make in a fixed window. Authenticated users are bucketed by user id; anonymous clients by IP. When the cap is exceeded, SecurePress responds with HTTP <code>429 Too Many Requests</code> and emits standard <code>Retry-After</code> / <code>X-RateLimit-*</code> headers.</p>';
+        echo '<p>Caps how many requests a single client may make in a fixed window. Authenticated users are bucketed by user id; anonymous clients by IP. When the cap is exceeded, PressSentinel responds with HTTP <code>429 Too Many Requests</code> and emits standard <code>Retry-After</code> / <code>X-RateLimit-*</code> headers.</p>';
         echo '<p>This is a <strong>global</strong> middleware. Per-route limits set via the <code>Security::rateLimit()</code> SDK still apply on top of this.</p>';
     }
 

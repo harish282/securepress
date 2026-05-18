@@ -8,7 +8,7 @@ declare(strict_types=1);
  */
 ?>
 <div class="wrap">
-    <h1>SecurePress Authentication</h1>
+    <h1>PressSentinel Authentication</h1>
     <p>Configure login lockout, two-factor authentication, session tracking, and suspicious-login alerts. Each user manages their own 2FA enrolment from <strong>Account Security</strong> in the sidebar.</p>
 
     <form method="post" action="options.php">

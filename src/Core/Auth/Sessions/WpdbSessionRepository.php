@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Sessions;
+namespace PressSentinel\Core\Auth\Sessions;
 
 /**
  * Production session repository backed by `$wpdb`.
  *
- * Modelled on {@see \SecurePress\Core\Audit\WpdbAuditLogRepository} so the access
+ * Modelled on {@see \PressSentinel\Core\Audit\WpdbAuditLogRepository} so the access
  * patterns are familiar:
  *  - All raw input goes through `$wpdb->prepare` to defeat injection.
  *  - Reads use `ARRAY_A` and `SessionRecord::fromRow()` to keep the public boundary

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\RateLimit;
+namespace PressSentinel\Core\RateLimit;
 
 /**
  * Outcome of a single rate-limit check.

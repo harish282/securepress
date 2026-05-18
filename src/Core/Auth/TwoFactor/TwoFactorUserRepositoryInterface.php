@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\TwoFactor;
+namespace PressSentinel\Core\Auth\TwoFactor;
 
 /**
  * Persistence contract for per-user 2FA state.

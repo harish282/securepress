@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\Notifications\AuthNotifier;
-use SecurePress\Core\Auth\Notifications\ArrayMailer;
-use SecurePress\Core\Auth\TwoFactor\ArrayChallengeStore;
-use SecurePress\Core\Auth\TwoFactor\ArrayTwoFactorRepository;
-use SecurePress\Core\Auth\TwoFactor\EmailOtpProvider;
-use SecurePress\Core\Auth\TwoFactor\RecoveryCodeService;
-use SecurePress\Core\Auth\TwoFactor\TotpProvider;
-use SecurePress\Core\Auth\TwoFactor\TwoFactorMethod;
-use SecurePress\Core\Auth\TwoFactor\TwoFactorService;
-use SecurePress\Core\Logging\NullLogger;
+use PressSentinel\Core\Auth\Notifications\AuthNotifier;
+use PressSentinel\Core\Auth\Notifications\ArrayMailer;
+use PressSentinel\Core\Auth\TwoFactor\ArrayChallengeStore;
+use PressSentinel\Core\Auth\TwoFactor\ArrayTwoFactorRepository;
+use PressSentinel\Core\Auth\TwoFactor\EmailOtpProvider;
+use PressSentinel\Core\Auth\TwoFactor\RecoveryCodeService;
+use PressSentinel\Core\Auth\TwoFactor\TotpProvider;
+use PressSentinel\Core\Auth\TwoFactor\TwoFactorMethod;
+use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
+use PressSentinel\Core\Logging\NullLogger;
 
 final class TwoFactorServiceTest extends TestCase
 {
@@ -67,7 +67,7 @@ final class TwoFactorServiceTest extends TestCase
         $challenges = new ArrayChallengeStore();
         $emailOtp = new EmailOtpProvider();
 
-        $users->save(3, \SecurePress\Core\Auth\TwoFactor\TwoFactorState::enabled(
+        $users->save(3, \PressSentinel\Core\Auth\TwoFactor\TwoFactorState::enabled(
             TwoFactorMethod::EMAIL_OTP,
             null,
             (new RecoveryCodeService(2))->generate()['hashes'],

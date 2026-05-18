@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Detection;
+namespace PressSentinel\WooCommerce\Detection;
 
 /**
  * The result of running a context through a feature pipeline.

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Audit;
+namespace PressSentinel\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Audit\ArrayAuditLogRepository;
-use SecurePress\Core\Audit\AuditLogger;
-use SecurePress\Core\Audit\AuditLogQuery;
-use SecurePress\Core\Audit\Listeners\PluginListener;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Audit\ArrayAuditLogRepository;
+use PressSentinel\Core\Audit\AuditLogger;
+use PressSentinel\Core\Audit\AuditLogQuery;
+use PressSentinel\Core\Audit\Listeners\PluginListener;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 final class PluginListenerTest extends TestCase
 {

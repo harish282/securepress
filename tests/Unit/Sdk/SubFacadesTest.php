@@ -2,45 +2,45 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Sdk;
+namespace PressSentinel\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Audit\ArrayAuditLogRepository;
-use SecurePress\Core\Audit\AuditLogger;
-use SecurePress\Core\Audit\AuditLoggerInterface;
-use SecurePress\Core\Auth\Lockout\ArrayLockoutStore;
-use SecurePress\Core\Auth\Lockout\LockoutStoreInterface;
-use SecurePress\Core\Auth\Lockout\LoginLockoutPolicy;
-use SecurePress\Core\Auth\Lockout\LoginLockoutService;
-use SecurePress\Core\Auth\Notifications\ArrayMailer;
-use SecurePress\Core\Auth\Notifications\AuthNotifier;
-use SecurePress\Core\Auth\Sessions\ArraySessionRepository;
-use SecurePress\Core\Auth\Sessions\SessionFingerprinter;
-use SecurePress\Core\Auth\Sessions\SessionRepositoryInterface;
-use SecurePress\Core\Auth\Sessions\SessionService;
-use SecurePress\Core\Auth\TwoFactor\ArrayChallengeStore;
-use SecurePress\Core\Auth\TwoFactor\ArrayTwoFactorRepository;
-use SecurePress\Core\Auth\TwoFactor\ChallengeStoreInterface;
-use SecurePress\Core\Auth\TwoFactor\EmailOtpProvider;
-use SecurePress\Core\Auth\TwoFactor\RecoveryCodeService;
-use SecurePress\Core\Auth\TwoFactor\TotpProvider;
-use SecurePress\Core\Auth\TwoFactor\TwoFactorService;
-use SecurePress\Core\Auth\TwoFactor\TwoFactorUserRepositoryInterface;
-use SecurePress\Core\Container;
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Facades\Security;
-use SecurePress\Sdk\AuditApi;
-use SecurePress\Sdk\LockoutApi;
-use SecurePress\Sdk\SessionApi;
-use SecurePress\Sdk\TwoFactorApi;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Audit\ArrayAuditLogRepository;
+use PressSentinel\Core\Audit\AuditLogger;
+use PressSentinel\Core\Audit\AuditLoggerInterface;
+use PressSentinel\Core\Auth\Lockout\ArrayLockoutStore;
+use PressSentinel\Core\Auth\Lockout\LockoutStoreInterface;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
+use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
+use PressSentinel\Core\Auth\Notifications\ArrayMailer;
+use PressSentinel\Core\Auth\Notifications\AuthNotifier;
+use PressSentinel\Core\Auth\Sessions\ArraySessionRepository;
+use PressSentinel\Core\Auth\Sessions\SessionFingerprinter;
+use PressSentinel\Core\Auth\Sessions\SessionRepositoryInterface;
+use PressSentinel\Core\Auth\Sessions\SessionService;
+use PressSentinel\Core\Auth\TwoFactor\ArrayChallengeStore;
+use PressSentinel\Core\Auth\TwoFactor\ArrayTwoFactorRepository;
+use PressSentinel\Core\Auth\TwoFactor\ChallengeStoreInterface;
+use PressSentinel\Core\Auth\TwoFactor\EmailOtpProvider;
+use PressSentinel\Core\Auth\TwoFactor\RecoveryCodeService;
+use PressSentinel\Core\Auth\TwoFactor\TotpProvider;
+use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
+use PressSentinel\Core\Auth\TwoFactor\TwoFactorUserRepositoryInterface;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Facades\Security;
+use PressSentinel\Sdk\AuditApi;
+use PressSentinel\Sdk\LockoutApi;
+use PressSentinel\Sdk\SessionApi;
+use PressSentinel\Sdk\TwoFactorApi;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Sdk\TwoFactorApi
- * @see \SecurePress\Sdk\SessionApi
- * @see \SecurePress\Sdk\LockoutApi
- * @see \SecurePress\Sdk\AuditApi
+ * @see \PressSentinel\Sdk\TwoFactorApi
+ * @see \PressSentinel\Sdk\SessionApi
+ * @see \PressSentinel\Sdk\LockoutApi
+ * @see \PressSentinel\Sdk\AuditApi
  */
 final class SubFacadesTest extends TestCase
 {
@@ -132,9 +132,9 @@ final class SubFacadesTest extends TestCase
         self::assertNotNull($event);
 
         /** @var ArrayAuditLogRepository $repo */
-        $repo = $container->get(\SecurePress\Core\Audit\AuditLogRepositoryInterface::class);
+        $repo = $container->get(\PressSentinel\Core\Audit\AuditLogRepositoryInterface::class);
         self::assertSame(1, $repo->count());
-        $page = $repo->paginate(new \SecurePress\Core\Audit\AuditLogQuery());
+        $page = $repo->paginate(new \PressSentinel\Core\Audit\AuditLogQuery());
         self::assertSame('user.login.success', $page->items[0]->action);
     }
 
@@ -150,9 +150,9 @@ final class SubFacadesTest extends TestCase
             ->record();
 
         /** @var ArrayAuditLogRepository $repo */
-        $repo = $container->get(\SecurePress\Core\Audit\AuditLogRepositoryInterface::class);
+        $repo = $container->get(\PressSentinel\Core\Audit\AuditLogRepositoryInterface::class);
         self::assertSame(1, $repo->count());
-        $page = $repo->paginate(new \SecurePress\Core\Audit\AuditLogQuery());
+        $page = $repo->paginate(new \PressSentinel\Core\Audit\AuditLogQuery());
         $first = $page->items[0];
         self::assertSame('order.refunded', $first->action);
         self::assertSame('woocommerce', $first->category);
@@ -207,13 +207,13 @@ final class SubFacadesTest extends TestCase
 
         // Audit.
         $container->singleton(
-            \SecurePress\Core\Audit\AuditLogRepositoryInterface::class,
-            static fn (): \SecurePress\Core\Audit\AuditLogRepositoryInterface => new ArrayAuditLogRepository()
+            \PressSentinel\Core\Audit\AuditLogRepositoryInterface::class,
+            static fn (): \PressSentinel\Core\Audit\AuditLogRepositoryInterface => new ArrayAuditLogRepository()
         );
         $container->singleton(
             AuditLoggerInterface::class,
             static fn (Container $c): AuditLoggerInterface => new AuditLogger(
-                $c->get(\SecurePress\Core\Audit\AuditLogRepositoryInterface::class),
+                $c->get(\PressSentinel\Core\Audit\AuditLogRepositoryInterface::class),
                 new NullLogger(),
                 true,
                 false

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Middleware;
+namespace PressSentinel\Core\Middleware;
 
 /**
  * Ordered list of global middleware class names.

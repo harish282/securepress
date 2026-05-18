@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * @var string $templatePath
@@ -12,7 +12,7 @@ use SecurePress\Core\Support\WpHelper;
 ?>
 <div class="notice notice-warning">
     <p>
-        <strong>SecurePress:</strong>
+        <strong>PressSentinel:</strong>
         MU loader is not installed. For earliest request monitoring, copy the loader file now.
     </p>
     <p>

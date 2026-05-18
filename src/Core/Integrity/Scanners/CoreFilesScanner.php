@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity\Scanners;
+namespace PressSentinel\Core\Integrity\Scanners;
 
-use SecurePress\Core\Integrity\Checksums\ChecksumProviderInterface;
-use SecurePress\Core\Integrity\Finding;
-use SecurePress\Core\Integrity\FindingSeverity;
-use SecurePress\Core\Integrity\FindingType;
-use SecurePress\Core\Integrity\IntegrityScope;
+use PressSentinel\Core\Integrity\Checksums\ChecksumProviderInterface;
+use PressSentinel\Core\Integrity\Finding;
+use PressSentinel\Core\Integrity\FindingSeverity;
+use PressSentinel\Core\Integrity\FindingType;
+use PressSentinel\Core\Integrity\IntegrityScope;
 
 /**
  * Diffs the live WordPress core tree against the official WP.org checksums for the

@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Integrity;
+namespace PressSentinel\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Integrity\FindingSeverity;
-use SecurePress\Core\Integrity\IntegrityOptions;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Integrity\FindingSeverity;
+use PressSentinel\Core\Integrity\IntegrityOptions;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Core\Integrity\IntegrityOptions
+ * @see \PressSentinel\Core\Integrity\IntegrityOptions
  */
 final class IntegrityOptionsTest extends TestCase
 {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @var \SecurePress\Core\Auth\TwoFactor\TwoFactorState $state
+ * @var \PressSentinel\Core\Auth\TwoFactor\TwoFactorState $state
  * @var string $method_label
- * @var list<\SecurePress\Core\Auth\Sessions\SessionRecord> $sessions
+ * @var list<\PressSentinel\Core\Auth\Sessions\SessionRecord> $sessions
  * @var ?list<string> $recovery_codes
  * @var ?array{secret:string, provisioning_uri:string} $enrolment
  * @var ?array{type:string,message:string} $flash
@@ -13,7 +13,7 @@
  * @var ?int $current_session_id
  */
 
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 $flashType = $flash['type'] ?? '';
 $flashClass = match ($flashType) {

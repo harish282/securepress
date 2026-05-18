@@ -12,7 +12,7 @@
  * @var string $submit_action
  */
 
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Support\WpHelper;
 
 $method = (string) $method;
 $is_email_otp = $method === 'email_otp';

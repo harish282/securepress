@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Core\Recovery;
+namespace PressSentinel\Tests\Unit\Core\Recovery;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Recovery\SafeMode;
+use PressSentinel\Core\Recovery\SafeMode;
 
 final class SafeModeTest extends TestCase
 {
     protected function tearDown(): void
     {
         if (\function_exists('remove_all_filters')) {
-            \remove_all_filters('securepress_safe_mode');
-            \remove_all_filters('securepress_safe_mode_bypasses');
+            \remove_all_filters('presssentinel_safe_mode');
+            \remove_all_filters('presssentinel_safe_mode_bypasses');
         }
     }
 
@@ -30,7 +30,7 @@ final class SafeModeTest extends TestCase
             self::markTestSkipped('WordPress filter API not available.');
         }
 
-        \add_filter('securepress_safe_mode', static fn (): bool => true);
+        \add_filter('presssentinel_safe_mode', static fn (): bool => true);
 
         self::assertTrue(SafeMode::isActive());
         self::assertTrue(SafeMode::bypasses(SafeMode::BYPASS_LOGIN_DISGUISE));
@@ -43,9 +43,9 @@ final class SafeModeTest extends TestCase
             self::markTestSkipped('WordPress filter API not available.');
         }
 
-        \add_filter('securepress_safe_mode', static fn (): bool => true);
+        \add_filter('presssentinel_safe_mode', static fn (): bool => true);
         \add_filter(
-            'securepress_safe_mode_bypasses',
+            'presssentinel_safe_mode_bypasses',
             static fn (): array => [SafeMode::BYPASS_LOCKOUT]
         );
 

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Integrity;
+namespace PressSentinel\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Integrity\IntegrityScope;
-use SecurePress\Core\Integrity\ManifestBuilder;
+use PressSentinel\Core\Integrity\IntegrityScope;
+use PressSentinel\Core\Integrity\ManifestBuilder;
 
 /**
- * @see \SecurePress\Core\Integrity\ManifestBuilder
+ * @see \PressSentinel\Core\Integrity\ManifestBuilder
  */
 final class ManifestBuilderTest extends TestCase
 {

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Admin;
+namespace PressSentinel\WooCommerce\Admin;
 
-use SecurePress\Admin\LicensePage;
-use SecurePress\Admin\SecurePressMenuPage;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\Licensing\LicenseStatus;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
+use PressSentinel\Admin\LicensePage;
+use PressSentinel\Admin\PressSentinelMenuPage;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\Licensing\LicenseStatus;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
 
 /**
  * Settings → WooCommerce Protection admin page.
@@ -26,8 +26,8 @@ use SecurePress\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
  */
 final class WooCommerceProtectionPage
 {
-    public const PAGE_SLUG = 'securepress-woocommerce';
-    public const OPTION_GROUP = 'securepress_wc_protection_group';
+    public const PAGE_SLUG = 'presssentinel-woocommerce';
+    public const OPTION_GROUP = 'presssentinel_wc_protection_group';
 
     public function __construct(
         private readonly WooCommerceProtectionOptions $options,
@@ -44,8 +44,8 @@ final class WooCommerceProtectionPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            SecurePressMenuPage::PARENT_SLUG,
-            'SecurePress WooCommerce Protection',
+            PressSentinelMenuPage::PARENT_SLUG,
+            'PressSentinel WooCommerce Protection',
             'WooCommerce Protection',
             'manage_options',
             self::PAGE_SLUG,
@@ -73,7 +73,7 @@ final class WooCommerceProtectionPage
         $values = $this->options->all();
 
         echo '<div class="wrap">';
-        echo '<h1>SecurePress &mdash; WooCommerce Protection</h1>';
+        echo '<h1>PressSentinel &mdash; WooCommerce Protection</h1>';
 
         $this->renderLicenseBanner($status, $isPro);
 
@@ -108,7 +108,7 @@ final class WooCommerceProtectionPage
                 echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>'
                     . '<strong>Early access.</strong> WooCommerce Protection and the rest of the Pro tier are '
                     . 'unlocked without a commercial license. Optional keys are managed on the '
-                    . '<a href="' . WpHelper::escapeUrl(SecurePressMenuPage::submenuUrl(LicensePage::PAGE_SLUG)) . '">License</a> page.</p></div>';
+                    . '<a href="' . WpHelper::escapeUrl(PressSentinelMenuPage::submenuUrl(LicensePage::PAGE_SLUG)) . '">License</a> page.</p></div>';
 
                 return;
             }
@@ -135,7 +135,7 @@ final class WooCommerceProtectionPage
         $reason = $status->reason !== '' ? $status->reason : 'No active Pro license.';
         $licenseHint = LicensePage::shouldShowAdminMenu($status)
             ? ' Configure a license on the <a href="'
-                . WpHelper::escapeUrl(SecurePressMenuPage::submenuUrl(LicensePage::PAGE_SLUG))
+                . WpHelper::escapeUrl(PressSentinelMenuPage::submenuUrl(LicensePage::PAGE_SLUG))
                 . '">License</a> page.'
             : '';
         echo '<div class="notice notice-warning inline" style="margin-bottom:1em;"><p>'
@@ -145,7 +145,7 @@ final class WooCommerceProtectionPage
     private function renderUpgradePrompt(): void
     {
         echo '<div class="notice notice-info"><p>'
-            . 'WooCommerce Protection is part of the <strong>SecurePress Pro</strong> tier. '
+            . 'WooCommerce Protection is part of the <strong>PressSentinel Pro</strong> tier. '
             . 'It includes behavioural fake-checkout, registration spam, API abuse, and cart abuse defences.'
             . '</p></div>';
     }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Logging;
+namespace PressSentinel\Core\Logging;
 
 interface LoggerInterface
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Http;
+namespace PressSentinel\Core\Http;
 
 /**
  * Collects URI patterns guarded by middleware or future route protection.

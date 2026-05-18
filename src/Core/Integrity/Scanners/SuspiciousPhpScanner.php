@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity\Scanners;
+namespace PressSentinel\Core\Integrity\Scanners;
 
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use SecurePress\Core\Integrity\Finding;
-use SecurePress\Core\Integrity\FindingSeverity;
-use SecurePress\Core\Integrity\FindingType;
-use SecurePress\Core\Integrity\Heuristics\HeuristicInterface;
-use SecurePress\Core\Integrity\Heuristics\HeuristicMatch;
+use PressSentinel\Core\Integrity\Finding;
+use PressSentinel\Core\Integrity\FindingSeverity;
+use PressSentinel\Core\Integrity\FindingType;
+use PressSentinel\Core\Integrity\Heuristics\HeuristicInterface;
+use PressSentinel\Core\Integrity\Heuristics\HeuristicMatch;
 use SplFileInfo;
 
 /**

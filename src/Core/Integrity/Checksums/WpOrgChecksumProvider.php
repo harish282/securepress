@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Integrity\Checksums;
+namespace PressSentinel\Core\Integrity\Checksums;
 
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Logging\NullLogger;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Real WP.org checksum provider — queries

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit;
+namespace PressSentinel\Tests\Unit;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Container;
-use SecurePress\Core\Http\RouteGuardRegistry;
-use SecurePress\Core\Middleware\MiddlewareInterface;
-use SecurePress\Core\Middleware\MiddlewareRegistry;
-use SecurePress\Core\Middleware\MiddlewareStack;
-use SecurePress\Facades\Security;
-use SecurePress\Sdk\Csrf\CsrfTokenManager;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Http\RouteGuardRegistry;
+use PressSentinel\Core\Middleware\MiddlewareInterface;
+use PressSentinel\Core\Middleware\MiddlewareRegistry;
+use PressSentinel\Core\Middleware\MiddlewareStack;
+use PressSentinel\Facades\Security;
+use PressSentinel\Sdk\Csrf\CsrfTokenManager;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 final class SecurityFacadeTest extends TestCase
 {
@@ -40,7 +40,7 @@ final class SecurityFacadeTest extends TestCase
         $container = $this->createMinimalContainer();
 
         Security::bootstrap($container);
-        $unknownClass = 'SecurePress\\Tests\\Stub\\NonExistentMiddleware';
+        $unknownClass = 'PressSentinel\\Tests\\Stub\\NonExistentMiddleware';
         Security::middleware([SecurityTestMiddlewareAlpha::class, $unknownClass]);
 
         self::assertSame([
@@ -48,7 +48,7 @@ final class SecurityFacadeTest extends TestCase
             $unknownClass,
         ], $container->get(MiddlewareStack::class)->all());
 
-        self::expectException(\SecurePress\Core\Middleware\MiddlewareException::class);
+        self::expectException(\PressSentinel\Core\Middleware\MiddlewareException::class);
         $container->get(MiddlewareRegistry::class)->resolve($unknownClass);
     }
 
@@ -98,7 +98,7 @@ final class SecurityFacadeTest extends TestCase
         $url = Security::signedUrl('/reset', expires: 600, params: ['user' => 7], oneTime: true);
         self::assertStringContainsString('n=', $url);
 
-        $store = $container->get(\SecurePress\Core\Url\NonceStoreInterface::class);
+        $store = $container->get(\PressSentinel\Core\Url\NonceStoreInterface::class);
         $params = $this->parseQuery($url);
         $nonce = $params['n'] ?? '';
 
@@ -187,17 +187,17 @@ final class SecurityFacadeTest extends TestCase
     {
         $container = $this->createMinimalContainer();
         $container->singleton(
-            \SecurePress\Core\Config\Config::class,
-            static fn (): \SecurePress\Core\Config\Config => new \SecurePress\Core\Config\Config()
+            \PressSentinel\Core\Config\Config::class,
+            static fn (): \PressSentinel\Core\Config\Config => new \PressSentinel\Core\Config\Config()
         );
 
-        $signer = new \SecurePress\Core\Url\UrlSigner(
-            new \SecurePress\Core\Url\ArraySecretProvider('test-secret-32-bytes-of-entropy-XX')
+        $signer = new \PressSentinel\Core\Url\UrlSigner(
+            new \PressSentinel\Core\Url\ArraySecretProvider('test-secret-32-bytes-of-entropy-XX')
         );
-        $container->set(\SecurePress\Core\Url\UrlSigner::class, $signer);
+        $container->set(\PressSentinel\Core\Url\UrlSigner::class, $signer);
         $container->singleton(
-            \SecurePress\Core\Url\NonceStoreInterface::class,
-            static fn (): \SecurePress\Core\Url\NonceStoreInterface => new \SecurePress\Core\Url\ArrayNonceStore()
+            \PressSentinel\Core\Url\NonceStoreInterface::class,
+            static fn (): \PressSentinel\Core\Url\NonceStoreInterface => new \PressSentinel\Core\Url\ArrayNonceStore()
         );
 
         return $container;

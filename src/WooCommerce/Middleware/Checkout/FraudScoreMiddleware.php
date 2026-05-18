@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\WooCommerce\Middleware\Checkout;
+namespace PressSentinel\WooCommerce\Middleware\Checkout;
 
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Middleware\WcMiddlewareInterface;
-use SecurePress\WooCommerce\Services\FraudScoreService;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
+use PressSentinel\WooCommerce\Services\FraudScoreService;
 
 /**
  * Pipeline tail: turn the accumulated signal score into a final {@see Decision}.

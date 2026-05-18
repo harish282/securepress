@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\WooCommerce\Pipelines;
+namespace PressSentinel\Tests\Unit\WooCommerce\Pipelines;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Middleware\Registration\HoneypotMiddleware;
-use SecurePress\WooCommerce\Middleware\Registration\RegistrationDisposableEmailMiddleware;
-use SecurePress\WooCommerce\Middleware\Registration\RegistrationRateLimitMiddleware;
-use SecurePress\WooCommerce\Pipelines\RegistrationPipeline;
-use SecurePress\WooCommerce\Services\DisposableEmailRegistry;
-use SecurePress\WooCommerce\Storage\ArrayAbuseCounterStore;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Middleware\Registration\HoneypotMiddleware;
+use PressSentinel\WooCommerce\Middleware\Registration\RegistrationDisposableEmailMiddleware;
+use PressSentinel\WooCommerce\Middleware\Registration\RegistrationRateLimitMiddleware;
+use PressSentinel\WooCommerce\Pipelines\RegistrationPipeline;
+use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
+use PressSentinel\WooCommerce\Storage\ArrayAbuseCounterStore;
 
 /**
- * @see \SecurePress\WooCommerce\Pipelines\RegistrationPipeline
- * @see \SecurePress\WooCommerce\Middleware\Registration\HoneypotMiddleware
- * @see \SecurePress\WooCommerce\Middleware\Registration\RegistrationRateLimitMiddleware
- * @see \SecurePress\WooCommerce\Middleware\Registration\RegistrationDisposableEmailMiddleware
+ * @see \PressSentinel\WooCommerce\Pipelines\RegistrationPipeline
+ * @see \PressSentinel\WooCommerce\Middleware\Registration\HoneypotMiddleware
+ * @see \PressSentinel\WooCommerce\Middleware\Registration\RegistrationRateLimitMiddleware
+ * @see \PressSentinel\WooCommerce\Middleware\Registration\RegistrationDisposableEmailMiddleware
  */
 final class RegistrationPipelineTest extends TestCase
 {
@@ -34,7 +34,7 @@ final class RegistrationPipelineTest extends TestCase
     public function test_honeypot_filled_denies_immediately(): void
     {
         $pipeline = $this->makePipeline();
-        $ctx = $this->ctx('alice@example.com')->withData('securepress_hp', 'spam');
+        $ctx = $this->ctx('alice@example.com')->withData('presssentinel_hp', 'spam');
 
         $result = $pipeline->run($ctx);
 
@@ -105,7 +105,7 @@ final class RegistrationPipelineTest extends TestCase
         $store = new ArrayAbuseCounterStore();
 
         return new RegistrationPipeline([
-            new HoneypotMiddleware('securepress_hp', minSecondsToSubmit: 2),
+            new HoneypotMiddleware('presssentinel_hp', minSecondsToSubmit: 2),
             new RegistrationRateLimitMiddleware($store, limit: 5, windowSeconds: 600),
             new RegistrationDisposableEmailMiddleware(new DisposableEmailRegistry(), denyOnMatch: true),
         ]);

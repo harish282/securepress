@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Sdk;
+namespace PressSentinel\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Container;
-use SecurePress\Core\Http\RouteGuardRegistry;
-use SecurePress\Core\Middleware\MiddlewareRegistry;
-use SecurePress\Core\Middleware\MiddlewareStack;
-use SecurePress\Core\RateLimit\ArrayStore;
-use SecurePress\Core\RateLimit\RateLimitStoreInterface;
-use SecurePress\Core\RateLimit\RateLimiter;
-use SecurePress\Facades\Security;
-use SecurePress\Sdk\Exceptions\RateLimitExceededException;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Http\RouteGuardRegistry;
+use PressSentinel\Core\Middleware\MiddlewareRegistry;
+use PressSentinel\Core\Middleware\MiddlewareStack;
+use PressSentinel\Core\RateLimit\ArrayStore;
+use PressSentinel\Core\RateLimit\RateLimitStoreInterface;
+use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Facades\Security;
+use PressSentinel\Sdk\Exceptions\RateLimitExceededException;
 
 /**
- * @see \SecurePress\Facades\Security::rateLimit
- * @see \SecurePress\Facades\Security::throttle
- * @see \SecurePress\Facades\Security::resetRateLimit
+ * @see \PressSentinel\Facades\Security::rateLimit
+ * @see \PressSentinel\Facades\Security::throttle
+ * @see \PressSentinel\Facades\Security::resetRateLimit
  */
 final class SecurityRateLimitSdkTest extends TestCase
 {

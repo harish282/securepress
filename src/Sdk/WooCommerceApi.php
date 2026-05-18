@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Sdk;
+namespace PressSentinel\Sdk;
 
-use SecurePress\Core\Container;
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Pipelines\ApiPipeline;
-use SecurePress\WooCommerce\Pipelines\CartPipeline;
-use SecurePress\WooCommerce\Pipelines\CheckoutPipeline;
-use SecurePress\WooCommerce\Pipelines\PipelineResult;
-use SecurePress\WooCommerce\Pipelines\RegistrationPipeline;
-use SecurePress\WooCommerce\WooCommerceModule;
+use PressSentinel\Core\Container;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Pipelines\ApiPipeline;
+use PressSentinel\WooCommerce\Pipelines\CartPipeline;
+use PressSentinel\WooCommerce\Pipelines\CheckoutPipeline;
+use PressSentinel\WooCommerce\Pipelines\PipelineResult;
+use PressSentinel\WooCommerce\Pipelines\RegistrationPipeline;
+use PressSentinel\WooCommerce\WooCommerceModule;
 
 /**
  * Developer-facing facade over the WooCommerce protection pipelines.

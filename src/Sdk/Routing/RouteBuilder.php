@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Sdk\Routing;
+namespace PressSentinel\Sdk\Routing;
 
 use Closure;
-use SecurePress\Core\Container;
-use SecurePress\Core\Http\RouteGuardRegistry;
-use SecurePress\Core\Logging\LoggerInterface;
-use SecurePress\Core\Middleware\MiddlewareInterface;
-use SecurePress\Core\Middleware\MiddlewarePipeline;
-use SecurePress\Core\RateLimit\RateLimiter;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\Url\NonceStoreInterface;
-use SecurePress\Core\Url\UrlSigner;
-use SecurePress\Middleware\CsrfProtectionMiddleware;
-use SecurePress\Middleware\RateLimitMiddleware;
-use SecurePress\Middleware\SignedUrlMiddleware;
-use SecurePress\Sdk\Exceptions\RouteGuardException;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Http\RouteGuardRegistry;
+use PressSentinel\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Middleware\MiddlewareInterface;
+use PressSentinel\Core\Middleware\MiddlewarePipeline;
+use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\Url\NonceStoreInterface;
+use PressSentinel\Core\Url\UrlSigner;
+use PressSentinel\Middleware\CsrfProtectionMiddleware;
+use PressSentinel\Middleware\RateLimitMiddleware;
+use PressSentinel\Middleware\SignedUrlMiddleware;
+use PressSentinel\Sdk\Exceptions\RouteGuardException;
 
 /**
  * Fluent builder for declarative, route-scoped security guards.

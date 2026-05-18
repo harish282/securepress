@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\RateLimit;
+namespace PressSentinel\Tests\Unit\RateLimit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
  * @see RateLimitOptions

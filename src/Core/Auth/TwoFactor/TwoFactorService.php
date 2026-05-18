@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\TwoFactor;
+namespace PressSentinel\Core\Auth\TwoFactor;
 
-use SecurePress\Core\Auth\Notifications\AuthNotifier;
-use SecurePress\Core\Logging\LoggerInterface;
+use PressSentinel\Core\Auth\Notifications\AuthNotifier;
+use PressSentinel\Core\Logging\LoggerInterface;
 
 /**
  * The single application-level entry point for everything 2FA.
@@ -36,7 +36,7 @@ final class TwoFactorService
         private readonly RecoveryCodeService $recovery,
         private readonly AuthNotifier $notifier,
         private readonly LoggerInterface $logger,
-        private readonly string $issuer = 'SecurePress',
+        private readonly string $issuer = 'PressSentinel',
         private readonly int $challengeTtlSeconds = self::CHALLENGE_TTL_SECONDS,
     ) {
     }

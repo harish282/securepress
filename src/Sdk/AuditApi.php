@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Sdk;
+namespace PressSentinel\Sdk;
 
-use SecurePress\Core\Audit\AuditEvent;
-use SecurePress\Core\Audit\AuditEventBuilder;
-use SecurePress\Core\Audit\AuditLoggerInterface;
-use SecurePress\Core\Container;
+use PressSentinel\Core\Audit\AuditEvent;
+use PressSentinel\Core\Audit\AuditEventBuilder;
+use PressSentinel\Core\Audit\AuditLoggerInterface;
+use PressSentinel\Core\Container;
 
 /**
  * Instance-style entry point into the audit-log subsystem.
  *
- * The {@see \SecurePress\Facades\AuditLog} static facade is the original, Laravel-style
+ * The {@see \PressSentinel\Facades\AuditLog} static facade is the original, Laravel-style
  * API. This wrapper exists so developers can route everything through a single
  * `Security::audit()` entry point and keep the SDK consistent:
  *

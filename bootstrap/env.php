@@ -6,7 +6,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$envFile = SECUREPRESS_PATH . '/.env';
+$envFile = PRESS_SENTINEL_PATH . '/.env';
 if (!is_readable($envFile)) {
     return;
 }

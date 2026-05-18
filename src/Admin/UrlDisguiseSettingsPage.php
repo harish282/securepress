@@ -2,27 +2,27 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin;
+namespace PressSentinel\Admin;
 
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\Core\View\View;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
+use PressSentinel\Core\View\View;
 
 /**
- * SecurePress → URL disguise: custom login path slug.
+ * PressSentinel → URL disguise: custom login path slug.
  *
  * Uses the Settings API; saves through {@see UrlDisguiseOptions::sanitize()}.
- * {@see \SecurePress\Core\UrlDisguise\UrlDisguiseModule} registers rewrites when
+ * {@see \PressSentinel\Core\UrlDisguise\UrlDisguiseModule} registers rewrites when
  * {@see UrlDisguiseOptions::isActive()} is true; changing these options flushes
  * rewrite rules via {@see Plugin::boot()}.
  */
 final class UrlDisguiseSettingsPage
 {
-    public const PAGE_SLUG = 'securepress-url-disguise';
+    public const PAGE_SLUG = 'presssentinel-url-disguise';
 
-    public const OPTION_GROUP = 'securepress_url_disguise_group';
+    public const OPTION_GROUP = 'presssentinel_url_disguise_group';
 
-    public const SECTION = 'securepress_section_url_disguise';
+    public const SECTION = 'presssentinel_section_url_disguise';
 
     public function __construct(
         private readonly UrlDisguiseOptions $options,
@@ -39,8 +39,8 @@ final class UrlDisguiseSettingsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            SecurePressMenuPage::PARENT_SLUG,
-            'SecurePress URL disguise',
+            PressSentinelMenuPage::PARENT_SLUG,
+            'PressSentinel URL disguise',
             'URL disguise',
             'manage_options',
             self::PAGE_SLUG,

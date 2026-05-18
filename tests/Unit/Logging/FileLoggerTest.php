@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Logging;
+namespace PressSentinel\Tests\Unit\Logging;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Logging\FileLogger;
+use PressSentinel\Core\Logging\FileLogger;
 
 /**
- * @see \SecurePress\Core\Logging\FileLogger
+ * @see \PressSentinel\Core\Logging\FileLogger
  */
 final class FileLoggerTest extends TestCase
 {
@@ -16,7 +16,7 @@ final class FileLoggerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->root = sys_get_temp_dir() . '/securepress-filelogger-' . bin2hex(random_bytes(4));
+        $this->root = sys_get_temp_dir() . '/presssentinel-filelogger-' . bin2hex(random_bytes(4));
     }
 
     protected function tearDown(): void
@@ -26,7 +26,7 @@ final class FileLoggerTest extends TestCase
 
     public function test_log_directory_and_file_are_auto_created(): void
     {
-        $path = $this->root . '/logs/securepress.log';
+        $path = $this->root . '/logs/presssentinel.log';
         $logger = new FileLogger($path);
 
         $logger->info('first line', ['ctx' => 1]);
@@ -38,7 +38,7 @@ final class FileLoggerTest extends TestCase
 
     public function test_log_lines_are_appended_as_json(): void
     {
-        $path = $this->root . '/logs/securepress.log';
+        $path = $this->root . '/logs/presssentinel.log';
         $logger = new FileLogger($path);
 
         $logger->info('a', ['x' => 1]);
@@ -58,7 +58,7 @@ final class FileLoggerTest extends TestCase
 
     public function test_protection_files_dropped_when_directory_is_created(): void
     {
-        $path = $this->root . '/logs/securepress.log';
+        $path = $this->root . '/logs/presssentinel.log';
         $logger = new FileLogger($path);
 
         $logger->info('seed');
@@ -75,7 +75,7 @@ final class FileLoggerTest extends TestCase
         file_put_contents($dir . '/.htaccess', '# custom rule');
         file_put_contents($dir . '/index.html', 'KEEP');
 
-        $logger = new FileLogger($dir . '/securepress.log');
+        $logger = new FileLogger($dir . '/presssentinel.log');
         $logger->info('seed');
 
         self::assertSame('# custom rule', file_get_contents($dir . '/.htaccess'));
@@ -94,7 +94,7 @@ final class FileLoggerTest extends TestCase
         mkdir($this->root, 0755, true);
         $parent = $this->root . '/locked';
         mkdir($parent, 0500);
-        $path = $parent . '/logs/securepress.log';
+        $path = $parent . '/logs/presssentinel.log';
 
         $logger = new FileLogger($path);
         $logger->info('attempt');
@@ -128,7 +128,7 @@ final class FileLoggerTest extends TestCase
 
     public function test_reset_re_probes_writability(): void
     {
-        $path = $this->root . '/logs/securepress.log';
+        $path = $this->root . '/logs/presssentinel.log';
         $logger = new FileLogger($path);
 
         $logger->info('first');
@@ -148,7 +148,7 @@ final class FileLoggerTest extends TestCase
 
     public function test_repeated_logs_only_probe_filesystem_once(): void
     {
-        $path = $this->root . '/logs/securepress.log';
+        $path = $this->root . '/logs/presssentinel.log';
         $logger = new FileLogger($path);
 
         for ($i = 0; $i < 5; $i++) {
@@ -164,7 +164,7 @@ final class FileLoggerTest extends TestCase
 
     public function test_log_file_path_is_exposed(): void
     {
-        $path = $this->root . '/logs/securepress.log';
+        $path = $this->root . '/logs/presssentinel.log';
         $logger = new FileLogger($path);
 
         self::assertSame($path, $logger->logFilePath());

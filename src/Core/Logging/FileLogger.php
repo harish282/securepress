@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Logging;
+namespace PressSentinel\Core\Logging;
 
 /**
  * Append-only JSON-line logger that writes to a single file on disk.
@@ -79,7 +79,7 @@ final class FileLogger implements LoggerInterface
         $bytes = @file_put_contents($this->logFilePath, $line . PHP_EOL, FILE_APPEND | LOCK_EX);
         if ($bytes === false) {
             $this->lastError = sprintf(
-                'SecurePress could not write to the log file at %s. Verify that the directory is writable by the web server (typically www-data or apache).',
+                'PressSentinel could not write to the log file at %s. Verify that the directory is writable by the web server (typically www-data or apache).',
                 $this->logFilePath
             );
             $this->ready = false;
@@ -145,7 +145,7 @@ final class FileLogger implements LoggerInterface
         }
         if (!is_dir($directory)) {
             $this->lastError = sprintf(
-                'SecurePress could not create the log directory at %s. Please create it manually and chmod it so the web server can write to it (e.g. `chmod 755`).',
+                'PressSentinel could not create the log directory at %s. Please create it manually and chmod it so the web server can write to it (e.g. `chmod 755`).',
                 $directory
             );
 
@@ -159,7 +159,7 @@ final class FileLogger implements LoggerInterface
         if (!file_exists($this->logFilePath)) {
             if (@touch($this->logFilePath) === false) {
                 $this->lastError = sprintf(
-                    'SecurePress could not create the log file at %s. The directory exists but is not writable by the web server.',
+                    'PressSentinel could not create the log file at %s. The directory exists but is not writable by the web server.',
                     $this->logFilePath
                 );
 
@@ -178,7 +178,7 @@ final class FileLogger implements LoggerInterface
         // regardless, so we render one consolidated message.
         if (!is_writable($this->logFilePath)) {
             $this->lastError = sprintf(
-                'SecurePress log file at %s is not writable. Run `chmod 644 %s` (and `chown` to the web server user if needed).',
+                'PressSentinel log file at %s is not writable. Run `chmod 644 %s` (and `chown` to the web server user if needed).',
                 $this->logFilePath,
                 $this->logFilePath
             );
@@ -232,7 +232,7 @@ final class FileLogger implements LoggerInterface
         if (!file_exists($htaccess)) {
             @file_put_contents(
                 $htaccess,
-                "# SecurePress log directory — not web-accessible.\n"
+                "# PressSentinel log directory — not web-accessible.\n"
                 . "<IfModule mod_authz_core.c>\n  Require all denied\n</IfModule>\n"
                 . "<IfModule !mod_authz_core.c>\n  Order allow,deny\n  Deny from all\n</IfModule>\n"
             );

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use SecurePress\Admin\AuditLogPage;
-use SecurePress\Core\Audit\AuditEvent;
-use SecurePress\Core\Audit\AuditLogPage as PageResult;
-use SecurePress\Core\Audit\AuditLogQuery;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Admin\AuditLogPage;
+use PressSentinel\Core\Audit\AuditEvent;
+use PressSentinel\Core\Audit\AuditLogPage as PageResult;
+use PressSentinel\Core\Audit\AuditLogQuery;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * @var PageResult       $page
@@ -59,7 +59,7 @@ $levelClass = static function (string $level): string {
 
 ?>
 <div class="wrap">
-    <h1>SecurePress Audit Logs</h1>
+    <h1>PressSentinel Audit Logs</h1>
     <p class="description">
         <?= WpHelper::escapeHtml(sprintf(
             'Tracking %d events across %d categories. Use the filters below to narrow the view.',
@@ -227,20 +227,20 @@ $levelClass = static function (string $level): string {
     <p class="description">
         Configure <a href="<?= WpHelper::escapeUrl(
             \function_exists('admin_url')
-                ? (string) \call_user_func('admin_url', 'admin.php?page=securepress-audit-settings')
+                ? (string) \call_user_func('admin_url', 'admin.php?page=presssentinel-audit-settings')
                 : '#'
         ) ?>">retention, auto-prune, and minimum log level</a> before large deployments.
         All actions below require the <code>manage_options</code> capability and a valid WordPress nonce. Clearing logs is permanent.
     </p>
 
     <form method="post" action="<?= WpHelper::escapeUrl(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block; margin-right: 8px;" onsubmit="return confirm('Run pruner now? Entries beyond the configured retention window will be deleted.');">
-        <input type="hidden" name="action" value="securepress_prune_audit_logs">
+        <input type="hidden" name="action" value="presssentinel_prune_audit_logs">
         <?= $nonceField($nonceAction); ?>
         <button type="submit" class="button">Run prune now</button>
     </form>
 
     <form method="post" action="<?= WpHelper::escapeUrl(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block;" onsubmit="return confirm('Permanently delete every audit log entry? This cannot be undone.');">
-        <input type="hidden" name="action" value="securepress_clear_audit_logs">
+        <input type="hidden" name="action" value="presssentinel_clear_audit_logs">
         <?= $nonceField($nonceAction); ?>
         <button type="submit" class="button button-link-delete">Clear all logs</button>
     </form>

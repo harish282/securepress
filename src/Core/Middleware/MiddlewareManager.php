@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Middleware;
+namespace PressSentinel\Core\Middleware;
 
-use SecurePress\Core\Container;
+use PressSentinel\Core\Container;
 
 final class MiddlewareManager
 {

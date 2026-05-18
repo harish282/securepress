@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\WooCommerce\Pipelines;
+namespace PressSentinel\Tests\Unit\WooCommerce\Pipelines;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\FraudScoreMiddleware;
-use SecurePress\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware;
-use SecurePress\WooCommerce\Pipelines\CheckoutPipeline;
-use SecurePress\WooCommerce\Services\BehaviorClock;
-use SecurePress\WooCommerce\Services\CartFingerprinter;
-use SecurePress\WooCommerce\Services\DisposableEmailRegistry;
-use SecurePress\WooCommerce\Services\FraudScoreService;
-use SecurePress\WooCommerce\Storage\ArrayAbuseCounterStore;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\FraudScoreMiddleware;
+use PressSentinel\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware;
+use PressSentinel\WooCommerce\Pipelines\CheckoutPipeline;
+use PressSentinel\WooCommerce\Services\BehaviorClock;
+use PressSentinel\WooCommerce\Services\CartFingerprinter;
+use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
+use PressSentinel\WooCommerce\Services\FraudScoreService;
+use PressSentinel\WooCommerce\Storage\ArrayAbuseCounterStore;
 
 /**
- * @see \SecurePress\WooCommerce\Pipelines\CheckoutPipeline
- * @see \SecurePress\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware
- * @see \SecurePress\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware
- * @see \SecurePress\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware
- * @see \SecurePress\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware
- * @see \SecurePress\WooCommerce\Middleware\Checkout\FraudScoreMiddleware
+ * @see \PressSentinel\WooCommerce\Pipelines\CheckoutPipeline
+ * @see \PressSentinel\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware
+ * @see \PressSentinel\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware
+ * @see \PressSentinel\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware
+ * @see \PressSentinel\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware
+ * @see \PressSentinel\WooCommerce\Middleware\Checkout\FraudScoreMiddleware
  */
 final class CheckoutPipelineTest extends TestCase
 {

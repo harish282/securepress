@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\SuspiciousLogin;
+namespace PressSentinel\Core\Auth\SuspiciousLogin;
 
-use SecurePress\Core\Auth\SuspiciousLogin\Rules\RuleInterface;
+use PressSentinel\Core\Auth\SuspiciousLogin\Rules\RuleInterface;
 
 /**
  * Sums the contributions of every registered rule into a single {@see SuspicionResult}.

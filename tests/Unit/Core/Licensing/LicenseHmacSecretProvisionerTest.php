@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Core\Licensing;
+namespace PressSentinel\Tests\Unit\Core\Licensing;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Licensing\LicenseHmacSecretProvisioner;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Core\Licensing\LicenseHmacSecretProvisioner
+ * @see \PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner
  */
 final class LicenseHmacSecretProvisionerTest extends TestCase
 {

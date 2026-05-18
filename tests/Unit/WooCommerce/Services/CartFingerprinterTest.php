@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\WooCommerce\Services;
+namespace PressSentinel\Tests\Unit\WooCommerce\Services;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\WooCommerce\Services\CartFingerprinter;
+use PressSentinel\WooCommerce\Services\CartFingerprinter;
 
 /**
- * @see \SecurePress\WooCommerce\Services\CartFingerprinter
+ * @see \PressSentinel\WooCommerce\Services\CartFingerprinter
  */
 final class CartFingerprinterTest extends TestCase
 {

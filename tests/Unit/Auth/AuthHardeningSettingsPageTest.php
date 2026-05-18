@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Auth;
+namespace PressSentinel\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Admin\AuthHardeningSettingsPage;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\View\View;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Admin\AuthHardeningSettingsPage;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\View\View;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
  * Smoke coverage for the admin settings page — verifies the field-render closures
  * produce HTML referencing the canonical option name, and that the registered slug /
  * option-group constants stay aligned with what the WordPress Settings API expects.
  *
- * @see \SecurePress\Admin\AuthHardeningSettingsPage
+ * @see \PressSentinel\Admin\AuthHardeningSettingsPage
  */
 final class AuthHardeningSettingsPageTest extends TestCase
 {
@@ -47,7 +47,7 @@ final class AuthHardeningSettingsPageTest extends TestCase
 
         $issuer = $this->capture(static fn () => $page->renderTwoFactorIssuer());
         self::assertStringContainsString(AuthHardeningOptions::OPTION_NAME . '[two_factor][issuer]', $issuer);
-        self::assertStringContainsString('value="SecurePress"', $issuer);
+        self::assertStringContainsString('value="PressSentinel"', $issuer);
 
         $rule = $this->capture(static fn () => $page->renderSuspicionNewDevice());
         self::assertStringContainsString(AuthHardeningOptions::OPTION_NAME . '[suspicion][rules][new_device]', $rule);
@@ -74,16 +74,16 @@ final class AuthHardeningSettingsPageTest extends TestCase
         // Settings API requires page slug and option group to be plain strings — guard
         // against accidental rename by pinning them here. If you intentionally rename
         // them, update this assertion in the same commit.
-        self::assertSame('securepress-authentication', AuthHardeningSettingsPage::PAGE_SLUG);
-        self::assertSame('securepress_auth_hardening_group', AuthHardeningSettingsPage::OPTION_GROUP);
-        self::assertSame('securepress_auth_hardening', AuthHardeningOptions::OPTION_NAME);
+        self::assertSame('presssentinel-authentication', AuthHardeningSettingsPage::PAGE_SLUG);
+        self::assertSame('presssentinel_auth_hardening_group', AuthHardeningSettingsPage::OPTION_GROUP);
+        self::assertSame('presssentinel_auth_hardening', AuthHardeningOptions::OPTION_NAME);
     }
 
     private function page(): AuthHardeningSettingsPage
     {
         return new AuthHardeningSettingsPage(
             new AuthHardeningOptions(new Config()),
-            new View(SECUREPRESS_VIEWS_PATH),
+            new View(PRESS_SENTINEL_VIEWS_PATH),
         );
     }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Auth\Lockout;
+namespace PressSentinel\Core\Auth\Lockout;
 
 /**
  * Tunable thresholds for the lockout state machine.

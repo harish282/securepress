@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-use SecurePress\Admin\FeatureDescriptor;
-use SecurePress\Core\Licensing\LicenseStatus;
-use SecurePress\Core\Support\WpHelper;
+use PressSentinel\Admin\FeatureDescriptor;
+use PressSentinel\Core\Licensing\LicenseStatus;
+use PressSentinel\Core\Support\WpHelper;
 
 /**
  * @var array{isPro:bool,status:LicenseStatus,menuVisible:bool}             $license
@@ -81,17 +81,17 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
 
 ?>
 <div class="wrap">
-    <h1>Secure Press</h1>
-    <p class="description">Status overview for every SecurePress subsystem. Toggle a feature on or off below, or click any tile to manage that area in detail.</p>
+    <h1>Press Sentinel</h1>
+    <p class="description">Status overview for every PressSentinel subsystem. Toggle a feature on or off below, or click any tile to manage that area in detail.</p>
 
     <?php if (!$muLoader['isInstalled']): ?>
         <div style="background:#fff;border:1px solid #f0b849;border-left:4px solid #f0b849;border-radius:6px;padding:18px 22px;margin-top:16px;">
             <h2 style="margin:0 0 6px;font-size:15px;color:#7a5400;">
-                MU loader not installed &mdash; SecurePress is loading later than it could
+                MU loader not installed &mdash; PressSentinel is loading later than it could
             </h2>
             <p style="margin:0 0 12px;color:#50575e;">
                 <strong>Why this matters:</strong>
-                WordPress loads must-use plugins (<code>wp-content/mu-plugins/</code>) <em>before</em> regular plugins, themes, and the request router. Installing the SecurePress MU loader lets us inspect incoming requests, rate-limit traffic, and apply security headers at the earliest possible point in the WordPress lifecycle &mdash; catching malicious traffic that would otherwise reach plugin code first.
+                WordPress loads must-use plugins (<code>wp-content/mu-plugins/</code>) <em>before</em> regular plugins, themes, and the request router. Installing the PressSentinel MU loader lets us inspect incoming requests, rate-limit traffic, and apply security headers at the earliest possible point in the WordPress lifecycle &mdash; catching malicious traffic that would otherwise reach plugin code first.
             </p>
             <p style="margin:0 0 14px;color:#50575e;">
                 <strong>How to install (under a minute):</strong>
@@ -102,7 +102,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
                 <li>Upload it (via SFTP, your host's File Manager, or <code>wp cli</code>) to:<br>
                     <code style="display:inline-block;margin-top:4px;padding:4px 8px;background:#f6f7f7;border-radius:3px;"><?= WpHelper::escapeHtml($muLoader['expectedDirectory']) ?>/</code><br>
                     If the <code>mu-plugins</code> folder doesn't exist, create it &mdash; WordPress will pick it up automatically.</li>
-                <li>Reload this page. The callout will disappear once SecurePress detects the loader.</li>
+                <li>Reload this page. The callout will disappear once PressSentinel detects the loader.</li>
             </ol>
             <form method="post"
                   action="<?= WpHelper::escapeUrl($muLoader['downloadUrl']) ?>"
@@ -134,7 +134,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
     <?php endif; ?>
 
     <h2 style="margin-top:24px;">Feature toggles</h2>
-    <p class="description">Turn entire SecurePress modules on or off in one click. Detailed per-module settings stay on each module's dedicated page &mdash; this only flips the master switch.</p>
+    <p class="description">Turn entire PressSentinel modules on or off in one click. Detailed per-module settings stay on each module's dedicated page &mdash; this only flips the master switch.</p>
 
     <form method="post" action="<?= WpHelper::escapeUrl($features['formAction']) ?>"
           style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:20px;margin-top:8px;">
@@ -157,14 +157,14 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
                 ?>
                 <tr>
                     <th scope="row" style="padding-left:0;">
-                        <label for="securepress_feature_<?= WpHelper::escapeAttribute($feature->key) ?>" style="display:block;">
+                        <label for="presssentinel_feature_<?= WpHelper::escapeAttribute($feature->key) ?>" style="display:block;">
                             <strong><?= WpHelper::escapeHtml($feature->label) ?></strong><?= $proBadge ?>
                         </label>
                     </th>
                     <td>
                         <label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;">
                             <input type="checkbox"
-                                   id="securepress_feature_<?= WpHelper::escapeAttribute($feature->key) ?>"
+                                   id="presssentinel_feature_<?= WpHelper::escapeAttribute($feature->key) ?>"
                                    name="features[<?= WpHelper::escapeAttribute($feature->key) ?>]"
                                    value="1"
                                    <?= $isOn ? 'checked' : '' ?>>

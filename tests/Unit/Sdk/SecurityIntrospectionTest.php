@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\Sdk;
+namespace PressSentinel\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Container;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\Http\RouteGuardRegistry;
-use SecurePress\Core\Middleware\MiddlewareRegistry;
-use SecurePress\Core\Middleware\MiddlewareStack;
-use SecurePress\Facades\Security;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Container;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\Http\RouteGuardRegistry;
+use PressSentinel\Core\Middleware\MiddlewareRegistry;
+use PressSentinel\Core\Middleware\MiddlewareStack;
+use PressSentinel\Facades\Security;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
- * @see \SecurePress\Facades\Security::version
- * @see \SecurePress\Facades\Security::isFeatureEnabled
+ * @see \PressSentinel\Facades\Security::version
+ * @see \PressSentinel\Facades\Security::isFeatureEnabled
  */
 final class SecurityIntrospectionTest extends TestCase
 {

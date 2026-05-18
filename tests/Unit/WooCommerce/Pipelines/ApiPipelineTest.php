@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit\WooCommerce\Pipelines;
+namespace PressSentinel\Tests\Unit\WooCommerce\Pipelines;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\WooCommerce\Detection\Decision;
-use SecurePress\WooCommerce\Detection\DetectionContext;
-use SecurePress\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
-use SecurePress\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware;
-use SecurePress\WooCommerce\Pipelines\ApiPipeline;
-use SecurePress\WooCommerce\Storage\ArrayAbuseCounterStore;
+use PressSentinel\WooCommerce\Detection\Decision;
+use PressSentinel\WooCommerce\Detection\DetectionContext;
+use PressSentinel\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
+use PressSentinel\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware;
+use PressSentinel\WooCommerce\Pipelines\ApiPipeline;
+use PressSentinel\WooCommerce\Storage\ArrayAbuseCounterStore;
 
 /**
- * @see \SecurePress\WooCommerce\Pipelines\ApiPipeline
- * @see \SecurePress\WooCommerce\Middleware\Api\ApiRateLimitMiddleware
- * @see \SecurePress\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware
+ * @see \PressSentinel\WooCommerce\Pipelines\ApiPipeline
+ * @see \PressSentinel\WooCommerce\Middleware\Api\ApiRateLimitMiddleware
+ * @see \PressSentinel\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware
  */
 final class ApiPipelineTest extends TestCase
 {

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Tests\Unit;
+namespace PressSentinel\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use SecurePress\Middleware\CsrfProtectionMiddleware;
-use SecurePress\Tests\Stubs\WpStubState;
+use PressSentinel\Middleware\CsrfProtectionMiddleware;
+use PressSentinel\Tests\Stubs\WpStubState;
 
 final class CsrfProtectionMiddlewareTest extends TestCase
 {

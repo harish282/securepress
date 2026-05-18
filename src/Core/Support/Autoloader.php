@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Core\Support;
+namespace PressSentinel\Core\Support;
 
 final class Autoloader
 {
-    private const PREFIX = 'SecurePress\\';
+    private const PREFIX = 'PressSentinel\\';
 
     public static function register(): void
     {
@@ -21,7 +21,7 @@ final class Autoloader
 
         $relativeClass = substr($class, strlen(self::PREFIX));
         $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
-        $filePath = SECUREPRESS_SRC_PATH . '/' . $relativePath;
+        $filePath = PRESS_SENTINEL_SRC_PATH . '/' . $relativePath;
 
         if (is_readable($filePath)) {
             require_once $filePath;

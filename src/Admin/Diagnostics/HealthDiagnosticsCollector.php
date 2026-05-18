@@ -2,37 +2,37 @@
 
 declare(strict_types=1);
 
-namespace SecurePress\Admin\Diagnostics;
+namespace PressSentinel\Admin\Diagnostics;
 
-use SecurePress\Admin\FeatureDescriptor;
-use SecurePress\Admin\FeatureRegistry;
-use SecurePress\Admin\MuLoaderStatus;
-use SecurePress\Core\Audit\AuditLogOptions;
-use SecurePress\Core\Audit\AuditLogPruner;
-use SecurePress\Core\Audit\AuditLogSchema;
-use SecurePress\Core\Auth\AuthHardeningOptions;
-use SecurePress\Core\Auth\Sessions\SessionPruner;
-use SecurePress\Core\Auth\Sessions\SessionSchema;
-use SecurePress\Core\Config\Config;
-use SecurePress\Core\Headers\SecurityHeadersDispatcher;
-use SecurePress\Core\Headers\SecurityHeadersOptions;
-use SecurePress\Core\Integrity\IntegrityOptions;
-use SecurePress\Core\Integrity\IntegrityScheduler;
-use SecurePress\Core\Integrity\IntegritySchema;
-use SecurePress\Core\Licensing\LicenseManager;
-use SecurePress\Core\RateLimit\RateLimitOptions;
-use SecurePress\Core\Recovery\SafeMode;
-use SecurePress\Core\Support\WpHelper;
-use SecurePress\Core\UrlDisguise\UrlDisguiseOptions;
-use SecurePress\WooCommerce\Admin\WooCommerceProtectionOptions;
-use SecurePress\WooCommerce\WooCommerceModule;
+use PressSentinel\Admin\FeatureDescriptor;
+use PressSentinel\Admin\FeatureRegistry;
+use PressSentinel\Admin\MuLoaderStatus;
+use PressSentinel\Core\Audit\AuditLogOptions;
+use PressSentinel\Core\Audit\AuditLogPruner;
+use PressSentinel\Core\Audit\AuditLogSchema;
+use PressSentinel\Core\Auth\AuthHardeningOptions;
+use PressSentinel\Core\Auth\Sessions\SessionPruner;
+use PressSentinel\Core\Auth\Sessions\SessionSchema;
+use PressSentinel\Core\Config\Config;
+use PressSentinel\Core\Headers\SecurityHeadersDispatcher;
+use PressSentinel\Core\Headers\SecurityHeadersOptions;
+use PressSentinel\Core\Integrity\IntegrityOptions;
+use PressSentinel\Core\Integrity\IntegrityScheduler;
+use PressSentinel\Core\Integrity\IntegritySchema;
+use PressSentinel\Core\Licensing\LicenseManager;
+use PressSentinel\Core\RateLimit\RateLimitOptions;
+use PressSentinel\Core\Recovery\SafeMode;
+use PressSentinel\Core\Support\WpHelper;
+use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
+use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
+use PressSentinel\WooCommerce\WooCommerceModule;
 
 /**
  * Read-only snapshot of plugin health for the admin diagnostics screen.
  */
 final class HealthDiagnosticsCollector
 {
-    private const TRANSIENT_PROBE_PREFIX = 'securepress_health_probe_';
+    private const TRANSIENT_PROBE_PREFIX = 'presssentinel_health_probe_';
 
     public function __construct(
         private readonly FeatureRegistry $features,
@@ -115,7 +115,7 @@ final class HealthDiagnosticsCollector
             'label' => 'License HMAC secret',
             'state' => $weakSecret ? 'blocked' : 'active',
             'detail' => $weakSecret
-                ? 'Ensure the database option securepress_license_hmac_secret is writable, or set SECUREPRESS_LICENSE_SECRET (24+ chars) via wp-config.php, .env, or environment.'
+                ? 'Ensure the database option presssentinel_license_hmac_secret is writable, or set PRESS_SENTINEL_LICENSE_SECRET (24+ chars) via wp-config.php, .env, or environment.'
                 : 'Strong secret resolved (auto-generated option, constant, or environment).',
         ];
 
@@ -243,7 +243,7 @@ final class HealthDiagnosticsCollector
                 'hook' => 'login_form_sp_2fa',
                 'kind' => 'action',
                 'expected' => $authEnabled,
-                'note' => 'SecurePress-specific login form action.',
+                'note' => 'PressSentinel-specific login form action.',
             ],
             [
                 'label' => 'Auth hardening (lockout pre-check)',
@@ -257,7 +257,7 @@ final class HealthDiagnosticsCollector
                 'hook' => SessionPruner::CRON_HOOK,
                 'kind' => 'action',
                 'expected' => $sessionsOn,
-                'note' => 'Daily cron for securepress_sessions rows.',
+                'note' => 'Daily cron for presssentinel_sessions rows.',
             ],
             [
                 'label' => 'File integrity scan',
