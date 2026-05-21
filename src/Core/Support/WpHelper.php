@@ -128,6 +128,87 @@ final class WpHelper
         return stripslashes($value);
     }
 
+    public static function sanitizeTextField(string $value): string
+    {
+        if (\function_exists('sanitize_text_field')) {
+            return (string) \call_user_func('sanitize_text_field', $value);
+        }
+
+        return trim($value);
+    }
+
+    /**
+     * Normalized {@see $_SERVER} value (unslashed); empty strings become null.
+     */
+    public static function getServerString(string $key): ?string
+    {
+        if (!isset($_SERVER[$key]) || !is_scalar($_SERVER[$key])) {
+            return null;
+        }
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Unslashed and validated by caller.
+        $raw = $_SERVER[$key];
+        $value = is_string($raw) ? self::unslash($raw) : (string) $raw;
+
+        return $value === '' ? null : $value;
+    }
+
+    public static function getRequestMethod(): string
+    {
+        return strtoupper(self::getServerString('REQUEST_METHOD') ?? 'GET');
+    }
+
+    /**
+     * Read-only admin/list {@see $_GET} parameter (sanitized).
+     */
+    public static function getQueryString(string $key, string $default = ''): string
+    {
+        if (!isset($_GET[$key])) {
+            return $default;
+        }
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended -- Sanitized below; used for admin filters and pagination.
+        $raw = $_GET[$key];
+
+        return self::sanitizeTextField(self::unslash(is_string($raw) ? $raw : (string) $raw));
+    }
+
+    public static function getQueryInt(string $key, int $default, int $min, int $max): int
+    {
+        if (!isset($_GET[$key]) || !is_numeric($_GET[$key])) {
+            return $default;
+        }
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Admin list pagination/filter query arg.
+        $value = (int) $_GET[$key];
+
+        return max($min, min($max, $value));
+    }
+
+    public static function getPostString(string $key, string $default = ''): string
+    {
+        if (!isset($_POST[$key])) {
+            return $default;
+        }
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Unslashed and sanitized below; callers verify nonces on mutating requests.
+        $raw = $_POST[$key];
+
+        return self::sanitizeTextField(self::unslash(is_string($raw) ? $raw : (string) $raw));
+    }
+
+    public static function getRequestString(string $key, string $default = ''): string
+    {
+        if (!isset($_REQUEST[$key])) {
+            return $default;
+        }
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Unslashed and sanitized below.
+        $raw = $_REQUEST[$key];
+
+        return self::sanitizeTextField(self::unslash(is_string($raw) ? $raw : (string) $raw));
+    }
+
     public static function getTransient(string $name): mixed
     {
         if (!\function_exists('get_transient')) {
@@ -261,8 +342,8 @@ final class WpHelper
      */
     public static function getClientIp(): ?string
     {
-        $remote = $_SERVER['REMOTE_ADDR'] ?? null;
-        if (!is_string($remote) || $remote === '') {
+        $remote = self::getServerString('REMOTE_ADDR');
+        if ($remote === null) {
             return null;
         }
 
@@ -430,8 +511,8 @@ final class WpHelper
 
     public static function userAgent(): ?string
     {
-        $ua = $_SERVER['HTTP_USER_AGENT'] ?? null;
-        if (!is_string($ua) || $ua === '') {
+        $ua = self::getServerString('HTTP_USER_AGENT');
+        if ($ua === null) {
             return null;
         }
 
@@ -440,8 +521,8 @@ final class WpHelper
 
     public static function requestUri(): ?string
     {
-        $uri = $_SERVER['REQUEST_URI'] ?? null;
-        if (!is_string($uri) || $uri === '') {
+        $uri = self::getServerString('REQUEST_URI');
+        if ($uri === null) {
             return null;
         }
 
@@ -525,8 +606,8 @@ final class WpHelper
 
     public static function verifyAdminNonce(string $action, string $field = '_wpnonce'): bool
     {
-        $nonce = $_REQUEST[$field] ?? '';
-        if (!is_string($nonce) || $nonce === '') {
+        $nonce = self::getRequestString($field, '');
+        if ($nonce === '') {
             return false;
         }
 

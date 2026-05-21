@@ -13,13 +13,13 @@ if (!defined('ABSPATH')) {
  * `recovery.safe_mode` in config/plugin.php.
  */
 if (!defined('PRESS_SENTINEL_SAFE_MODE')) {
-    $configFile = PRESS_SENTINEL_CONFIG_PATH . '/plugin.php';
-    $config = is_readable($configFile) ? require $configFile : [];
-    $enabled = is_array($config)
-        && is_array($config['recovery'] ?? null)
-        && ($config['recovery']['safe_mode'] ?? false);
+    $presssentinel_config_file = PRESS_SENTINEL_CONFIG_PATH . '/plugin.php';
+    $presssentinel_config = is_readable($presssentinel_config_file) ? require $presssentinel_config_file : [];
+    $presssentinel_safe_mode_enabled = is_array($presssentinel_config)
+        && is_array($presssentinel_config['recovery'] ?? null)
+        && ($presssentinel_config['recovery']['safe_mode'] ?? false);
 
-    if ($enabled) {
+    if ($presssentinel_safe_mode_enabled) {
         define('PRESS_SENTINEL_SAFE_MODE', true);
     }
 }

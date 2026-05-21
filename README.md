@@ -8,7 +8,7 @@ Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Application-layer security for WordPress: login hardening, 2FA, audit log, security headers, file integrity, and optional WooCommerce protection.
+WordPress security: 2FA, audit logs, login hardening, security headers, file integrity scans, and optional WooCommerce protection.
 
 ---
 

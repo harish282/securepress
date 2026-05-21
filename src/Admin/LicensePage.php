@@ -77,9 +77,7 @@ final class LicensePage
         }
         $status = $this->license->status();
         $adminUrl = WpHelper::adminUrl('admin-post.php');
-        $statusFlag = isset($_GET[self::STATUS_QUERY_KEY]) && is_string($_GET[self::STATUS_QUERY_KEY])
-            ? (string) $_GET[self::STATUS_QUERY_KEY]
-            : '';
+        $statusFlag = WpHelper::getQueryString(self::STATUS_QUERY_KEY);
 
         $nonceField = static function (string $action): string {
             if (\function_exists('wp_nonce_field')) {
@@ -165,7 +163,7 @@ final class LicensePage
     public function handleSave(): void
     {
         $this->guardWriteRequest();
-        $key = isset($_POST['license_key']) && is_string($_POST['license_key']) ? trim($_POST['license_key']) : '';
+        $key = trim(WpHelper::getPostString('license_key'));
 
         if ($key === '') {
             $this->license->clearLicense();

@@ -17,6 +17,7 @@ use PressSentinel\Core\Middleware\MiddlewareRegistry;
 use PressSentinel\Core\Middleware\MiddlewareStack;
 use PressSentinel\Core\RateLimit\RateLimitResult;
 use PressSentinel\Core\RateLimit\RateLimiter;
+use PressSentinel\Core\Support\WpHelper;
 use PressSentinel\Core\Url\NonceStoreInterface;
 use PressSentinel\Core\Url\SignedUrlResult;
 use PressSentinel\Core\Url\UrlSigner;
@@ -168,8 +169,7 @@ final class Security
     {
         $target = $url;
         if ($target === null) {
-            $requestUri = $_SERVER['REQUEST_URI'] ?? null;
-            $target = is_string($requestUri) && $requestUri !== '' ? $requestUri : '';
+            $target = WpHelper::requestUri() ?? '';
         }
 
         return self::container()->get(UrlSigner::class)->verify($target);

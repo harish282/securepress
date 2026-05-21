@@ -124,9 +124,7 @@ final class RequestContext
         if (\defined('REST_REQUEST') && \constant('REST_REQUEST')) {
             return true;
         }
-        $uri = isset($_SERVER['REQUEST_URI']) && is_string($_SERVER['REQUEST_URI'])
-            ? $_SERVER['REQUEST_URI']
-            : '';
+        $uri = WpHelper::requestUri() ?? '';
         if ($uri === '') {
             return false;
         }

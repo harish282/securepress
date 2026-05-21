@@ -34,7 +34,7 @@ final class TwoFactorChallengeController
 
     public function dispatch(): void
     {
-        $method = strtoupper((string) ($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        $method = WpHelper::getRequestMethod();
         $token = $this->stringFromRequest('token');
 
         if ($token === '') {

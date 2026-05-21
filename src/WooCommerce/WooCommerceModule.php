@@ -511,9 +511,9 @@ final class WooCommerceModule
     private function detectIp(): string
     {
         $candidates = [
-            $_SERVER['HTTP_CF_CONNECTING_IP'] ?? null,
-            $_SERVER['HTTP_X_FORWARDED_FOR'] ?? null,
-            $_SERVER['REMOTE_ADDR'] ?? null,
+            WpHelper::getServerString('HTTP_CF_CONNECTING_IP'),
+            WpHelper::getServerString('HTTP_X_FORWARDED_FOR'),
+            WpHelper::getServerString('REMOTE_ADDR'),
         ];
         foreach ($candidates as $candidate) {
             if (!is_string($candidate) || $candidate === '') {
@@ -530,15 +530,15 @@ final class WooCommerceModule
 
     private function detectUserAgent(): string
     {
-        $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        $ua = WpHelper::getServerString('HTTP_USER_AGENT') ?? '';
 
-        return is_string($ua) ? substr($ua, 0, 512) : '';
+        return substr($ua, 0, 512);
     }
 
     private function detectReferer(): string
     {
-        $referer = $_SERVER['HTTP_REFERER'] ?? '';
+        $referer = WpHelper::getServerString('HTTP_REFERER') ?? '';
 
-        return is_string($referer) ? substr($referer, 0, 512) : '';
+        return substr($referer, 0, 512);
     }
 }

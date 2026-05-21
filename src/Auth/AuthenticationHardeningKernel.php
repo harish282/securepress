@@ -127,8 +127,9 @@ final class AuthenticationHardeningKernel
 
         $email = isset($user->user_email) && is_string($user->user_email) ? $user->user_email : '';
         $name = isset($user->display_name) && is_string($user->display_name) ? $user->display_name : '';
-        $remember = isset($_POST['rememberme']) && (string) $_POST['rememberme'] === 'forever';
-        $redirectTo = isset($_REQUEST['redirect_to']) && is_string($_REQUEST['redirect_to']) ? WpHelper::unslash($_REQUEST['redirect_to']) : null;
+        $remember = WpHelper::getPostString('rememberme') === 'forever';
+        $redirectRaw = WpHelper::getRequestString('redirect_to', '');
+        $redirectTo = $redirectRaw !== '' ? $redirectRaw : null;
 
         $challenge = $this->twoFactor->startChallenge(
             $userId,

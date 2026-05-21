@@ -68,6 +68,8 @@ final class AuditLogPage
         $query = $this->buildQuery();
         $page = $this->repository->paginate($query);
         $totalAll = $this->repository->count();
+        $detailRaw = WpHelper::getQueryString('detail', '');
+        $detailId = is_numeric($detailRaw) ? max(0, (int) $detailRaw) : 0;
 
         $this->view->render('admin.audit.log-list', [
             'page' => $page,
@@ -77,15 +79,13 @@ final class AuditLogPage
             'nonceAction' => self::NONCE_ACTION,
             'categories' => AuditEventCategory::all(),
             'levels' => AuditEventLevel::all(),
-            'status' => isset($_GET[self::STATUS_QUERY_KEY]) && is_string($_GET[self::STATUS_QUERY_KEY])
-                ? $_GET[self::STATUS_QUERY_KEY]
+            'status' => WpHelper::getQueryString(self::STATUS_QUERY_KEY, '') !== ''
+                ? WpHelper::getQueryString(self::STATUS_QUERY_KEY)
                 : null,
-            'detailId' => isset($_GET['detail']) && is_numeric($_GET['detail'])
-                ? (int) $_GET['detail']
-                : null,
-            'detail' => isset($_GET['detail']) && is_numeric($_GET['detail'])
-                ? $this->repository->findById((int) $_GET['detail'])
-                : null,
+            'detailId' => $detailId > 0 ? $detailId : null,
+            'detail' => $detailId > 0 ? $this->repository->findById($detailId) : null,
+            'filterDateFrom' => WpHelper::getQueryString('date_from'),
+            'filterDateTo' => WpHelper::getQueryString('date_to'),
         ]);
     }
 
@@ -107,20 +107,18 @@ final class AuditLogPage
     {
         $query = new AuditLogQuery();
 
-        $category = isset($_GET['category']) && is_string($_GET['category']) ? trim($_GET['category']) : '';
-        $level = isset($_GET['level']) && is_string($_GET['level']) ? trim($_GET['level']) : '';
-        $search = isset($_GET['s']) && is_string($_GET['s']) ? trim($_GET['s']) : '';
+        $category = trim(WpHelper::getQueryString('category'));
+        $level = trim(WpHelper::getQueryString('level'));
+        $search = trim(WpHelper::getQueryString('s'));
 
         $query->category = ($category !== '' && in_array($category, AuditEventCategory::all(), true)) ? $category : null;
         $query->level = ($level !== '' && AuditEventLevel::isValid($level)) ? $level : null;
         $query->search = $search === '' ? null : $search;
-        $query->page = isset($_GET['paged']) && is_numeric($_GET['paged']) ? max(1, (int) $_GET['paged']) : 1;
-        $query->perPage = isset($_GET['per_page']) && is_numeric($_GET['per_page'])
-            ? max(5, min(200, (int) $_GET['per_page']))
-            : 25;
+        $query->page = WpHelper::getQueryInt('paged', 1, 1, 999_999);
+        $query->perPage = WpHelper::getQueryInt('per_page', 25, 5, 200);
 
-        $query->dateFrom = $this->parseDate($_GET['date_from'] ?? null, false);
-        $query->dateTo = $this->parseDate($_GET['date_to'] ?? null, true);
+        $query->dateFrom = $this->parseDate(WpHelper::getQueryString('date_from', ''), false);
+        $query->dateTo = $this->parseDate(WpHelper::getQueryString('date_to', ''), true);
 
         return $query;
     }

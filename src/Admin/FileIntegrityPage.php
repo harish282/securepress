@@ -85,8 +85,8 @@ final class FileIntegrityPage
             'severityLabels' => $this->severityLabels(),
             'typeLabels' => $this->typeLabels(),
             'scannerSummary' => $this->scannerSummary(),
-            'status' => isset($_GET[self::STATUS_QUERY_KEY]) && is_string($_GET[self::STATUS_QUERY_KEY])
-                ? $_GET[self::STATUS_QUERY_KEY]
+            'status' => WpHelper::getQueryString(self::STATUS_QUERY_KEY, '') !== ''
+                ? WpHelper::getQueryString(self::STATUS_QUERY_KEY)
                 : null,
         ]);
     }
@@ -104,7 +104,7 @@ final class FileIntegrityPage
     public function handleReview(): void
     {
         $this->guardWriteRequest();
-        $id = isset($_POST['id']) && is_numeric($_POST['id']) ? (int) $_POST['id'] : 0;
+        $id = max(0, (int) WpHelper::getPostString('id', '0'));
         $ok = $id > 0 && $this->findings->markReviewed($id);
         $this->redirect([self::STATUS_QUERY_KEY => $ok ? 'reviewed:' . $id : 'review_failed']);
     }
@@ -112,7 +112,7 @@ final class FileIntegrityPage
     public function handleDelete(): void
     {
         $this->guardWriteRequest();
-        $id = isset($_POST['id']) && is_numeric($_POST['id']) ? (int) $_POST['id'] : 0;
+        $id = max(0, (int) WpHelper::getPostString('id', '0'));
         $ok = $id > 0 && $this->findings->delete($id);
         $this->redirect([self::STATUS_QUERY_KEY => $ok ? 'deleted:' . $id : 'delete_failed']);
     }
@@ -127,7 +127,7 @@ final class FileIntegrityPage
     public function handleResetBaseline(): void
     {
         $this->guardWriteRequest();
-        $scope = isset($_POST['scope']) && is_string($_POST['scope']) ? $_POST['scope'] : '';
+        $scope = WpHelper::getPostString('scope');
         if ($scope === '') {
             foreach ($this->manifests->scopes() as $known) {
                 $this->manifests->delete($known);

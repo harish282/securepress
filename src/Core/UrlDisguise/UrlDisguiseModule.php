@@ -212,8 +212,8 @@ final class UrlDisguiseModule
     private function rawRequestPathWithoutQuery(): string
     {
         foreach (['REQUEST_URI', 'REDIRECT_URL', 'HTTP_X_ORIGINAL_URL'] as $key) {
-            $v = $_SERVER[$key] ?? null;
-            if (!is_string($v) || $v === '') {
+            $v = WpHelper::getServerString($key);
+            if ($v === null) {
                 continue;
             }
             $path = explode('?', $v, 2)[0];

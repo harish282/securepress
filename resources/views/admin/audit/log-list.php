@@ -22,6 +22,8 @@ use PressSentinel\Core\Support\WpHelper;
  * @var string|null      $status
  * @var int|null         $detailId
  * @var AuditEvent|null  $detail
+ * @var string           $filterDateFrom
+ * @var string           $filterDateTo
  */
 
 $pageBase = WpHelper::adminUrl('admin.php?page=' . $pageSlug);
@@ -35,14 +37,14 @@ $nonceField = static function (string $action): string {
 
     return '';
 };
-$buildLink = static function (array $params) use ($pageBase, $query): string {
+$buildLink = static function (array $params) use ($pageBase, $pageSlug, $query, $filterDateFrom, $filterDateTo): string {
     $defaults = [
-        'page' => isset($_GET['page']) ? (string) $_GET['page'] : '',
+        'page' => $pageSlug,
         'category' => $query->category,
         'level' => $query->level,
         's' => $query->search,
-        'date_from' => isset($_GET['date_from']) ? (string) $_GET['date_from'] : '',
-        'date_to' => isset($_GET['date_to']) ? (string) $_GET['date_to'] : '',
+        'date_from' => $filterDateFrom,
+        'date_to' => $filterDateTo,
         'per_page' => $query->perPage,
         'paged' => $query->page,
     ];
@@ -108,11 +110,11 @@ $levelClass = static function (string $level): string {
 
         <label style="margin-left: 8px;">
             From
-            <input type="date" name="date_from" value="<?php echo esc_attr(isset($_GET['date_from']) ? (string) $_GET['date_from'] : ''); ?>">
+            <input type="date" name="date_from" value="<?php echo esc_attr($filterDateFrom); ?>">
         </label>
         <label>
             To
-            <input type="date" name="date_to" value="<?php echo esc_attr(isset($_GET['date_to']) ? (string) $_GET['date_to'] : ''); ?>">
+            <input type="date" name="date_to" value="<?php echo esc_attr($filterDateTo); ?>">
         </label>
 
         <select name="per_page">

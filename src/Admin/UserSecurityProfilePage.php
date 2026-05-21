@@ -97,8 +97,8 @@ final class UserSecurityProfilePage
      */
     private function dispatch(int $userId): ?array
     {
-        $action = $_REQUEST['action'] ?? '';
-        if (!is_string($action) || $action === '') {
+        $action = WpHelper::getRequestString('action');
+        if ($action === '') {
             return null;
         }
 
@@ -144,7 +144,7 @@ final class UserSecurityProfilePage
             return ['type' => 'error', 'message' => 'No pending enrolment found. Please start over.'];
         }
 
-        $code = trim((string) ($_POST['sp_2fa_code'] ?? ''));
+        $code = trim(WpHelper::getPostString('sp_2fa_code'));
         if ($code === '') {
             return ['type' => 'error', 'message' => 'Please enter the code shown in your authenticator app.'];
         }
@@ -220,7 +220,7 @@ final class UserSecurityProfilePage
      */
     private function revokeSession(int $userId): array
     {
-        $sessionId = isset($_POST['session_id']) ? (int) $_POST['session_id'] : 0;
+        $sessionId = max(0, (int) WpHelper::getPostString('session_id', '0'));
         if ($sessionId <= 0) {
             return ['type' => 'error', 'message' => 'Invalid session reference.'];
         }
@@ -236,7 +236,8 @@ final class UserSecurityProfilePage
      */
     private function revokeAllOtherSessions(int $userId): array
     {
-        $excludeId = isset($_POST['current_session_id']) ? (int) $_POST['current_session_id'] : null;
+        $excludeRaw = WpHelper::getPostString('current_session_id', '');
+        $excludeId = is_numeric($excludeRaw) ? (int) $excludeRaw : null;
         $count = $this->sessions->revokeAllExceptCurrent($userId, $excludeId);
 
         return ['type' => 'success', 'message' => sprintf('%d other session(s) revoked.', $count)];

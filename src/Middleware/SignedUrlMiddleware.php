@@ -6,6 +6,7 @@ namespace PressSentinel\Middleware;
 
 use PressSentinel\Core\Logging\LoggerInterface;
 use PressSentinel\Core\Logging\NullLogger;
+use PressSentinel\Core\Support\WpHelper;
 use PressSentinel\Core\Middleware\MiddlewareInterface;
 use PressSentinel\Core\Url\NonceStoreInterface;
 use PressSentinel\Core\Url\SignedUrlResult;
@@ -96,8 +97,8 @@ final class SignedUrlMiddleware implements MiddlewareInterface
             return $request['url'];
         }
 
-        $requestUri = $_SERVER['REQUEST_URI'] ?? null;
-        if (is_string($requestUri) && $requestUri !== '') {
+        $requestUri = WpHelper::requestUri();
+        if ($requestUri !== null) {
             return $requestUri;
         }
 

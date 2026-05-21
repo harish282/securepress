@@ -173,8 +173,8 @@ final class PressSentinelMenuPage
                 'nonceAction' => self::NONCE_ACTION,
                 'actionName' => self::NONCE_ACTION,
             ],
-            'status' => isset($_GET[self::STATUS_QUERY_KEY]) && is_string($_GET[self::STATUS_QUERY_KEY])
-                ? $_GET[self::STATUS_QUERY_KEY]
+            'status' => WpHelper::getQueryString(self::STATUS_QUERY_KEY, '') !== ''
+                ? WpHelper::getQueryString(self::STATUS_QUERY_KEY)
                 : null,
             'links' => [
                 'authentication' => $this->submenuUrl(AuthHardeningSettingsPage::PAGE_SLUG),
@@ -228,6 +228,7 @@ final class PressSentinelMenuPage
         // omits the key entirely when unchecked. Build the desired map by
         // iterating the canonical feature list rather than the POST payload —
         // that way an attacker can't smuggle in keys we don't recognise.
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Checkbox map; keys validated against FeatureRegistry below.
         $posted = isset($_POST['features']) && is_array($_POST['features']) ? $_POST['features'] : [];
         $desired = [];
         foreach ($this->features->all() as $feature) {
