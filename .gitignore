@@ -13,6 +13,9 @@ storage/tmp/*
 # Dependency directories
 vendor/
 node_modules/
+cypress.env.json
+cypress/screenshots/
+cypress/videos/
 
 # Release artifacts
 build/

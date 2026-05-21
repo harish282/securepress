@@ -122,6 +122,10 @@ composer install
 vendor/bin/phpunit
 bash scripts/build-release-zip.sh dev    # sync to wp-content/plugins/presssentinel
 bash scripts/build-release-zip.sh prod   # zip under ./build
+
+# Staging E2E (requires a live WP site — see docs/CYPRESS_E2E.md)
+npm install
+npm run test:e2e
 ```
 
 Configuration: `config/plugin.php` and optional `wp-config.php` constants (`PRESS_SENTINEL_SAFE_MODE`, `PRESS_SENTINEL_PRO_LICENSE`, `PRESS_SENTINEL_LICENSE_SECRET`). See [docs/USAGE.md](docs/USAGE.md) and [PRIVACY.md](PRIVACY.md).
@@ -134,6 +138,7 @@ Configuration: `config/plugin.php` and optional `wp-config.php` constants (`PRES
 | [docs/USAGE.md](docs/USAGE.md) | Developer and operator usage |
 | [docs/MU_LOADER_INSTALL.md](docs/MU_LOADER_INSTALL.md) | Early-load MU plugin setup |
 | [docs/STAGING_TEST_PLAN.md](docs/STAGING_TEST_PLAN.md) | Step-by-step staging QA checklist |
+| [docs/CYPRESS_E2E.md](docs/CYPRESS_E2E.md) | Cypress automation for the staging plan |
 | [ROADMAP_AGILE.md](ROADMAP_AGILE.md) | Sprint backlog |
 | [presssentinel_wordpress_security_plugin_project_plan.md](presssentinel_wordpress_security_plugin_project_plan.md) | Product vision and phases |
 

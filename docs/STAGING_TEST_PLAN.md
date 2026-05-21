@@ -364,8 +364,30 @@ For sites using custom routes, verify SDK wiring from [USAGE.md](USAGE.md):
 
 ---
 
+## 16. Automated Cypress checks
+
+A subset of this plan is covered by Cypress specs under `cypress/e2e/staging/`. See [CYPRESS_E2E.md](CYPRESS_E2E.md) for setup (`npm install`, `cypress.env.json`, `npm run test:e2e`).
+
+| Section | Automated | Notes |
+| --- | --- | --- |
+| §2 Pre-flight | Yes | Dashboard + Health |
+| §3 Dashboard | Yes | Feature toggle persistence |
+| §4 Audit log | Yes | Settings, prune; plugin events need manual toggle or `runDestructive` |
+| §5 Auth | Partial | Settings UI; lockout/2FA/sessions manual or `runDestructive` |
+| §6 Headers | Yes | X-Frame-Options on front end |
+| §7 Rate limit | Yes | REST 429 burst |
+| §8 File integrity | Yes | Scan form submit |
+| §9 URL disguise | Optional | `runDestructive: true` only |
+| §10 WooCommerce | Optional | `runWooCommerce: true` |
+| §11 Safe mode | No | wp-config change |
+| §12 License | Yes | Page load + status text |
+| §13 Developer API | No | Custom route required |
+
+---
+
 ## Related docs
 
+- [CYPRESS_E2E.md](CYPRESS_E2E.md) — staging E2E runner and env flags  
 - [USAGE.md](USAGE.md) — developer APIs and configuration reference  
 - [MU_LOADER_INSTALL.md](MU_LOADER_INSTALL.md) — early load setup  
 - [PRIVACY.md](../PRIVACY.md) — data stored and third-party requests  
