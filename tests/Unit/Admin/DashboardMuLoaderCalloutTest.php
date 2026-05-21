@@ -88,6 +88,20 @@ final class DashboardMuLoaderCalloutTest extends TestCase
         self::assertStringNotContainsString('Download MU loader (.zip)', $html);
     }
 
+    public function test_feature_toggle_form_includes_nonce_field(): void
+    {
+        $page = $this->makePage(isInstalled: true);
+        $html = $this->captureRender($page);
+
+        self::assertStringContainsString('Save feature toggles', $html);
+        self::assertStringContainsString(
+            'name="action" value="' . PressSentinelMenuPage::NONCE_ACTION . '"',
+            $html
+        );
+        self::assertStringContainsString('name="_wpnonce"', $html);
+        self::assertStringContainsString('value="nonce_' . PressSentinelMenuPage::NONCE_ACTION . '"', $html);
+    }
+
     private function captureRender(PressSentinelMenuPage $page): string
     {
         \ob_start();

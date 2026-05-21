@@ -12,6 +12,8 @@ use PressSentinel\Admin\FeatureDescriptor;
 use PressSentinel\Core\Licensing\LicenseStatus;
 use PressSentinel\Core\Support\WpHelper;
 
+// Nonce fields must be echoed via WpHelper::adminNonceField() — wp_kses_post() strips hidden inputs.
+
 /**
  * @var array{isPro:bool,status:LicenseStatus,menuVisible:bool}             $license
  * @var array{enabled:bool}                                                  $auth
@@ -48,17 +50,6 @@ $card = static function (string $title, string $statusHtml, string $bodyHtml, ?s
                 . '</div>'
             : '')
         . '</div>';
-};
-
-$nonceField = static function (string $action): string {
-    if (\function_exists('wp_nonce_field')) {
-        ob_start();
-        \call_user_func('wp_nonce_field', $action);
-
-        return (string) ob_get_clean();
-    }
-
-    return '';
 };
 
 $licenseStatus = $license['status'];
@@ -114,7 +105,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
                   action="<?php echo esc_url($muLoader['downloadUrl']) ?>"
                   style="display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <input type="hidden" name="action" value="<?php echo esc_attr($muLoader['downloadAction']) ?>">
-                <?php echo wp_kses_post($nonceField($muLoader['downloadAction'])); ?>
+                <?php WpHelper::adminNonceField($muLoader['downloadAction']); ?>
                 <button type="submit" class="button button-primary">
                     Download MU loader (.zip)
                 </button>
@@ -145,7 +136,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
     <form method="post" action="<?php echo esc_url($features['formAction']) ?>"
           style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:20px;margin-top:8px;">
         <input type="hidden" name="action" value="<?php echo esc_attr($features['actionName']) ?>">
-        <?php echo wp_kses_post($nonceField($features['nonceAction'])); ?>
+        <?php WpHelper::adminNonceField($features['nonceAction']); ?>
 
         <table class="form-table" role="presentation" style="margin-top:0;">
             <tbody>

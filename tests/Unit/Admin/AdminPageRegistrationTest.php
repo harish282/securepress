@@ -134,6 +134,19 @@ final class AdminPageRegistrationTest extends TestCase
      * `admin_post_{action}`, and never fires `admin_menu`. Anything registered
      * inside `admin_menu` would be missed entirely on form submissions.
      */
+    public function test_dashboard_post_handler_registers_when_is_admin_false_at_wire_time(): void
+    {
+        WpStubState::$isAdmin = false;
+
+        $page = (new ReflectionClass(\PressSentinel\Admin\PressSentinelMenuPage::class))->newInstanceWithoutConstructor();
+        $page->registerPostHandler();
+
+        self::assertTrue(
+            WpStubState::hasAction('admin_post_presssentinel_features'),
+            'Dashboard save must register admin_post_presssentinel_features even when is_admin() was false during MU/front-end bootstrap.'
+        );
+    }
+
     public function test_admin_post_handlers_registered_via_init_run_on_form_submission(): void
     {
         $invoked = false;

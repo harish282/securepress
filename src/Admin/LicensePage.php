@@ -79,15 +79,6 @@ final class LicensePage
         $adminUrl = WpHelper::adminUrl('admin-post.php');
         $statusFlag = WpHelper::getQueryString(self::STATUS_QUERY_KEY);
 
-        $nonceField = static function (string $action): string {
-            if (\function_exists('wp_nonce_field')) {
-                ob_start();
-                \call_user_func('wp_nonce_field', $action);
-                return (string) ob_get_clean();
-            }
-            return '';
-        };
-
         echo '<div class="wrap">';
         echo '<h1>PressSentinel &mdash; License</h1>';
 
@@ -105,7 +96,7 @@ final class LicensePage
         echo '<h2>' . ($isEarly ? 'License key (optional)' : 'Enter your license key') . '</h2>';
         echo '<form method="post" action="' . esc_url($adminUrl) . '">';
         echo '<input type="hidden" name="action" value="presssentinel_license_save" />';
-        echo wp_kses_post($nonceField(self::NONCE_ACTION));
+        WpHelper::adminNonceField(self::NONCE_ACTION);
         echo '<table class="form-table" role="presentation"><tbody>';
         echo '<tr><th scope="row"><label for="presssentinel-license-key">License key</label></th><td>';
         echo '<input type="text" id="presssentinel-license-key" name="license_key" value="" class="regular-text" autocomplete="off" placeholder="SP-PRO-1714780800-1746316800-………" />';
@@ -132,7 +123,7 @@ final class LicensePage
         if ($mayClearStoredKey) {
             echo '<form method="post" action="' . esc_url($adminUrl) . '" style="margin-top: 1em;">';
             echo '<input type="hidden" name="action" value="presssentinel_license_clear" />';
-            echo wp_kses_post($nonceField(self::NONCE_ACTION));
+            WpHelper::adminNonceField(self::NONCE_ACTION);
             echo '<button type="submit" class="button" onclick="return confirm(\'Remove the current license?\');">Remove license</button>';
             echo '</form>';
         }

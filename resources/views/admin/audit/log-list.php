@@ -30,16 +30,6 @@ use PressSentinel\Core\Support\WpHelper;
  */
 
 $pageBase = WpHelper::adminUrl('admin.php?page=' . $pageSlug);
-$nonceField = static function (string $action): string {
-    if (\function_exists('wp_nonce_field')) {
-        ob_start();
-        \call_user_func('wp_nonce_field', $action);
-
-        return (string) ob_get_clean();
-    }
-
-    return '';
-};
 $buildLink = static function (array $params) use ($pageBase, $pageSlug, $query, $filterDateFrom, $filterDateTo): string {
     $defaults = [
         'page' => $pageSlug,
@@ -243,13 +233,13 @@ $levelClass = static function (string $level): string {
 
     <form method="post" action="<?php echo esc_url(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block; margin-right: 8px;" onsubmit="return confirm('Run pruner now? Entries beyond the configured retention window will be deleted.');">
         <input type="hidden" name="action" value="presssentinel_prune_audit_logs">
-        <?php echo wp_kses_post($nonceField($nonceAction)); ?>
+        <?php WpHelper::adminNonceField($nonceAction); ?>
         <button type="submit" class="button">Run prune now</button>
     </form>
 
     <form method="post" action="<?php echo esc_url(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block;" onsubmit="return confirm('Permanently delete every audit log entry? This cannot be undone.');">
         <input type="hidden" name="action" value="presssentinel_clear_audit_logs">
-        <?php echo wp_kses_post($nonceField($nonceAction)); ?>
+        <?php WpHelper::adminNonceField($nonceAction); ?>
         <button type="submit" class="button button-link-delete">Clear all logs</button>
     </form>
 </div>

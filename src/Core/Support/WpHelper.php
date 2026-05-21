@@ -86,7 +86,11 @@ final class WpHelper
 
         $result = \call_user_func('wp_verify_nonce', $nonce, $action);
 
-        return is_int($result) && $result > 0 ? $result : 0;
+        if ($result === false || $result === 0 || $result === '0') {
+            return 0;
+        }
+
+        return (int) $result > 0 ? (int) $result : 0;
     }
 
     public static function createNonce(string $action): string
@@ -609,14 +613,56 @@ final class WpHelper
         }
     }
 
+    /**
+     * Reads a form nonce from POST first (admin-post / options.php), then REQUEST.
+     *
+     * Nonces are not passed through {@see sanitizeTextField()} — WordPress core
+     * only unslashes them before {@see wp_verify_nonce()}.
+     */
+    public static function getNonceFromRequest(string $field = '_wpnonce'): string
+    {
+        if (isset($_POST[$field]) && is_string($_POST[$field])) {
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Unslashed below.
+            return self::unslash($_POST[$field]);
+        }
+
+        if (isset($_REQUEST[$field]) && is_string($_REQUEST[$field])) {
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Unslashed below.
+            return self::unslash($_REQUEST[$field]);
+        }
+
+        return '';
+    }
+
     public static function verifyAdminNonce(string $action, string $field = '_wpnonce'): bool
     {
-        $nonce = self::getRequestString($field, '');
+        if (\function_exists('check_admin_referer')) {
+            $result = \call_user_func('check_admin_referer', $action, $field, false);
+
+            return $result !== false && $result !== 0;
+        }
+
+        $nonce = self::getNonceFromRequest($field);
         if ($nonce === '') {
             return false;
         }
 
         return self::verifyNonce($nonce, $action) > 0;
+    }
+
+    /**
+     * Prints a WordPress admin nonce field. Do not wrap in {@see wp_kses_post()} —
+     * KSES strips hidden inputs and breaks {@see verifyAdminNonce()}.
+     */
+    public static function adminNonceField(
+        string $action,
+        string $name = '_wpnonce',
+        bool $referer = true,
+        bool $display = true,
+    ): void {
+        if (\function_exists('wp_nonce_field')) {
+            \call_user_func('wp_nonce_field', $action, $name, $referer, $display);
+        }
     }
 
     public static function safeRedirect(string $url): void

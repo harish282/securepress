@@ -78,12 +78,26 @@ final class PressSentinelMenuPage
 
     public function register(): void
     {
-        WpHelper::addAction('admin_menu', [$this, 'addMenu'], 0);
-        // admin_post_* handlers MUST be registered before wp-admin/admin-post.php
-        // dispatches the action. The plugin bootstrap calls register() from a
-        // priority-1 `init` hook, which fires comfortably before admin-post.php's
-        // own admin_init / admin_post_* sequence — see Plugin::registerAdminHooks().
+        $this->registerPostHandler();
+        $this->registerMenu();
+    }
+
+    /**
+     * Wires the dashboard feature-toggle form handler on admin-post.php.
+     *
+     * Kept separate from {@see registerMenu()} so {@see Plugin::registerAdminHooks()}
+     * can register post handlers even when {@see WpHelper::isAdmin()} is false at
+     * plugin bootstrap (e.g. MU loader on a front-end request) — admin-post.php
+     * still needs the hook on the next POST.
+     */
+    public function registerPostHandler(): void
+    {
         WpHelper::addAction('admin_post_' . self::NONCE_ACTION, [$this, 'handleSaveFeatures']);
+    }
+
+    public function registerMenu(): void
+    {
+        WpHelper::addAction('admin_menu', [$this, 'addMenu'], 0);
     }
 
     /**

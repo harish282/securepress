@@ -11,7 +11,10 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$pressSentinelBootstrap = WP_PLUGIN_DIR . '/press-sentinel/press-sentinel.php';
+$pressSentinelBootstrap = WP_PLUGIN_DIR . '/presssentinel/press-sentinel.php';
+if (!is_readable($pressSentinelBootstrap)) {
+    $pressSentinelBootstrap = WP_PLUGIN_DIR . '/press-sentinel/press-sentinel.php';
+}
 
 if (is_readable($pressSentinelBootstrap)) {
     require_once $pressSentinelBootstrap;

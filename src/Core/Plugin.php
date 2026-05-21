@@ -1272,26 +1272,11 @@ final class Plugin
 
     private function registerAdminHooks(): void
     {
-        if (!WpHelper::isAdmin()) {
-            return;
-        }
-
-        WpHelper::addAction('admin_notices', [$this, 'renderMuLoaderNotice']);
-        WpHelper::addAction('admin_notices', [$this, 'renderLoggerNotice']);
-        WpHelper::addAction('admin_notices', [$this, 'renderLicenseSecretNotice']);
-        WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
-
-        // The top-level "Secure Press" menu owns the parent slug every submenu
-        // page below hangs off. It must be registered first — WP drops submenu
-        // entries whose `parent_slug` doesn't yet exist — so we hook into
-        // `admin_menu` outside of the priority-1 submenu callback. The page
-        // itself does this internally at priority 0.
-        $this->container->get(PressSentinelMenuPage::class)->register();
-
-        // The MU loader zip-download controller registers an admin_post_*
-        // hook only (no menu page), so it can live right next to the
-        // dashboard menu registration — same lifecycle, same admin-post.php
-        // entry point.
+        // admin-post.php never fires admin_menu. Post handlers and Settings API
+        // registration must be wired on every bootstrap — not only when
+        // is_admin() is true at plugin load (MU loader can boot on front-end
+        // requests where is_admin() is still false).
+        $this->container->get(PressSentinelMenuPage::class)->registerPostHandler();
         $this->container->get(MuLoaderDownloadController::class)->register();
 
         // Admin pages are deferred to `init` — NOT `admin_menu`, NOT
@@ -1313,10 +1298,8 @@ final class Plugin
         // part of wp-load.php and therefore precedes wp-admin/admin.php's
         // menu-rendering AND admin-post.php's action dispatch.
         //
-        // The outer is_admin() gate above ensures this hook is only added
-        // for admin requests; the inner RequestContext::isAjax() check skips
-        // admin-ajax.php to preserve the lazy-loading intent (no page
-        // construction on every AJAX call).
+        // The inner RequestContext::isAjax() check skips admin-ajax.php to
+        // preserve the lazy-loading intent (no page construction on every AJAX call).
         WpHelper::addAction('init', function (): void {
             if (RequestContext::isAjax()) {
                 return;
@@ -1347,6 +1330,18 @@ final class Plugin
                 $this->container->get(UserSecurityProfilePage::class)->register();
             }
         }, 1);
+
+        if (!WpHelper::isAdmin()) {
+            return;
+        }
+
+        WpHelper::addAction('admin_notices', [$this, 'renderMuLoaderNotice']);
+        WpHelper::addAction('admin_notices', [$this, 'renderLoggerNotice']);
+        WpHelper::addAction('admin_notices', [$this, 'renderLicenseSecretNotice']);
+        WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
+
+        // Top-level menu must register before submenu pages (priority 0).
+        $this->container->get(PressSentinelMenuPage::class)->registerMenu();
     }
 
 }

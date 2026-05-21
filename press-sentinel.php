@@ -34,5 +34,7 @@ require_once PRESS_SENTINEL_SRC_PATH . '/Core/Plugin.php';
     }
 );
 
-$plugin = new \PressSentinel\Core\Plugin();
-$plugin->boot();
+if (!defined('PRESS_SENTINEL_BOOTED')) {
+    define('PRESS_SENTINEL_BOOTED', true);
+    (new \PressSentinel\Core\Plugin())->boot();
+}
