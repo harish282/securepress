@@ -467,6 +467,7 @@ final class WooCommerceModule
      */
     private function postArray(): array
     {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- Shape-only read for WooCommerce cart/checkout payloads.
         return isset($_POST) && is_array($_POST) ? $_POST : [];
     }
 

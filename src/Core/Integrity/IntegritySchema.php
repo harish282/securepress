@@ -19,6 +19,7 @@ namespace PressSentinel\Core\Integrity;
  * Both follow the same versioning convention as the other plugin schemas — a stored
  * `..._db_version` option is compared on boot, `dbDelta` only runs when it lags.
  */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Schema DDL via dbDelta; DROP uses internal table names only.
 final class IntegritySchema
 {
     public const BASELINE_TABLE = 'presssentinel_integrity_baselines';
@@ -58,9 +59,7 @@ final class IntegritySchema
     {
         $wpdb = $this->wpdb();
         if ($wpdb !== null && method_exists($wpdb, 'query')) {
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- DROP TABLE uses schema-derived table names.
             $wpdb->query('DROP TABLE IF EXISTS ' . $this->baselineTable());
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- DROP TABLE uses schema-derived table names.
             $wpdb->query('DROP TABLE IF EXISTS ' . $this->findingTable());
         }
         if (\function_exists('delete_option')) {

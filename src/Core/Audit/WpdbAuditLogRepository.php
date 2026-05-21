@@ -18,7 +18,7 @@ use RuntimeException;
  * writes throw — failing loud on writes is intentional, silent failure here would mean
  * losing audit entries, which is exactly the problem this feature exists to solve.
  */
-// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table names are prefix + fixed slug from schema; values use $wpdb->prepare().
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom tables; names from schema helpers; values use $wpdb->prepare().
 final class WpdbAuditLogRepository implements AuditLogRepositoryInterface
 {
     public function __construct(private readonly AuditLogSchema $schema)

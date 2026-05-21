@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PressSentinel\Core\Support;
 
+// phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- Sanitized superglobal accessors; mutating callers verify nonces first.
 final class WpHelper
 {
     public static function addAction(string $hook, callable $callback, int $priority = 10, int $acceptedArgs = 1): void

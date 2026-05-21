@@ -206,6 +206,7 @@ final class FileLogger implements LoggerInterface
     private function makeDirectory(string $directory): void
     {
         $silent = static fn (): bool => true;
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Scoped handler around mkdir only; restored in finally.
         set_error_handler($silent);
         try {
             if (\function_exists('wp_mkdir_p')) {

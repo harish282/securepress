@@ -5,6 +5,9 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
+
+
 use PressSentinel\Admin\AuditLogPage;
 use PressSentinel\Core\Audit\AuditEvent;
 use PressSentinel\Core\Audit\AuditLogPage as PageResult;

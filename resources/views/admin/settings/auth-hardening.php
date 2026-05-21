@@ -5,6 +5,9 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
+
+
 /**
  * @var string $pageSlug
  * @var string $optionGroup

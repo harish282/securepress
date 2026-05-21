@@ -15,7 +15,7 @@ use RuntimeException;
  * lookup table. Tradeoff: adding a new severity level requires a code change here, but
  * keeps the schema dead simple (single VARCHAR column).
  */
-// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table names are prefix + fixed slug from schema; values use $wpdb->prepare().
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom tables; names from schema helpers; values use $wpdb->prepare().
 final class WpdbFindingRepository implements FindingRepositoryInterface
 {
     public function __construct(private readonly IntegritySchema $schema)

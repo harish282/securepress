@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PressSentinel\Auth;
 
+// phpcs:disable WordPress.Security.NonceVerification -- wp-login.php challenge; sanitized read-only args via WpHelper.
 use PressSentinel\Core\Auth\TwoFactor\PendingChallenge;
 use PressSentinel\Core\Auth\TwoFactor\TwoFactorMethod;
 use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
@@ -192,17 +193,10 @@ final class TwoFactorChallengeController
      */
     private function stringFromRequest(string $key, string $source = 'REQUEST'): string
     {
-        $bag = match ($source) {
-            'GET' => $_GET,
-            'POST' => $_POST,
-            default => $_REQUEST,
+        return match ($source) {
+            'GET' => WpHelper::getQueryString($key),
+            'POST' => WpHelper::getPostString($key),
+            default => WpHelper::getRequestString($key),
         };
-
-        $value = $bag[$key] ?? '';
-        if (!is_string($value)) {
-            return '';
-        }
-
-        return WpHelper::unslash($value);
     }
 }

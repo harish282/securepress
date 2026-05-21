@@ -2,6 +2,9 @@
 if (! defined('ABSPATH')) {
     exit;
 }
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
+
 /**
  * @var string $token
  * @var string $method

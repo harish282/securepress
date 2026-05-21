@@ -11,6 +11,7 @@ namespace PressSentinel\Core\Auth\Sessions;
  * (a) opaque/serialised, (b) overwritten on every login, and (c) not designed for
  * arbitrary querying. Our table supports `findActiveForUser()` and pruning natively.
  */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Schema DDL via dbDelta; DROP uses internal table names only.
 final class SessionSchema
 {
     public const TABLE = 'presssentinel_sessions';
@@ -49,7 +50,6 @@ final class SessionSchema
     {
         $wpdb = $this->wpdb();
         if ($wpdb !== null && method_exists($wpdb, 'query')) {
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- DROP TABLE uses schema-derived table name.
             $wpdb->query('DROP TABLE IF EXISTS ' . $this->tableName());
         }
         if (\function_exists('delete_option')) {

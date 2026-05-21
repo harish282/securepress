@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PressSentinel\Middleware;
 
+// phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- Locates CSRF tokens via WpHelper; wp_verify_nonce() validates them.
 use PressSentinel\Core\Logging\LoggerInterface;
 use PressSentinel\Core\Logging\NullLogger;
 use PressSentinel\Core\Middleware\MiddlewareInterface;
@@ -174,12 +175,7 @@ final class CsrfProtectionMiddleware implements MiddlewareInterface
             return strtoupper($request['method']);
         }
 
-        $serverMethod = $_SERVER['REQUEST_METHOD'] ?? null;
-        if (is_string($serverMethod) && $serverMethod !== '') {
-            return strtoupper($serverMethod);
-        }
-
-        return 'GET';
+        return WpHelper::getRequestMethod();
     }
 
     /**
@@ -200,9 +196,9 @@ final class CsrfProtectionMiddleware implements MiddlewareInterface
         }
 
         foreach (self::HEADER_SERVER_KEYS as $key) {
-            $value = $_SERVER[$key] ?? null;
-            if (is_string($value) && $value !== '') {
-                return WpHelper::unslash($value);
+            $value = WpHelper::getServerString($key);
+            if ($value !== null) {
+                return $value;
             }
         }
 
@@ -217,9 +213,9 @@ final class CsrfProtectionMiddleware implements MiddlewareInterface
         }
 
         foreach (self::BODY_KEYS as $field) {
-            $value = $_POST[$field] ?? null;
-            if (is_string($value) && $value !== '') {
-                return WpHelper::unslash($value);
+            $value = WpHelper::getPostString($field);
+            if ($value !== '') {
+                return $value;
             }
         }
 
@@ -234,9 +230,9 @@ final class CsrfProtectionMiddleware implements MiddlewareInterface
         }
 
         foreach (self::QUERY_KEYS as $field) {
-            $value = $_GET[$field] ?? null;
-            if (is_string($value) && $value !== '') {
-                return WpHelper::unslash($value);
+            $value = WpHelper::getQueryString($field);
+            if ($value !== '') {
+                return $value;
             }
         }
 

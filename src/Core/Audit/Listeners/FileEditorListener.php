@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace PressSentinel\Core\Audit\Listeners;
 
+// phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- Core file-editor requests; save path verifies editor nonce.
 use PressSentinel\Core\Audit\AuditEvent;
 use PressSentinel\Core\Audit\AuditEventCategory;
 use PressSentinel\Core\Audit\AuditEventLevel;
@@ -54,7 +55,8 @@ final class FileEditorListener implements ListenerInterface
         }
 
         $type = self::SCREENS[$screenId];
-        $file = isset($_REQUEST['file']) && is_string($_REQUEST['file']) ? $_REQUEST['file'] : null;
+        $fileRaw = WpHelper::getRequestString('file', '');
+        $file = $fileRaw !== '' ? $fileRaw : null;
 
         $event = AuditEvent::make('file_editor.viewed', AuditEventCategory::FILE_EDITOR, AuditEventLevel::NOTICE)
             ->withTarget($type, $file ?? '(index)')
@@ -66,16 +68,12 @@ final class FileEditorListener implements ListenerInterface
 
     public function onAdminInit(): void
     {
-        $method = isset($_SERVER['REQUEST_METHOD']) && is_string($_SERVER['REQUEST_METHOD'])
-            ? strtoupper($_SERVER['REQUEST_METHOD'])
-            : 'GET';
-        if ($method !== 'POST') {
+        if (WpHelper::getRequestMethod() !== 'POST') {
             return;
         }
 
-        $script = isset($_SERVER['SCRIPT_NAME']) && is_string($_SERVER['SCRIPT_NAME'])
-            ? basename($_SERVER['SCRIPT_NAME'])
-            : '';
+        $scriptName = WpHelper::getServerString('SCRIPT_NAME');
+        $script = $scriptName !== null ? basename($scriptName) : '';
 
         $type = match ($script) {
             'theme-editor.php' => 'theme',
@@ -86,14 +84,13 @@ final class FileEditorListener implements ListenerInterface
             return;
         }
 
-        $action = isset($_POST['action']) && is_string($_POST['action']) ? $_POST['action'] : '';
-        if ($action !== 'update') {
+        if (WpHelper::getPostString('action') !== 'update') {
             return;
         }
 
         $nonceAction = $type === 'theme' ? 'edit-theme_' : 'edit-plugin_';
-        $file = isset($_POST['file']) && is_string($_POST['file']) ? $_POST['file'] : '';
-        if ($file === '' || WpHelper::verifyNonce((string) ($_POST['_wpnonce'] ?? ''), $nonceAction . $file) <= 0) {
+        $file = WpHelper::getPostString('file');
+        if ($file === '' || WpHelper::verifyNonce(WpHelper::getPostString('_wpnonce'), $nonceAction . $file) <= 0) {
             return;
         }
 

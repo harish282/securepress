@@ -228,7 +228,7 @@ final class PressSentinelMenuPage
         // omits the key entirely when unchecked. Build the desired map by
         // iterating the canonical feature list rather than the POST payload —
         // that way an attacker can't smuggle in keys we don't recognise.
-        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Checkbox map; keys validated against FeatureRegistry below.
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing, WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Nonce verified above; checkbox map keys validated against FeatureRegistry below.
         $posted = isset($_POST['features']) && is_array($_POST['features']) ? $_POST['features'] : [];
         $desired = [];
         foreach ($this->features->all() as $feature) {

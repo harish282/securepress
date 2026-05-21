@@ -14,30 +14,30 @@
 
     <!-- Included view templates use local variables, not unprefixed globals. -->
     <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
-        <exclude-pattern>resources/views/*</exclude-pattern>
-        <exclude-pattern>bootstrap/safe-mode.php</exclude-pattern>
+        <exclude-pattern>*/resources/views/*</exclude-pattern>
+        <exclude-pattern>*/bootstrap/safe-mode.php</exclude-pattern>
     </rule>
 
     <!-- Custom plugin tables use $wpdb directly; names come from schema helpers only. -->
     <rule ref="WordPress.DB.DirectDatabaseQuery">
-        <exclude-pattern>src/Core/**/Wpdb*.php</exclude-pattern>
-        <exclude-pattern>src/Core/**/*Schema.php</exclude-pattern>
-        <exclude-pattern>src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
+        <exclude-pattern>*/src/Core/*/Wpdb*.php</exclude-pattern>
+        <exclude-pattern>*/src/Core/*/*Schema.php</exclude-pattern>
+        <exclude-pattern>*/src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
     </rule>
     <rule ref="WordPress.DB.DirectDatabaseQuery.NoCaching">
-        <exclude-pattern>src/Core/**/Wpdb*.php</exclude-pattern>
-        <exclude-pattern>src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
+        <exclude-pattern>*/src/Core/*/Wpdb*.php</exclude-pattern>
+        <exclude-pattern>*/src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
     </rule>
     <rule ref="WordPress.DB.DirectDatabaseQuery.SchemaChange">
-        <exclude-pattern>src/Core/**/*Schema.php</exclude-pattern>
+        <exclude-pattern>*/src/Core/*/*Schema.php</exclude-pattern>
     </rule>
     <rule ref="PluginCheck.Security.DirectDB.UnescapedDBParameter">
-        <exclude-pattern>src/Core/**/Wpdb*.php</exclude-pattern>
-        <exclude-pattern>src/Core/**/*Schema.php</exclude-pattern>
-        <exclude-pattern>src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
+        <exclude-pattern>*/src/Core/*/Wpdb*.php</exclude-pattern>
+        <exclude-pattern>*/src/Core/*/*Schema.php</exclude-pattern>
+        <exclude-pattern>*/src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
     </rule>
     <rule ref="WordPress.DB.PreparedSQL.InterpolatedNotPrepared">
-        <exclude-pattern>src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
+        <exclude-pattern>*/src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
     </rule>
 
     <!-- Log channel registers a scoped error handler for the write operation only. -->

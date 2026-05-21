@@ -5,6 +5,9 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
+
+
 use PressSentinel\Admin\PressSentinelMenuPage;
 use PressSentinel\Core\Support\WpHelper;
 

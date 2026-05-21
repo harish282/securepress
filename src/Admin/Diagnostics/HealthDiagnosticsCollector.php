@@ -30,6 +30,7 @@ use PressSentinel\WooCommerce\WooCommerceModule;
 /**
  * Read-only snapshot of plugin health for the admin diagnostics screen.
  */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Diagnostics probes; table names from schema helpers only.
 final class HealthDiagnosticsCollector
 {
     private const TRANSIENT_PROBE_PREFIX = 'presssentinel_health_probe_';
@@ -433,6 +434,7 @@ final class HealthDiagnosticsCollector
             return false;
         }
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Diagnostics probe; table name from schema helpers.
         $found = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table));
 
         return is_string($found) && $found === $table;
@@ -446,6 +448,7 @@ final class HealthDiagnosticsCollector
         }
 
         // Table name comes from our schema helpers only — not user input.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $raw = $wpdb->get_var("SELECT COUNT(*) FROM `{$table}`");
         if (!is_numeric($raw)) {
             return null;

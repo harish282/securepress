@@ -5,6 +5,9 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
+
+
 use PressSentinel\Admin\FileIntegrityPage;
 use PressSentinel\Core\Integrity\Finding;
 use PressSentinel\Core\Integrity\FindingSeverity;

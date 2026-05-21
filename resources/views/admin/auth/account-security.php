@@ -2,6 +2,9 @@
 if (! defined('ABSPATH')) {
     exit;
 }
+
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
+
 /**
  * @var \PressSentinel\Core\Auth\TwoFactor\TwoFactorState $state
  * @var string $method_label

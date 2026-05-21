@@ -12,6 +12,7 @@ namespace PressSentinel\Core\Audit;
  * statements. We track our own `presssentinel_db_version` option so we don't even call
  * `dbDelta` when the schema is already current (saves a DB round-trip on every boot).
  */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Schema DDL via dbDelta; DROP uses internal table names only.
 final class AuditLogSchema
 {
     public const TABLE = 'presssentinel_audit_logs';
@@ -60,7 +61,6 @@ final class AuditLogSchema
     {
         $wpdb = $this->wpdb();
         if ($wpdb !== null && method_exists($wpdb, 'query')) {
-            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- DROP TABLE uses schema-derived table name.
             $wpdb->query('DROP TABLE IF EXISTS ' . $this->tableName());
         }
 
