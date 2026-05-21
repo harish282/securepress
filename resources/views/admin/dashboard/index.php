@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+if (! defined('ABSPATH')) {
+    exit;
+}
 
 use PressSentinel\Admin\FeatureDescriptor;
 use PressSentinel\Core\Licensing\LicenseStatus;
@@ -25,20 +28,20 @@ $badge = static function (bool $ok, string $okLabel, string $offLabel): string {
 
     return '<span style="display:inline-block;padding:2px 10px;border-radius:10px;background:'
         . $bg . ';color:' . $fg . ';font-weight:600;font-size:12px;">'
-        . WpHelper::escapeHtml($label) . '</span>';
+        . esc_html($label) . '</span>';
 };
 
 $card = static function (string $title, string $statusHtml, string $bodyHtml, ?string $href, string $cta): string {
     return '<div style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;min-height:140px;">'
         . '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">'
-        . '<h2 style="margin:0;font-size:15px;">' . WpHelper::escapeHtml($title) . '</h2>'
+        . '<h2 style="margin:0;font-size:15px;">' . esc_html($title) . '</h2>'
         . $statusHtml
         . '</div>'
         . '<div style="color:#50575e;font-size:13px;line-height:1.5;">' . $bodyHtml . '</div>'
         . ($href !== null && $href !== '' && $cta !== ''
             ? '<div style="margin-top:auto;">'
-                . '<a class="button button-secondary" href="' . WpHelper::escapeUrl($href) . '">'
-                . WpHelper::escapeHtml($cta) . ' &rarr;</a>'
+                . '<a class="button button-secondary" href="' . esc_url($href) . '">'
+                . esc_html($cta) . ' &rarr;</a>'
                 . '</div>'
             : '')
         . '</div>';
@@ -98,22 +101,22 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
             </p>
             <ol style="margin:0 0 14px 22px;color:#50575e;line-height:1.7;">
                 <li>Click <strong>Download MU loader (.zip)</strong> below.</li>
-                <li>Extract the archive. You'll get one file: <code><?= WpHelper::escapeHtml($muLoader['loaderFilename']) ?></code>.</li>
+                <li>Extract the archive. You'll get one file: <code><?php echo esc_html($muLoader['loaderFilename']) ?></code>.</li>
                 <li>Upload it (via SFTP, your host's File Manager, or <code>wp cli</code>) to:<br>
-                    <code style="display:inline-block;margin-top:4px;padding:4px 8px;background:#f6f7f7;border-radius:3px;"><?= WpHelper::escapeHtml($muLoader['expectedDirectory']) ?>/</code><br>
+                    <code style="display:inline-block;margin-top:4px;padding:4px 8px;background:#f6f7f7;border-radius:3px;"><?php echo esc_html($muLoader['expectedDirectory']) ?>/</code><br>
                     If the <code>mu-plugins</code> folder doesn't exist, create it &mdash; WordPress will pick it up automatically.</li>
                 <li>Reload this page. The callout will disappear once PressSentinel detects the loader.</li>
             </ol>
             <form method="post"
-                  action="<?= WpHelper::escapeUrl($muLoader['downloadUrl']) ?>"
+                  action="<?php echo esc_url($muLoader['downloadUrl']) ?>"
                   style="display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                <input type="hidden" name="action" value="<?= WpHelper::escapeAttribute($muLoader['downloadAction']) ?>">
-                <?= $nonceField($muLoader['downloadAction']) ?>
+                <input type="hidden" name="action" value="<?php echo esc_attr($muLoader['downloadAction']) ?>">
+                <?php echo wp_kses_post($nonceField($muLoader['downloadAction']) ?>
                 <button type="submit" class="button button-primary">
                     Download MU loader (.zip)
                 </button>
                 <span style="color:#50575e;font-size:12px;">
-                    Contents: <code><?= WpHelper::escapeHtml($muLoader['loaderFilename']) ?></code> + <code>INSTALL.txt</code>.
+                    Contents: <code><?php echo esc_html($muLoader['loaderFilename']) ?></code> + <code>INSTALL.txt</code>.
                 </span>
             </form>
         </div>
@@ -125,8 +128,8 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
                 <?php if ($savedCount === 0): ?>
                     No feature changes to apply &mdash; everything is already in the requested state.
                 <?php else: ?>
-                    <strong><?= (int) $savedCount ?></strong>
-                    feature<?= $savedCount === 1 ? '' : 's' ?>
+                    <strong><?php echo (int) $savedCount ?></strong>
+                    feature<?php echo $savedCount === 1 ? '' : 's' ?>
                     updated.
                 <?php endif; ?>
             </p>
@@ -136,10 +139,10 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
     <h2 style="margin-top:24px;">Feature toggles</h2>
     <p class="description">Turn entire PressSentinel modules on or off in one click. Detailed per-module settings stay on each module's dedicated page &mdash; this only flips the master switch.</p>
 
-    <form method="post" action="<?= WpHelper::escapeUrl($features['formAction']) ?>"
+    <form method="post" action="<?php echo esc_url($features['formAction']) ?>"
           style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:20px;margin-top:8px;">
-        <input type="hidden" name="action" value="<?= WpHelper::escapeAttribute($features['actionName']) ?>">
-        <?= $nonceField($features['nonceAction']) ?>
+        <input type="hidden" name="action" value="<?php echo esc_attr($features['actionName']) ?>">
+        <?php echo wp_kses_post($nonceField($features['nonceAction']) ?>
 
         <table class="form-table" role="presentation" style="margin-top:0;">
             <tbody>
@@ -157,23 +160,23 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
                 ?>
                 <tr>
                     <th scope="row" style="padding-left:0;">
-                        <label for="presssentinel_feature_<?= WpHelper::escapeAttribute($feature->key) ?>" style="display:block;">
-                            <strong><?= WpHelper::escapeHtml($feature->label) ?></strong><?= $proBadge ?>
+                        <label for="presssentinel_feature_<?php echo esc_attr($feature->key) ?>" style="display:block;">
+                            <strong><?php echo esc_html($feature->label) ?></strong><?php echo wp_kses_post($proBadge); ?>
                         </label>
                     </th>
                     <td>
                         <label style="display:inline-flex;align-items:center;gap:10px;cursor:pointer;">
                             <input type="checkbox"
-                                   id="presssentinel_feature_<?= WpHelper::escapeAttribute($feature->key) ?>"
-                                   name="features[<?= WpHelper::escapeAttribute($feature->key) ?>]"
+                                   id="presssentinel_feature_<?php echo esc_attr($feature->key) ?>"
+                                   name="features[<?php echo esc_attr($feature->key) ?>]"
                                    value="1"
-                                   <?= $isOn ? 'checked' : '' ?>>
-                            <span><?= WpHelper::escapeHtml($feature->description) ?></span>
+                                   <?php echo $isOn ? 'checked' : '' ?>>
+                            <span><?php echo esc_html($feature->description) ?></span>
                         </label>
                         <?php if ($feature->isPro && !$features['isPro']): ?>
                             <p class="description" style="margin-top:6px;">
                                 Pro license required for this feature to take effect.
-                                <a href="<?= WpHelper::escapeUrl($links['license']) ?>">Activate Pro</a>.
+                                <a href="<?php echo esc_url($links['license']) ?>">Activate Pro</a>.
                             </p>
                         <?php endif; ?>
                     </td>
@@ -189,7 +192,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
 
     <h2 style="margin-top:32px;">Status overview</h2>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:8px;">
-        <?= $card(
+        <?php echo wp_kses_post($card(
             'Authentication',
             $badge($auth['enabled'], 'On', 'Off'),
             'Login lockout, two-factor enforcement, session tracking, and suspicious-login alerts.',
@@ -197,7 +200,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
             'Configure authentication',
         ); ?>
 
-        <?= $card(
+        <?php echo wp_kses_post($card(
             'Security Headers',
             $headers['masterEnabled']
                 ? $badge($headers['enabledCount'] > 0, $headers['enabledCount'] . ' of ' . $headers['totalCount'] . ' on', 'All off')
@@ -207,7 +210,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
             'Configure headers',
         ); ?>
 
-        <?= $card(
+        <?php echo wp_kses_post($card(
             'File Integrity',
             $badge($integrity['enabled'], 'Scanning', 'Disabled'),
             $integrity['openFindings'] > 0
@@ -217,7 +220,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
             'Review file integrity',
         ); ?>
 
-        <?= $card(
+        <?php echo wp_kses_post($card(
             'Audit Log',
             $badge($audit['totalEvents'] > 0, (string) $audit['totalEvents'] . ' events', 'Empty'),
             'Plugin activations, role changes, file-editor edits, authentication events, and (Pro) WooCommerce decisions.',
@@ -233,7 +236,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
                 : 'Pro features are unlocked during your evaluation trial. The License screen appears in the menu when the trial ends.')
             : 'Free tier. Apply a license key to unlock the Pro feature set.';
         ?>
-        <?= $card(
+        <?php echo wp_kses_post($card(
             'License',
             $badge($license['isPro'], $licenseLabel, $licenseLabel),
             $licenseBody,

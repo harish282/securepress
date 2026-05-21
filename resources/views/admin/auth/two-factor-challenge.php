@@ -1,4 +1,7 @@
 <?php
+if (! defined('ABSPATH')) {
+    exit;
+}
 /**
  * @var string $token
  * @var string $method
@@ -30,20 +33,20 @@ $minutes_remaining = max(1, (int) ceil(((int) $remaining_seconds) / 60));
     .sp-2fa-info { color: #1f5582; padding: 8px 12px; background: #e6f3ff; border-left: 4px solid #1f5582; margin-bottom: 12px; }
 </style>
 
-<form name="sp_2fa_form" id="loginform" action="<?php echo WpHelper::escapeAttribute((string) $submit_action); ?>" method="post">
+<form name="sp_2fa_form" id="loginform" action="<?php echo esc_attr((string) $submit_action); ?>" method="post">
     <div class="sp-2fa-card">
         <h1>Two-factor authentication</h1>
         <p class="sp-2fa-meta">
-            Method: <strong><?php echo WpHelper::escapeHtml((string) $method_label); ?></strong>
+            Method: <strong><?php echo esc_html((string) $method_label); ?></strong>
             &middot; expires in ~<?php echo (int) $minutes_remaining; ?> min
         </p>
 
         <?php if (!empty($error)) : ?>
-            <div class="sp-2fa-error"><?php echo WpHelper::escapeHtml((string) $error); ?></div>
+            <div class="sp-2fa-error"><?php echo esc_html((string) $error); ?></div>
         <?php endif; ?>
 
         <?php if (!empty($info)) : ?>
-            <div class="sp-2fa-info"><?php echo WpHelper::escapeHtml((string) $info); ?></div>
+            <div class="sp-2fa-info"><?php echo esc_html((string) $info); ?></div>
         <?php endif; ?>
 
         <p>
@@ -71,13 +74,13 @@ $minutes_remaining = max(1, (int) ceil(((int) $remaining_seconds) / 60));
 
         <p>
             <label>
-                <input type="checkbox" name="sp_2fa_recovery" value="1" <?php echo $is_recovery_default ? 'checked' : ''; ?> />
+                <input type="checkbox" name="sp_2fa_recovery" value="1" <?php checked($is_recovery_default); ?> />
                 Use a recovery code instead
             </label>
         </p>
 
-        <input type="hidden" name="token" value="<?php echo WpHelper::escapeAttribute((string) $token); ?>" />
-        <input type="hidden" name="redirect_to" value="<?php echo WpHelper::escapeAttribute((string) $redirect_to); ?>" />
+        <input type="hidden" name="token" value="<?php echo esc_attr((string) $token); ?>" />
+        <input type="hidden" name="redirect_to" value="<?php echo esc_attr((string) $redirect_to); ?>" />
 
         <p class="submit">
             <input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large"
@@ -86,11 +89,11 @@ $minutes_remaining = max(1, (int) ceil(((int) $remaining_seconds) / 60));
 
         <div class="sp-2fa-actions">
             <?php if ($is_email_otp) : ?>
-                <a href="<?php echo WpHelper::escapeUrl((string) $submit_action . '&token=' . rawurlencode((string) $token) . '&resend=1'); ?>">
+                <a href="<?php echo esc_url((string) $submit_action . '&token=' . rawurlencode((string) $token) . '&resend=1'); ?>">
                     Resend code
                 </a>
             <?php endif; ?>
-            <a href="<?php echo WpHelper::escapeUrl((string) $login_url); ?>">Back to sign-in</a>
+            <a href="<?php echo esc_url((string) $login_url); ?>">Back to sign-in</a>
         </div>
     </div>
 </form>

@@ -157,6 +157,7 @@ final class FileLogger implements LoggerInterface
         // read-only — we want to fall through to the writability check below
         // and emit a clean lastError, not a PHP warning.
         if (!file_exists($this->logFilePath)) {
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_touch -- Log file bootstrap before WP_Filesystem is available.
             if (@touch($this->logFilePath) === false) {
                 $this->lastError = sprintf(
                     'PressSentinel could not create the log file at %s. The directory exists but is not writable by the web server.',
@@ -169,6 +170,7 @@ final class FileLogger implements LoggerInterface
             // some hosts run PHP via FastCGI as a different user; the chmod
             // might be refused. We don't care: the file already exists at that
             // point and the worst case is "logs are 0664".
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Best-effort log file permissions after creation.
             @chmod($this->logFilePath, 0644);
             $this->dropProtectionFiles($directory);
         }
@@ -176,6 +178,7 @@ final class FileLogger implements LoggerInterface
         // Step 3: writability. A file that exists but isn't writable means
         // either bad ownership or read-only mount — same operator action
         // regardless, so we render one consolidated message.
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Log path writability probe for operator guidance.
         if (!is_writable($this->logFilePath)) {
             $this->lastError = sprintf(
                 'PressSentinel log file at %s is not writable. Run `chmod 644 %s` (and `chown` to the web server user if needed).',
@@ -210,6 +213,7 @@ final class FileLogger implements LoggerInterface
 
                 return;
             }
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Fallback when wp_mkdir_p is unavailable (tests/CLI).
             if (!mkdir($directory, 0755, true) && !is_dir($directory)) {
                 // Caller checks `is_dir()` after this returns; we don't need
                 // to surface anything further — the failure path collapses

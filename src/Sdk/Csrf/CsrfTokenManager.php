@@ -59,8 +59,8 @@ final class CsrfTokenManager
     {
         return sprintf(
             '<input type="hidden" name="%s" value="%s" />',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute($this->mint($action))
+            esc_attr($name),
+            esc_attr($this->mint($action))
         );
     }
 }

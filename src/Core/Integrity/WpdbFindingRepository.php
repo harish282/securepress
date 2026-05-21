@@ -15,6 +15,7 @@ use RuntimeException;
  * lookup table. Tradeoff: adding a new severity level requires a code change here, but
  * keeps the schema dead simple (single VARCHAR column).
  */
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table names are prefix + fixed slug from schema; values use $wpdb->prepare().
 final class WpdbFindingRepository implements FindingRepositoryInterface
 {
     public function __construct(private readonly IntegritySchema $schema)
@@ -43,6 +44,7 @@ final class WpdbFindingRepository implements FindingRepositoryInterface
         );
 
         if ($inserted === false) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Database persistence diagnostic.
             throw new RuntimeException('Failed to persist finding: ' . (string) ($wpdb->last_error ?? 'unknown wpdb error'));
         }
 

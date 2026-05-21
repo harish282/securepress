@@ -117,6 +117,7 @@ final class Security
             }
             if (!is_subclass_of($class, MiddlewareInterface::class)) {
                 throw new LogicException(
+                    // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- SDK bootstrap diagnostic.
                     sprintf('Middleware "%s" must implement %s.', $class, MiddlewareInterface::class)
                 );
             }
@@ -215,6 +216,7 @@ final class Security
     {
         $result = self::rateLimit($key, $limit, $window);
         if (!$result->allowed) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Rate-limit metadata object, not HTML output.
             throw new RateLimitExceededException($result);
         }
 

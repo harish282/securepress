@@ -95,8 +95,8 @@ final class UrlDisguiseSettingsPage
         $name = UrlDisguiseOptions::OPTION_NAME . '[enabled]';
         printf(
             '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Enable custom login URL</label>',
-            WpHelper::escapeAttribute($name),
-            $checked
+            esc_attr($name),
+            esc_attr($checked)
         );
     }
 
@@ -107,8 +107,8 @@ final class UrlDisguiseSettingsPage
         printf(
             '<input type="text" class="regular-text" name="%1$s" value="%2$s" autocomplete="off" placeholder="e.g. my-secret-login">'
             . '<p class="description">3–64 characters: lowercase letters, digits, and hyphens only. Must not match a reserved path (<code>wp-admin</code>, <code>wp-json</code>, etc.).</p>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute($value)
+            esc_attr($name),
+            esc_attr($value)
         );
     }
 
@@ -119,8 +119,8 @@ final class UrlDisguiseSettingsPage
         printf(
             '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Answer direct <code>wp-login.php</code> requests with <strong>404 Not Found</strong> (recommended)</label>'
             . '<p class="description">Does not redirect to your custom URL, so scanners cannot discover it from the default path. Turn off only if something must load <code>wp-login.php</code> by URL (rare).</p>',
-            WpHelper::escapeAttribute($name),
-            $checked
+            esc_attr($name),
+            esc_attr($checked)
         );
     }
 }

@@ -2,6 +2,10 @@
 
 declare(strict_types=1);
 
+if (! defined('ABSPATH')) {
+    exit;
+}
+
 return [
     'app' => [
         'name' => 'PressSentinel',
@@ -18,16 +22,17 @@ return [
      * Beta trial: when `beta_trial.enabled` is true and there is no valid license key,
      * the install receives Pro capabilities for `duration_days` from the first
      * request that evaluates licensing (`presssentinel_beta_trial_started_at` is set
-     * once). Override with `PRESS_SENTINEL_BETA_TRIAL_ENABLED` and
-     * `PRESS_SENTINEL_BETA_TRIAL_DURATION_DAYS`. PHPUnit forces the trial off in
-     * `tests/bootstrap.php` so the suite stays deterministic.
+     * once). Edit `beta_trial.enabled` and `duration_days` below to change the programme.
      *
      * Early access: when `early_access` is true and there is no valid key, Pro
      * unlocks with **no expiry** (use sparingly, e.g. private previews). When on, it
-     * wins over the beta trial. Override with `PRESS_SENTINEL_EARLY_ACCESS`. PHPUnit
-     * forces it off in `tests/bootstrap.php`.
+     * wins over the beta trial.
+     *
+     * Optional default key in this file (usually leave empty; admins set keys in wp-admin):
+     * `license_key` — also overridable via `define('PRESS_SENTINEL_PRO_LICENSE', '…')` in wp-config.php.
      */
     'pro_license' => [
+        'license_key' => '',
         'early_access' => false,
         'beta_trial' => [
             'enabled' => true,
@@ -68,6 +73,19 @@ return [
     ],
     'signed_url' => [
         'ttl_default' => 3600,
+        // Non-empty value pins signed URLs across WP salt rotation. Empty uses wp_salt('auth').
+        'secret' => '',
+    ],
+    /**
+     * Emergency recovery when login disguise, lockouts, or rate limits block access.
+     * Prefer wp-config.php (loaded first):
+     *
+     *     define('PRESS_SENTINEL_SAFE_MODE', true);
+     *
+     * Or set `safe_mode` to true here, reload once, sign in, then turn it off again.
+     */
+    'recovery' => [
+        'safe_mode' => false,
     ],
     'audit_log' => [
         'enabled' => true,
@@ -142,8 +160,9 @@ return [
     ],
     'licensing' => [
         // Offline HMAC keys use a per-install secret in the options table
-        // (`presssentinel_license_hmac_secret`), auto-created on activation — no
-        // wp-config required. This value is only a fallback before the option exists.
+        // (`presssentinel_license_hmac_secret`), auto-created on activation.
+        // This value is only a fallback before the option exists. Override in wp-config.php:
+        // define('PRESS_SENTINEL_LICENSE_SECRET', '…');
         'secret' => 'change-me-in-production',
     ],
 

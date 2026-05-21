@@ -185,8 +185,8 @@ final class SecurityHeadersSettingsPage
         $name = sprintf('%s[enabled]', SecurityHeadersOptions::OPTION_NAME);
         printf(
             '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Send all enabled security headers on every response</label>',
-            WpHelper::escapeAttribute($name),
-            $checked
+            esc_attr($name),
+            esc_attr($checked)
         );
     }
 
@@ -206,8 +206,8 @@ final class SecurityHeadersSettingsPage
         $name = $this->name('hsts', 'max_age');
         printf(
             '<input type="number" min="0" step="1" name="%s" value="%s" class="regular-text"> <span class="description">e.g. <code>31536000</code> = 1 year</span>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute((string) $value)
+            esc_attr($name),
+            esc_attr((string) $value)
         );
     }
 
@@ -242,8 +242,8 @@ final class SecurityHeadersSettingsPage
         $name = $this->name('csp', 'policy');
         printf(
             '<textarea name="%s" rows="5" class="large-text code">%s</textarea>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeTextarea($value)
+            esc_attr($name),
+            esc_textarea($value)
         );
     }
 
@@ -261,13 +261,13 @@ final class SecurityHeadersSettingsPage
     {
         $value = (string) $this->valueOf('x_frame_options', 'value');
         $name = $this->name('x_frame_options', 'value');
-        echo '<select name="' . WpHelper::escapeAttribute($name) . '">';
+        echo '<select name="' . esc_attr($name) . '">';
         foreach (XFrameOptionsHeader::VALID_VALUES as $option) {
             printf(
                 '<option value="%s"%s>%s</option>',
-                WpHelper::escapeAttribute($option),
+                esc_attr($option),
                 $option === $value ? ' selected' : '',
-                WpHelper::escapeHtml($option)
+                esc_html($option)
             );
         }
         echo '</select>';
@@ -287,13 +287,13 @@ final class SecurityHeadersSettingsPage
     {
         $value = (string) $this->valueOf('referrer_policy', 'policy');
         $name = $this->name('referrer_policy', 'policy');
-        echo '<select name="' . WpHelper::escapeAttribute($name) . '">';
+        echo '<select name="' . esc_attr($name) . '">';
         foreach (ReferrerPolicyHeader::VALID_POLICIES as $option) {
             printf(
                 '<option value="%s"%s>%s</option>',
-                WpHelper::escapeAttribute($option),
+                esc_attr($option),
                 $option === $value ? ' selected' : '',
-                WpHelper::escapeHtml($option)
+                esc_html($option)
             );
         }
         echo '</select>';
@@ -315,8 +315,8 @@ final class SecurityHeadersSettingsPage
         $name = $this->name('permissions_policy', 'policy');
         printf(
             '<textarea name="%s" rows="3" class="large-text code">%s</textarea>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeTextarea($value)
+            esc_attr($name),
+            esc_textarea($value)
         );
     }
 
@@ -336,9 +336,9 @@ final class SecurityHeadersSettingsPage
         $name = $this->name($group, $key);
         printf(
             '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> %3$s</label>',
-            WpHelper::escapeAttribute($name),
-            $checked,
-            $label
+            esc_attr($name),
+            esc_attr($checked),
+            esc_html($label)
         );
     }
 

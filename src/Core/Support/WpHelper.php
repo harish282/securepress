@@ -376,6 +376,19 @@ final class WpHelper
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 
+    /**
+     * @return array<string, mixed>|int|string|null
+     */
+    public static function parseUrl(string $url, int $component = -1): array|int|string|null
+    {
+        if (\function_exists('wp_parse_url')) {
+            return \call_user_func('wp_parse_url', $url, $component);
+        }
+
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback when wp_parse_url is unavailable (tests/CLI).
+        return parse_url($url, $component);
+    }
+
     public static function adminUrl(string $path = ''): string
     {
         if (\function_exists('admin_url')) {

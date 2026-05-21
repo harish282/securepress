@@ -22,21 +22,30 @@ final class LicenseManagerTest extends TestCase
     protected function setUp(): void
     {
         WpStubState::$options = [];
-        putenv(LicenseManager::ENV_VAR);
-        putenv('PRESS_SENTINEL_BETA_TRIAL_ENABLED=false');
-        putenv('PRESS_SENTINEL_EARLY_ACCESS=false');
     }
 
     protected function tearDown(): void
     {
-        putenv(LicenseManager::ENV_VAR);
-        putenv('PRESS_SENTINEL_BETA_TRIAL_ENABLED=false');
-        putenv('PRESS_SENTINEL_EARLY_ACCESS=false');
         WpStubState::$options = [];
+        if (\function_exists('remove_all_filters')) {
+            \remove_all_filters('presssentinel_config');
+        }
     }
 
-    private function manager(LicenseValidatorInterface $validator): LicenseManager
+    /**
+     * @param array<string, mixed> $overrides
+     */
+    private function manager(LicenseValidatorInterface $validator, array $overrides = []): LicenseManager
     {
+        if ($overrides !== [] && \function_exists('add_filter')) {
+            \add_filter(
+                'presssentinel_config',
+                static function (array $config) use ($overrides): array {
+                    return array_replace_recursive($config, $overrides);
+                }
+            );
+        }
+
         return new LicenseManager($validator, new Config());
     }
 
@@ -69,13 +78,14 @@ final class LicenseManagerTest extends TestCase
         self::assertSame(LicenseStatus::STATE_INVALID, $manager->status()->state);
     }
 
-    public function test_env_var_overrides_when_option_missing(): void
+    public function test_config_license_key_used_when_option_missing(): void
     {
         $validator = new LocalLicenseValidator('secret');
         $key = $validator->issue('PRO', time(), time() + 86400);
-        putenv(LicenseManager::ENV_VAR . '=' . $key);
 
-        $manager = $this->manager($validator);
+        $manager = $this->manager($validator, [
+            'pro_license' => ['license_key' => $key],
+        ]);
 
         self::assertTrue($manager->isPro());
     }
@@ -121,11 +131,13 @@ final class LicenseManagerTest extends TestCase
 
     public function test_status_is_cached_within_request(): void
     {
-        $validator = new class implements \PressSentinel\Core\Licensing\LicenseValidatorInterface {
+        $validator = new class implements LicenseValidatorInterface {
             public int $calls = 0;
+
             public function validate(string $key): LicenseStatus
             {
                 $this->calls++;
+
                 return LicenseStatus::active('pro', null);
             }
         };
@@ -141,10 +153,14 @@ final class LicenseManagerTest extends TestCase
 
     public function test_beta_trial_unlocks_pro_without_a_key_when_programme_enabled(): void
     {
-        putenv('PRESS_SENTINEL_BETA_TRIAL_ENABLED=true');
-        putenv('PRESS_SENTINEL_BETA_TRIAL_DURATION_DAYS=14');
-
-        $manager = $this->manager(new LocalLicenseValidator('secret'));
+        $manager = $this->manager(new LocalLicenseValidator('secret'), [
+            'pro_license' => [
+                'beta_trial' => [
+                    'enabled' => true,
+                    'duration_days' => 14,
+                ],
+            ],
+        ]);
 
         self::assertTrue($manager->isPro());
         self::assertSame(LicenseStatus::STATE_BETA_TRIAL, $manager->status()->state);
@@ -155,11 +171,16 @@ final class LicenseManagerTest extends TestCase
 
     public function test_expired_beta_trial_does_not_grant_pro(): void
     {
-        putenv('PRESS_SENTINEL_BETA_TRIAL_ENABLED=true');
-        putenv('PRESS_SENTINEL_BETA_TRIAL_DURATION_DAYS=30');
         WpStubState::$options[BetaTrial::STARTED_AT_OPTION] = time() - (400 * 86400);
 
-        $manager = $this->manager(new LocalLicenseValidator('secret'));
+        $manager = $this->manager(new LocalLicenseValidator('secret'), [
+            'pro_license' => [
+                'beta_trial' => [
+                    'enabled' => true,
+                    'duration_days' => 30,
+                ],
+            ],
+        ]);
 
         self::assertFalse($manager->isPro());
         self::assertSame(LicenseStatus::STATE_NONE, $manager->status()->state);
@@ -167,9 +188,9 @@ final class LicenseManagerTest extends TestCase
 
     public function test_early_access_unlocks_pro_without_a_key(): void
     {
-        putenv('PRESS_SENTINEL_EARLY_ACCESS=true');
-
-        $manager = $this->manager(new LocalLicenseValidator('secret'));
+        $manager = $this->manager(new LocalLicenseValidator('secret'), [
+            'pro_license' => ['early_access' => true],
+        ]);
 
         self::assertTrue($manager->isPro());
         self::assertSame(LicenseStatus::STATE_EARLY_ACCESS, $manager->status()->state);
@@ -180,11 +201,15 @@ final class LicenseManagerTest extends TestCase
 
     public function test_early_access_takes_precedence_over_beta_trial(): void
     {
-        putenv('PRESS_SENTINEL_EARLY_ACCESS=true');
-        putenv('PRESS_SENTINEL_BETA_TRIAL_ENABLED=true');
-        putenv('PRESS_SENTINEL_BETA_TRIAL_DURATION_DAYS=14');
-
-        $manager = $this->manager(new LocalLicenseValidator('secret'));
+        $manager = $this->manager(new LocalLicenseValidator('secret'), [
+            'pro_license' => [
+                'early_access' => true,
+                'beta_trial' => [
+                    'enabled' => true,
+                    'duration_days' => 14,
+                ],
+            ],
+        ]);
 
         self::assertSame(LicenseStatus::STATE_EARLY_ACCESS, $manager->status()->state);
         self::assertTrue($manager->isPro());

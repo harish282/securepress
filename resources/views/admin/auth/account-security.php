@@ -1,4 +1,7 @@
 <?php
+if (! defined('ABSPATH')) {
+    exit;
+}
 /**
  * @var \PressSentinel\Core\Auth\TwoFactor\TwoFactorState $state
  * @var string $method_label
@@ -27,15 +30,15 @@ $flashClass = match ($flashType) {
     <h1>Account Security</h1>
 
     <?php if ($flashClass !== '') : ?>
-        <div class="<?php echo WpHelper::escapeAttribute($flashClass); ?>">
-            <p><?php echo WpHelper::escapeHtml((string) ($flash['message'] ?? '')); ?></p>
+        <div class="<?php echo esc_attr($flashClass); ?>">
+            <p><?php echo esc_html((string) ($flash['message'] ?? '')); ?></p>
         </div>
     <?php endif; ?>
 
     <h2>Two-factor authentication</h2>
     <p><strong>Status:</strong>
         <?php if ($state->isEnabled()) : ?>
-            Enabled (<?php echo WpHelper::escapeHtml($method_label); ?>)
+            Enabled (<?php echo esc_html($method_label); ?>)
         <?php else : ?>
             Disabled
         <?php endif; ?>
@@ -46,44 +49,44 @@ $flashClass = match ($flashType) {
             <p><strong>Save these recovery codes now.</strong> They will not be shown again. Each code can be used once if you lose access to your primary 2FA method.</p>
             <pre style="background: #fafafa; padding: 12px; border: 1px solid #ddd; font-family: monospace;"><?php
                 foreach ($recovery_codes as $code) {
-                    echo WpHelper::escapeHtml((string) $code) . "\n";
+                    echo esc_html((string) $code) . "\n";
                 }
             ?></pre>
         </div>
     <?php endif; ?>
 
     <?php if ($state->isEnabled()) : ?>
-        <form method="post" action="<?php echo WpHelper::escapeAttribute($page_url); ?>" style="display:inline-block;margin-right:8px;">
+        <form method="post" action="<?php echo esc_attr($page_url); ?>" style="display:inline-block;margin-right:8px;">
             <input type="hidden" name="action" value="sp_2fa_disable" />
-            <input type="hidden" name="_wpnonce" value="<?php echo WpHelper::escapeAttribute($nonce); ?>" />
+            <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($nonce); ?>" />
             <button type="submit" class="button">Disable 2FA</button>
         </form>
-        <form method="post" action="<?php echo WpHelper::escapeAttribute($page_url); ?>" style="display:inline-block;">
+        <form method="post" action="<?php echo esc_attr($page_url); ?>" style="display:inline-block;">
             <input type="hidden" name="action" value="sp_2fa_regen" />
-            <input type="hidden" name="_wpnonce" value="<?php echo WpHelper::escapeAttribute($nonce); ?>" />
+            <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($nonce); ?>" />
             <button type="submit" class="button">Regenerate recovery codes</button>
         </form>
     <?php else : ?>
         <h3>Authenticator app (recommended)</h3>
         <?php if ($enrolment === null) : ?>
             <p>Use Google Authenticator, 1Password, Authy, or any compatible TOTP app.</p>
-            <form method="post" action="<?php echo WpHelper::escapeAttribute($page_url); ?>">
+            <form method="post" action="<?php echo esc_attr($page_url); ?>">
                 <input type="hidden" name="action" value="sp_2fa_start_totp" />
-                <input type="hidden" name="_wpnonce" value="<?php echo WpHelper::escapeAttribute($nonce); ?>" />
+                <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($nonce); ?>" />
                 <button type="submit" class="button button-primary">Set up authenticator app</button>
             </form>
         <?php else : ?>
             <p>1. Open your authenticator app and add a new account using either method below.</p>
             <p><strong>Manual entry:</strong>
-                <code style="font-size: 14px; padding: 4px 8px;"><?php echo WpHelper::escapeHtml($enrolment['secret']); ?></code>
+                <code style="font-size: 14px; padding: 4px 8px;"><?php echo esc_html($enrolment['secret']); ?></code>
             </p>
             <p><strong>Or scan / open this link:</strong><br />
-                <a href="<?php echo WpHelper::escapeAttribute($enrolment['provisioning_uri']); ?>"><?php echo WpHelper::escapeHtml($enrolment['provisioning_uri']); ?></a>
+                <a href="<?php echo esc_attr($enrolment['provisioning_uri']); ?>"><?php echo esc_html($enrolment['provisioning_uri']); ?></a>
             </p>
             <p>2. Enter the 6-digit code your app shows to confirm:</p>
-            <form method="post" action="<?php echo WpHelper::escapeAttribute($page_url); ?>">
+            <form method="post" action="<?php echo esc_attr($page_url); ?>">
                 <input type="hidden" name="action" value="sp_2fa_confirm_totp" />
-                <input type="hidden" name="_wpnonce" value="<?php echo WpHelper::escapeAttribute($nonce); ?>" />
+                <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($nonce); ?>" />
                 <input type="text" name="sp_2fa_code" inputmode="numeric" autocomplete="one-time-code"
                        placeholder="123456" maxlength="6" style="font-size: 18px; letter-spacing: 4px; width: 140px;" required />
                 <button type="submit" class="button button-primary">Confirm and enable</button>
@@ -92,9 +95,9 @@ $flashClass = match ($flashType) {
 
         <h3 style="margin-top: 32px;">Email one-time code</h3>
         <p>Each sign-in we'll send a fresh 6-digit code to your account email. Use this if you can't (or don't want to) use an authenticator app.</p>
-        <form method="post" action="<?php echo WpHelper::escapeAttribute($page_url); ?>">
+        <form method="post" action="<?php echo esc_attr($page_url); ?>">
             <input type="hidden" name="action" value="sp_2fa_enable_email" />
-            <input type="hidden" name="_wpnonce" value="<?php echo WpHelper::escapeAttribute($nonce); ?>" />
+            <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($nonce); ?>" />
             <button type="submit" class="button">Enable email 2FA</button>
         </form>
     <?php endif; ?>
@@ -116,15 +119,15 @@ $flashClass = match ($flashType) {
             <tbody>
                 <?php foreach ($sessions as $session) : ?>
                     <tr>
-                        <td><?php echo WpHelper::escapeHtml(gmdate('Y-m-d H:i', $session->createdAt)); ?> UTC</td>
-                        <td><?php echo WpHelper::escapeHtml(gmdate('Y-m-d H:i', $session->lastSeenAt)); ?> UTC</td>
-                        <td><?php echo WpHelper::escapeHtml($session->ip ?? '—'); ?></td>
-                        <td><?php echo WpHelper::escapeHtml(mb_substr($session->userAgent ?? '—', 0, 80)); ?></td>
+                        <td><?php echo esc_html(gmdate('Y-m-d H:i', $session->createdAt)); ?> UTC</td>
+                        <td><?php echo esc_html(gmdate('Y-m-d H:i', $session->lastSeenAt)); ?> UTC</td>
+                        <td><?php echo esc_html($session->ip ?? '—'); ?></td>
+                        <td><?php echo esc_html(mb_substr($session->userAgent ?? '—', 0, 80)); ?></td>
                         <td>
-                            <form method="post" action="<?php echo WpHelper::escapeAttribute($page_url); ?>" style="display:inline;">
+                            <form method="post" action="<?php echo esc_attr($page_url); ?>" style="display:inline;">
                                 <input type="hidden" name="action" value="sp_2fa_session_revoke" />
                                 <input type="hidden" name="session_id" value="<?php echo (int) $session->id; ?>" />
-                                <input type="hidden" name="_wpnonce" value="<?php echo WpHelper::escapeAttribute($nonce); ?>" />
+                                <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($nonce); ?>" />
                                 <button type="submit" class="button button-link-delete">Revoke</button>
                             </form>
                         </td>
@@ -133,12 +136,12 @@ $flashClass = match ($flashType) {
             </tbody>
         </table>
 
-        <form method="post" action="<?php echo WpHelper::escapeAttribute($page_url); ?>" style="margin-top: 12px;">
+        <form method="post" action="<?php echo esc_attr($page_url); ?>" style="margin-top: 12px;">
             <input type="hidden" name="action" value="sp_2fa_session_revoke_others" />
             <?php if ($current_session_id !== null) : ?>
                 <input type="hidden" name="current_session_id" value="<?php echo (int) $current_session_id; ?>" />
             <?php endif; ?>
-            <input type="hidden" name="_wpnonce" value="<?php echo WpHelper::escapeAttribute($nonce); ?>" />
+            <input type="hidden" name="_wpnonce" value="<?php echo esc_attr($nonce); ?>" />
             <button type="submit" class="button">Revoke all sessions</button>
         </form>
     <?php endif; ?>

@@ -15,6 +15,7 @@ namespace PressSentinel\Core\Auth\Sessions;
  *  - Writes return useful information (the new id; the affected row count) so callers
  *    don't have to do follow-up SELECTs.
  */
+// phpcs:disable WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Table names are prefix + fixed slug from schema; values use $wpdb->prepare().
 final class WpdbSessionRepository implements SessionRepositoryInterface
 {
     public function __construct(private readonly SessionSchema $schema)

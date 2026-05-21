@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+if (! defined('ABSPATH')) {
+    exit;
+}
 
 use PressSentinel\Admin\AuditLogPage;
 use PressSentinel\Core\Audit\AuditEvent;
@@ -45,7 +48,7 @@ $buildLink = static function (array $params) use ($pageBase, $query): string {
     ];
     $merged = array_filter(array_replace($defaults, $params), static fn ($v): bool => $v !== null && $v !== '');
 
-    return WpHelper::escapeUrl(WpHelper::adminUrl('admin.php') . '?' . http_build_query($merged));
+    return esc_url(WpHelper::adminUrl('admin.php') . '?' . http_build_query($merged));
 };
 
 $levelClass = static function (string $level): string {
@@ -61,7 +64,7 @@ $levelClass = static function (string $level): string {
 <div class="wrap">
     <h1>PressSentinel Audit Logs</h1>
     <p class="description">
-        <?= WpHelper::escapeHtml(sprintf(
+        <?php echo esc_html(sprintf(
             'Tracking %d events across %d categories. Use the filters below to narrow the view.',
             $totalAll,
             count($categories)
@@ -77,17 +80,17 @@ $levelClass = static function (string $level): string {
             default => 'Action completed.',
         };
         ?>
-        <div class="notice notice-success is-dismissible"><p><?= WpHelper::escapeHtml($msg); ?></p></div>
+        <div class="notice notice-success is-dismissible"><p><?php echo esc_html($msg); ?></p></div>
     <?php endif; ?>
 
     <form method="get" style="margin: 16px 0;">
-        <input type="hidden" name="page" value="<?= WpHelper::escapeAttribute($pageSlug); ?>">
+        <input type="hidden" name="page" value="<?php echo esc_attr($pageSlug); ?>">
 
         <select name="category">
             <option value="">All categories</option>
             <?php foreach ($categories as $cat): ?>
-                <option value="<?= WpHelper::escapeAttribute($cat); ?>"<?= $query->category === $cat ? ' selected' : ''; ?>>
-                    <?= WpHelper::escapeHtml($cat); ?>
+                <option value="<?php echo esc_attr($cat); ?>"<?php selected($query->category, $cat, false); ?>>
+                    <?php echo esc_html($cat); ?>
                 </option>
             <?php endforeach; ?>
         </select>
@@ -95,31 +98,31 @@ $levelClass = static function (string $level): string {
         <select name="level">
             <option value="">All levels</option>
             <?php foreach ($levels as $lvl): ?>
-                <option value="<?= WpHelper::escapeAttribute($lvl); ?>"<?= $query->level === $lvl ? ' selected' : ''; ?>>
-                    <?= WpHelper::escapeHtml($lvl); ?>
+                <option value="<?php echo esc_attr($lvl); ?>"<?php selected($query->level, $lvl, false); ?>>
+                    <?php echo esc_html($lvl); ?>
                 </option>
             <?php endforeach; ?>
         </select>
 
-        <input type="text" name="s" value="<?= WpHelper::escapeAttribute((string) ($query->search ?? '')); ?>" placeholder="Search action / message / actor" style="min-width: 260px;">
+        <input type="text" name="s" value="<?php echo esc_attr((string) ($query->search ?? '')); ?>" placeholder="Search action / message / actor" style="min-width: 260px;">
 
         <label style="margin-left: 8px;">
             From
-            <input type="date" name="date_from" value="<?= WpHelper::escapeAttribute(isset($_GET['date_from']) ? (string) $_GET['date_from'] : ''); ?>">
+            <input type="date" name="date_from" value="<?php echo esc_attr(isset($_GET['date_from']) ? (string) $_GET['date_from'] : ''); ?>">
         </label>
         <label>
             To
-            <input type="date" name="date_to" value="<?= WpHelper::escapeAttribute(isset($_GET['date_to']) ? (string) $_GET['date_to'] : ''); ?>">
+            <input type="date" name="date_to" value="<?php echo esc_attr(isset($_GET['date_to']) ? (string) $_GET['date_to'] : ''); ?>">
         </label>
 
         <select name="per_page">
             <?php foreach ([25, 50, 100, 200] as $pp): ?>
-                <option value="<?= $pp; ?>"<?= $query->perPage === $pp ? ' selected' : ''; ?>><?= $pp; ?> per page</option>
+                <option value="<?php echo esc_attr((string) $pp); ?>"<?php selected($query->perPage, $pp, false); ?>><?php echo esc_html((string) $pp); ?> per page</option>
             <?php endforeach; ?>
         </select>
 
         <button type="submit" class="button">Filter</button>
-        <a href="<?= WpHelper::escapeUrl($pageBase); ?>" class="button">Reset</a>
+        <a href="<?php echo esc_url($pageBase); ?>" class="button">Reset</a>
     </form>
 
     <table class="wp-list-table widefat fixed striped">
@@ -141,39 +144,39 @@ $levelClass = static function (string $level): string {
             <?php else: ?>
                 <?php foreach ($page->items as $event): ?>
                     <tr>
-                        <td><code><?= WpHelper::escapeHtml(gmdate('Y-m-d H:i:s', $event->occurredAt)); ?></code></td>
-                        <td><span class="<?= WpHelper::escapeAttribute($levelClass($event->level)); ?>" style="margin: 0; padding: 2px 8px; border-left-width: 3px;"><?= WpHelper::escapeHtml($event->level); ?></span></td>
-                        <td><?= WpHelper::escapeHtml($event->category); ?></td>
+                        <td><code><?php echo esc_html(gmdate('Y-m-d H:i:s', $event->occurredAt)); ?></code></td>
+                        <td><span class="<?php echo esc_attr($levelClass($event->level)); ?>" style="margin: 0; padding: 2px 8px; border-left-width: 3px;"><?php echo esc_html($event->level); ?></span></td>
+                        <td><?php echo esc_html($event->category); ?></td>
                         <td>
-                            <strong><?= WpHelper::escapeHtml($event->action); ?></strong>
+                            <strong><?php echo esc_html($event->action); ?></strong>
                             <?php if ($event->message !== null && $event->message !== ''): ?>
-                                <br><span class="description"><?= WpHelper::escapeHtml($event->message); ?></span>
+                                <br><span class="description"><?php echo esc_html($event->message); ?></span>
                             <?php endif; ?>
                         </td>
                         <td>
                             <?php if ($event->actorName !== null): ?>
-                                <?= WpHelper::escapeHtml($event->actorName); ?>
-                                <?php if ($event->actorId !== null): ?> <small>(#<?= (int) $event->actorId; ?>)</small><?php endif; ?>
+                                <?php echo esc_html($event->actorName); ?>
+                                <?php if ($event->actorId !== null): ?> <small>(#<?php echo (int) $event->actorId; ?>)</small><?php endif; ?>
                             <?php elseif ($event->actorId !== null): ?>
-                                <small>user #<?= (int) $event->actorId; ?></small>
+                                <small>user #<?php echo (int) $event->actorId; ?></small>
                             <?php else: ?>
                                 <em class="description">system</em>
                             <?php endif; ?>
                         </td>
                         <td>
                             <?php if ($event->targetType !== null): ?>
-                                <code><?= WpHelper::escapeHtml($event->targetType); ?></code>
+                                <code><?php echo esc_html($event->targetType); ?></code>
                                 <?php if ($event->targetId !== null && $event->targetId !== ''): ?>
-                                    <br><small><?= WpHelper::escapeHtml($event->targetId); ?></small>
+                                    <br><small><?php echo esc_html($event->targetId); ?></small>
                                 <?php endif; ?>
                             <?php else: ?>
                                 <em class="description">—</em>
                             <?php endif; ?>
                         </td>
-                        <td><code><?= WpHelper::escapeHtml((string) ($event->ip ?? '—')); ?></code></td>
+                        <td><code><?php echo esc_html((string) ($event->ip ?? '—')); ?></code></td>
                         <td>
                             <?php if ($event->id !== null): ?>
-                                <a href="<?= $buildLink(['detail' => (string) $event->id]); ?>">View</a>
+                                <a href="<?php echo esc_url($buildLink(['detail' => (string) $event->id]); ?>">View</a>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -186,19 +189,19 @@ $levelClass = static function (string $level): string {
     <?php if ($totalPages > 1): ?>
         <div class="tablenav"><div class="tablenav-pages">
             <span class="displaying-num">
-                <?= WpHelper::escapeHtml(sprintf('%d items', $page->total)); ?>
+                <?php echo esc_html(sprintf('%d items', $page->total)); ?>
             </span>
             <span class="pagination-links">
                 <?php if ($page->page > 1): ?>
-                    <a class="button" href="<?= $buildLink(['paged' => '1']); ?>">&laquo;</a>
-                    <a class="button" href="<?= $buildLink(['paged' => (string) ($page->page - 1)]); ?>">&lsaquo;</a>
+                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => '1']); ?>">&laquo;</a>
+                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => (string) ($page->page - 1)]); ?>">&lsaquo;</a>
                 <?php endif; ?>
                 <span class="paging-input">
-                    <?= WpHelper::escapeHtml(sprintf('%d of %d', $page->page, $totalPages)); ?>
+                    <?php echo esc_html(sprintf('%d of %d', $page->page, $totalPages)); ?>
                 </span>
                 <?php if ($page->page < $totalPages): ?>
-                    <a class="button" href="<?= $buildLink(['paged' => (string) ($page->page + 1)]); ?>">&rsaquo;</a>
-                    <a class="button" href="<?= $buildLink(['paged' => (string) $totalPages]); ?>">&raquo;</a>
+                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => (string) ($page->page + 1)]); ?>">&rsaquo;</a>
+                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => (string) $totalPages]); ?>">&raquo;</a>
                 <?php endif; ?>
             </span>
         </div></div>
@@ -206,26 +209,26 @@ $levelClass = static function (string $level): string {
 
     <?php if ($detail instanceof AuditEvent): ?>
         <hr>
-        <h2>Event detail #<?= (int) $detail->id; ?></h2>
+        <h2>Event detail #<?php echo (int) $detail->id; ?></h2>
         <table class="form-table" role="presentation">
-            <tr><th>Time (UTC)</th><td><code><?= WpHelper::escapeHtml(gmdate('Y-m-d H:i:s', $detail->occurredAt)); ?></code></td></tr>
-            <tr><th>Level</th><td><?= WpHelper::escapeHtml($detail->level); ?></td></tr>
-            <tr><th>Category</th><td><?= WpHelper::escapeHtml($detail->category); ?></td></tr>
-            <tr><th>Action</th><td><code><?= WpHelper::escapeHtml($detail->action); ?></code></td></tr>
-            <tr><th>Message</th><td><?= WpHelper::escapeHtml((string) ($detail->message ?? '—')); ?></td></tr>
-            <tr><th>Actor</th><td><?= WpHelper::escapeHtml(($detail->actorName ?? '') . ($detail->actorId !== null ? ' (#' . $detail->actorId . ')' : '') ?: 'system'); ?></td></tr>
-            <tr><th>Target</th><td><code><?= WpHelper::escapeHtml(($detail->targetType ?? '—') . ($detail->targetId !== null ? ':' . $detail->targetId : '')); ?></code></td></tr>
-            <tr><th>IP / UA</th><td><code><?= WpHelper::escapeHtml((string) ($detail->ip ?? '—')); ?></code><br><small><?= WpHelper::escapeHtml((string) ($detail->userAgent ?? '')); ?></small></td></tr>
-            <tr><th>Request URI</th><td><code><?= WpHelper::escapeHtml((string) ($detail->requestUri ?? '—')); ?></code></td></tr>
-            <tr><th>Context</th><td><pre style="white-space: pre-wrap; word-break: break-all;"><?= WpHelper::escapeHtml((string) json_encode($detail->context, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)); ?></pre></td></tr>
+            <tr><th>Time (UTC)</th><td><code><?php echo esc_html(gmdate('Y-m-d H:i:s', $detail->occurredAt)); ?></code></td></tr>
+            <tr><th>Level</th><td><?php echo esc_html($detail->level); ?></td></tr>
+            <tr><th>Category</th><td><?php echo esc_html($detail->category); ?></td></tr>
+            <tr><th>Action</th><td><code><?php echo esc_html($detail->action); ?></code></td></tr>
+            <tr><th>Message</th><td><?php echo esc_html((string) ($detail->message ?? '—')); ?></td></tr>
+            <tr><th>Actor</th><td><?php echo esc_html(($detail->actorName ?? '') . ($detail->actorId !== null ? ' (#' . $detail->actorId . ')' : '') ?: 'system'); ?></td></tr>
+            <tr><th>Target</th><td><code><?php echo esc_html(($detail->targetType ?? '—') . ($detail->targetId !== null ? ':' . $detail->targetId : '')); ?></code></td></tr>
+            <tr><th>IP / UA</th><td><code><?php echo esc_html((string) ($detail->ip ?? '—')); ?></code><br><small><?php echo esc_html((string) ($detail->userAgent ?? '')); ?></small></td></tr>
+            <tr><th>Request URI</th><td><code><?php echo esc_html((string) ($detail->requestUri ?? '—')); ?></code></td></tr>
+            <tr><th>Context</th><td><pre style="white-space: pre-wrap; word-break: break-all;"><?php echo esc_html((string) json_encode($detail->context, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE)); ?></pre></td></tr>
         </table>
-        <p><a href="<?= WpHelper::escapeUrl($pageBase); ?>" class="button">Back to list</a></p>
+        <p><a href="<?php echo esc_url($pageBase); ?>" class="button">Back to list</a></p>
     <?php endif; ?>
 
     <hr>
     <h2>Maintenance</h2>
     <p class="description">
-        Configure <a href="<?= WpHelper::escapeUrl(
+        Configure <a href="<?php echo esc_url(
             \function_exists('admin_url')
                 ? (string) \call_user_func('admin_url', 'admin.php?page=presssentinel-audit-settings')
                 : '#'
@@ -233,15 +236,15 @@ $levelClass = static function (string $level): string {
         All actions below require the <code>manage_options</code> capability and a valid WordPress nonce. Clearing logs is permanent.
     </p>
 
-    <form method="post" action="<?= WpHelper::escapeUrl(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block; margin-right: 8px;" onsubmit="return confirm('Run pruner now? Entries beyond the configured retention window will be deleted.');">
+    <form method="post" action="<?php echo esc_url(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block; margin-right: 8px;" onsubmit="return confirm('Run pruner now? Entries beyond the configured retention window will be deleted.');">
         <input type="hidden" name="action" value="presssentinel_prune_audit_logs">
-        <?= $nonceField($nonceAction); ?>
+        <?php echo wp_kses_post($nonceField($nonceAction); ?>
         <button type="submit" class="button">Run prune now</button>
     </form>
 
-    <form method="post" action="<?= WpHelper::escapeUrl(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block;" onsubmit="return confirm('Permanently delete every audit log entry? This cannot be undone.');">
+    <form method="post" action="<?php echo esc_url(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block;" onsubmit="return confirm('Permanently delete every audit log entry? This cannot be undone.');">
         <input type="hidden" name="action" value="presssentinel_clear_audit_logs">
-        <?= $nonceField($nonceAction); ?>
+        <?php echo wp_kses_post($nonceField($nonceAction); ?>
         <button type="submit" class="button button-link-delete">Clear all logs</button>
     </form>
 </div>

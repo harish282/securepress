@@ -113,8 +113,8 @@ final class RateLimitSettingsPage
         $name = $this->name('enabled');
         printf(
             '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Apply the global rate limit on every request</label>',
-            WpHelper::escapeAttribute($name),
-            $checked
+            esc_attr($name),
+            esc_attr($checked)
         );
     }
 
@@ -122,14 +122,16 @@ final class RateLimitSettingsPage
     {
         $value = (int) $this->valueOf('limit');
         $name = $this->name('limit');
+        $limitMin = (int) RateLimitOptions::LIMIT_MIN;
+        $limitMax = (int) RateLimitOptions::LIMIT_MAX;
         printf(
-            '<input type="number" name="%s" value="%s" min="%d" max="%d" class="small-text"> <span class="description">Requests allowed per window, per bucket. Range: %d&ndash;%d.</span>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute((string) $value),
-            RateLimitOptions::LIMIT_MIN,
-            RateLimitOptions::LIMIT_MAX,
-            RateLimitOptions::LIMIT_MIN,
-            RateLimitOptions::LIMIT_MAX
+            '<input type="number" name="%s" value="%s" min="%s" max="%s" class="small-text"> <span class="description">Requests allowed per window, per bucket. Range: %s&ndash;%s.</span>',
+            esc_attr($name),
+            esc_attr((string) $value),
+            esc_attr((string) $limitMin),
+            esc_attr((string) $limitMax),
+            esc_html((string) $limitMin),
+            esc_html((string) $limitMax)
         );
     }
 
@@ -137,14 +139,16 @@ final class RateLimitSettingsPage
     {
         $value = (int) $this->valueOf('window');
         $name = $this->name('window');
+        $windowMin = (int) RateLimitOptions::WINDOW_MIN;
+        $windowMax = (int) RateLimitOptions::WINDOW_MAX;
         printf(
-            '<input type="number" name="%s" value="%s" min="%d" max="%d" class="small-text"> <span class="description">Seconds. Common: 60 (per minute), 3600 (per hour). Range: %d&ndash;%d.</span>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute((string) $value),
-            RateLimitOptions::WINDOW_MIN,
-            RateLimitOptions::WINDOW_MAX,
-            RateLimitOptions::WINDOW_MIN,
-            RateLimitOptions::WINDOW_MAX
+            '<input type="number" name="%s" value="%s" min="%s" max="%s" class="small-text"> <span class="description">Seconds. Common: 60 (per minute), 3600 (per hour). Range: %s&ndash;%s.</span>',
+            esc_attr($name),
+            esc_attr((string) $value),
+            esc_attr((string) $windowMin),
+            esc_attr((string) $windowMax),
+            esc_html((string) $windowMin),
+            esc_html((string) $windowMax)
         );
     }
 

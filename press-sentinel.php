@@ -21,7 +21,6 @@ if (!defined('ABSPATH')) {
 }
 
 require_once __DIR__ . '/bootstrap/constants.php';
-require_once PRESS_SENTINEL_BOOTSTRAP_PATH . '/env.php';
 require_once PRESS_SENTINEL_BOOTSTRAP_PATH . '/safe-mode.php';
 require_once PRESS_SENTINEL_SRC_PATH . '/Core/Support/Autoloader.php';
 require_once PRESS_SENTINEL_SRC_PATH . '/Core/Plugin.php';

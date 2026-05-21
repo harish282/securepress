@@ -8,13 +8,16 @@ use PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner;
 use PressSentinel\Core\Support\WpHelper;
 
 /**
- * Merged file config + environment.
+ * Loads merged settings from {@see PRESS_SENTINEL_CONFIG_PATH}/plugin.php.
  *
  * Licensing secret resolution (first match wins): non-empty
  * {@see PRESS_SENTINEL_LICENSE_SECRET} constant → strong value in option
  * {@see LicenseHmacSecretProvisioner::OPTION_NAME} (auto-generated, plug-and-play)
- * → `PRESS_SENTINEL_LICENSE_SECRET` environment variable → shipped file default →
- * {@see apply_filters()} for hook `presssentinel_licensing_secret`.
+ * → value in `licensing.secret` from the config file → {@see apply_filters()}
+ * for hook `presssentinel_licensing_secret`.
+ *
+ * PHPUnit sets {@see PRESS_SENTINEL_TESTING}; {@see load()} forces early access and
+ * beta trial off unless a test opts in via the `presssentinel_config` filter.
  */
 final class Config
 {
@@ -57,45 +60,37 @@ final class Config
             $config = [];
         }
 
-        $config['app']['env'] = $this->env('PRESS_SENTINEL_APP_ENV', (string) ($config['app']['env'] ?? 'production'));
-        $config['app']['debug'] = filter_var(
-            $this->env('PRESS_SENTINEL_DEBUG', ($config['app']['debug'] ?? false) ? 'true' : 'false'),
-            FILTER_VALIDATE_BOOL
-        );
-        $config['requirements']['php'] = $this->env('PRESS_SENTINEL_MIN_PHP_VERSION', (string) ($config['requirements']['php'] ?? '8.2.0'));
-        $config['requirements']['wordpress'] = $this->env('PRESS_SENTINEL_MIN_WP_VERSION', (string) ($config['requirements']['wordpress'] ?? '6.4'));
-        $config['logging']['channel'] = $this->env('PRESS_SENTINEL_LOG_CHANNEL', (string) ($config['logging']['channel'] ?? 'file'));
-        $config['logging']['level'] = $this->env('PRESS_SENTINEL_LOG_LEVEL', (string) ($config['logging']['level'] ?? 'info'));
-        $config['logging']['file'] = $this->env('PRESS_SENTINEL_LOG_FILE', (string) ($config['logging']['file'] ?? 'presssentinel.log'));
-        $config['signed_url']['ttl_default'] = (int) $this->env(
-            'PRESS_SENTINEL_SIGNED_URL_TTL',
-            (string) ($config['signed_url']['ttl_default'] ?? 3600)
-        );
+        $config['app']['env'] = (string) ($config['app']['env'] ?? 'production');
+        $config['app']['debug'] = (bool) ($config['app']['debug'] ?? false);
+        $config['requirements']['php'] = (string) ($config['requirements']['php'] ?? '8.2.0');
+        $config['requirements']['wordpress'] = (string) ($config['requirements']['wordpress'] ?? '6.4');
+        $config['logging']['channel'] = (string) ($config['logging']['channel'] ?? 'file');
+        $config['logging']['level'] = (string) ($config['logging']['level'] ?? 'info');
+        $config['logging']['file'] = (string) ($config['logging']['file'] ?? 'presssentinel.log');
+        $config['signed_url']['ttl_default'] = (int) ($config['signed_url']['ttl_default'] ?? 3600);
+        $config['signed_url']['secret'] = (string) ($config['signed_url']['secret'] ?? '');
 
         if (!is_array($config['pro_license'] ?? null)) {
             $config['pro_license'] = [];
         }
 
-        $earlyDefault = ($config['pro_license']['early_access'] ?? false) ? 'true' : 'false';
-        $config['pro_license']['early_access'] = filter_var(
-            $this->env('PRESS_SENTINEL_EARLY_ACCESS', $earlyDefault),
-            FILTER_VALIDATE_BOOL
-        );
+        $config['pro_license']['license_key'] = (string) ($config['pro_license']['license_key'] ?? '');
+        $config['pro_license']['early_access'] = (bool) ($config['pro_license']['early_access'] ?? false);
 
         if (!is_array($config['pro_license']['beta_trial'] ?? null)) {
             $config['pro_license']['beta_trial'] = [];
         }
 
-        $betaTrialDefault = ($config['pro_license']['beta_trial']['enabled'] ?? false) ? 'true' : 'false';
-        $config['pro_license']['beta_trial']['enabled'] = filter_var(
-            $this->env('PRESS_SENTINEL_BETA_TRIAL_ENABLED', $betaTrialDefault),
-            FILTER_VALIDATE_BOOL
+        $config['pro_license']['beta_trial']['enabled'] = (bool) (
+            $config['pro_license']['beta_trial']['enabled'] ?? false
         );
-        $trialDays = (int) $this->env(
-            'PRESS_SENTINEL_BETA_TRIAL_DURATION_DAYS',
-            (string) ($config['pro_license']['beta_trial']['duration_days'] ?? 182)
-        );
+        $trialDays = (int) ($config['pro_license']['beta_trial']['duration_days'] ?? 182);
         $config['pro_license']['beta_trial']['duration_days'] = max(1, min(730, $trialDays));
+
+        if (!is_array($config['recovery'] ?? null)) {
+            $config['recovery'] = [];
+        }
+        $config['recovery']['safe_mode'] = (bool) ($config['recovery']['safe_mode'] ?? false);
 
         if (!is_array($config['licensing'] ?? null)) {
             $config['licensing'] = [];
@@ -114,22 +109,22 @@ final class Config
             $audit = $config['audit_log'];
             $config['audit_log']['retention_days'] = max(
                 0,
-                min(3650, (int) $this->env(
-                    'PRESS_SENTINEL_AUDIT_RETENTION_DAYS',
-                    (string) ($audit['retention_days'] ?? 90)
-                ))
+                min(3650, (int) ($audit['retention_days'] ?? 90))
             );
-            $config['audit_log']['auto_prune_enabled'] = filter_var(
-                $this->env(
-                    'PRESS_SENTINEL_AUDIT_AUTO_PRUNE',
-                    ($audit['auto_prune_enabled'] ?? true) ? 'true' : 'false'
-                ),
-                FILTER_VALIDATE_BOOL
-            );
-            $config['audit_log']['min_storage_level'] = $this->env(
-                'PRESS_SENTINEL_AUDIT_MIN_STORAGE_LEVEL',
-                (string) ($audit['min_storage_level'] ?? 'notice')
-            );
+            $config['audit_log']['auto_prune_enabled'] = (bool) ($audit['auto_prune_enabled'] ?? true);
+            $config['audit_log']['min_storage_level'] = (string) ($audit['min_storage_level'] ?? 'notice');
+        }
+
+        if (\defined('PRESS_SENTINEL_TESTING') && PRESS_SENTINEL_TESTING) {
+            $config['pro_license']['early_access'] = false;
+            $config['pro_license']['beta_trial']['enabled'] = false;
+        }
+
+        if (\function_exists('apply_filters')) {
+            $filtered = \apply_filters('presssentinel_config', $config);
+            if (is_array($filtered)) {
+                $config = $filtered;
+            }
         }
 
         return $config;
@@ -150,16 +145,6 @@ final class Config
             return $dbSecret;
         }
 
-        return $this->env('PRESS_SENTINEL_LICENSE_SECRET', $defaultLicenseSecret);
-    }
-
-    private function env(string $name, string $default): string
-    {
-        $value = getenv($name);
-        if ($value === false || $value === '') {
-            return $default;
-        }
-
-        return $value;
+        return $defaultLicenseSecret;
     }
 }

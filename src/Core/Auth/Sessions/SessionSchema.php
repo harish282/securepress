@@ -49,6 +49,7 @@ final class SessionSchema
     {
         $wpdb = $this->wpdb();
         if ($wpdb !== null && method_exists($wpdb, 'query')) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- DROP TABLE uses schema-derived table name.
             $wpdb->query('DROP TABLE IF EXISTS ' . $this->tableName());
         }
         if (\function_exists('delete_option')) {
@@ -61,8 +62,7 @@ final class SessionSchema
         $table = $this->tableName();
         $charsetCollate = $this->charsetCollate();
 
-        return <<<SQL
-CREATE TABLE {$table} (
+        return 'CREATE TABLE ' . $table . ' (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,
     token VARCHAR(64) NOT NULL,
@@ -77,8 +77,7 @@ CREATE TABLE {$table} (
     UNIQUE KEY token_idx (token),
     KEY user_idx (user_id, revoked_at),
     KEY fingerprint_idx (user_id, fingerprint_hash)
-) {$charsetCollate};
-SQL;
+) ' . $charsetCollate . ';';
     }
 
     private function runDbDelta(string $sql): bool

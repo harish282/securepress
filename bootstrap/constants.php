@@ -58,6 +58,6 @@ if (!defined('PRESS_SENTINEL_MU_LOADER_TEMPLATE_PATH')) {
  * While true, PressSentinel bypasses login URL disguise, login lockouts, and global
  * rate limiting without changing stored options. Remove after you regain access.
  *
- * You can also set `PRESS_SENTINEL_SAFE_MODE=true` in the plugin `.env` file; see
- * `.env.example` and {@see PRESS_SENTINEL_BOOTSTRAP_PATH}/safe-mode.php.
+ * Or set `recovery.safe_mode` to true in config/plugin.php; see
+ * {@see PRESS_SENTINEL_BOOTSTRAP_PATH}/safe-mode.php.
  */

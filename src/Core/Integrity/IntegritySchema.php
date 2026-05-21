@@ -58,7 +58,9 @@ final class IntegritySchema
     {
         $wpdb = $this->wpdb();
         if ($wpdb !== null && method_exists($wpdb, 'query')) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- DROP TABLE uses schema-derived table names.
             $wpdb->query('DROP TABLE IF EXISTS ' . $this->baselineTable());
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- DROP TABLE uses schema-derived table names.
             $wpdb->query('DROP TABLE IF EXISTS ' . $this->findingTable());
         }
         if (\function_exists('delete_option')) {
@@ -71,8 +73,7 @@ final class IntegritySchema
         $table = $this->baselineTable();
         $charsetCollate = $this->charsetCollate();
 
-        return <<<SQL
-CREATE TABLE {$table} (
+        return 'CREATE TABLE ' . $table . ' (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     scope VARCHAR(32) NOT NULL,
     path VARCHAR(512) NOT NULL,
@@ -83,8 +84,7 @@ CREATE TABLE {$table} (
     PRIMARY KEY  (id),
     UNIQUE KEY scope_path (scope, path(190)),
     KEY scope_idx (scope)
-) {$charsetCollate};
-SQL;
+) ' . $charsetCollate . ';';
     }
 
     public function findingSql(): string
@@ -92,8 +92,7 @@ SQL;
         $table = $this->findingTable();
         $charsetCollate = $this->charsetCollate();
 
-        return <<<SQL
-CREATE TABLE {$table} (
+        return 'CREATE TABLE ' . $table . ' (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     scope VARCHAR(32) NOT NULL,
     type VARCHAR(40) NOT NULL,
@@ -108,8 +107,7 @@ CREATE TABLE {$table} (
     KEY scope_type_idx (scope, type),
     KEY created_at_idx (created_at),
     KEY reviewed_idx (reviewed_at)
-) {$charsetCollate};
-SQL;
+) ' . $charsetCollate . ';';
     }
 
     private function prefix(): string

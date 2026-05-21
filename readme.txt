@@ -2,7 +2,7 @@
 Contributors: harish282
 Tags: security, authentication, audit, two-factor, woocommerce
 Requires at least: 6.4
-Tested up to: 6.8
+Tested up to: 7.0
 Requires PHP: 8.2
 Stable tag: 0.1.0
 License: GPLv2 or later
@@ -22,7 +22,7 @@ PressSentinel adds a structured security layer to WordPress without replacing yo
 * **File integrity monitoring** — baseline and diff scans for plugins; optional themes/uploads scopes; WordPress core checksum comparison.
 * **Rate limiting** — optional global HTTP throttling for front end, REST, AJAX, and wp-login (wp-admin dashboard loads are excluded by default).
 * **Login URL disguise** — optional custom login path instead of `wp-login.php` (off by default; configure carefully).
-* **Safe mode** — emergency recovery via `PRESS_SENTINEL_SAFE_MODE` in `.env` or `wp-config.php` to bypass disguise, lockouts, and global rate limits without changing saved settings.
+* **Safe mode** — emergency recovery via `PRESS_SENTINEL_SAFE_MODE` in `wp-config.php` or `recovery.safe_mode` in `config/plugin.php` to bypass disguise, lockouts, and global rate limits without changing saved settings.
 
 **Pro features**
 
@@ -64,7 +64,7 @@ Pro features (WooCommerce Protection) can be used during the built-in evaluation
 
 = I locked myself out after enabling login disguise or lockout. What do I do? =
 
-Enable **safe mode** by adding `define( 'PRESS_SENTINEL_SAFE_MODE', true );` to `wp-config.php` (before WordPress loads plugins) or `PRESS_SENTINEL_SAFE_MODE=true` in the plugin `.env` file. This bypasses login disguise, lockouts, and global rate limiting until you regain access. Turn safe mode off after fixing settings.
+Enable **safe mode** by adding `define( 'PRESS_SENTINEL_SAFE_MODE', true );` to `wp-config.php` (before WordPress loads plugins) or set `recovery.safe_mode` to `true` in `config/plugin.php`. This bypasses login disguise, lockouts, and global rate limiting until you regain access. Turn safe mode off after fixing settings.
 
 = Does PressSentinel work with WooCommerce? =
 

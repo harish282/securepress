@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+if (! defined('ABSPATH')) {
+    exit;
+}
 
 use PressSentinel\Core\Support\WpHelper;
 
@@ -17,10 +20,10 @@ use PressSentinel\Core\Support\WpHelper;
     </p>
     <p>
         <strong>Copy from:</strong>
-        <code><?= WpHelper::escapeHtml($templatePath); ?></code><br />
+        <code><?php echo esc_html($templatePath); ?></code><br />
         <strong>Copy to:</strong>
-        <code><?= WpHelper::escapeHtml($expectedPath); ?></code><br />
+        <code><?php echo esc_html($expectedPath); ?></code><br />
         <strong>Guide:</strong>
-        <code><?= WpHelper::escapeHtml($guidePath); ?></code>
+        <code><?php echo esc_html($guidePath); ?></code>
     </p>
 </div>

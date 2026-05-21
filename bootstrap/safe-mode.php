@@ -7,12 +7,19 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Maps `PRESS_SENTINEL_SAFE_MODE` from `.env` (loaded by {@see env.php}) to the
- * `PRESS_SENTINEL_SAFE_MODE` constant when wp-config.php did not define it already.
+ * Defines {@see PRESS_SENTINEL_SAFE_MODE} from config when wp-config.php did not set it.
+ *
+ * Precedence: existing `define()` in wp-config.php wins; otherwise
+ * `recovery.safe_mode` in config/plugin.php.
  */
 if (!defined('PRESS_SENTINEL_SAFE_MODE')) {
-    $raw = $_ENV['PRESS_SENTINEL_SAFE_MODE'] ?? $_SERVER['PRESS_SENTINEL_SAFE_MODE'] ?? getenv('PRESS_SENTINEL_SAFE_MODE');
-    if ($raw !== false && $raw !== '' && filter_var((string) $raw, FILTER_VALIDATE_BOOL)) {
+    $configFile = PRESS_SENTINEL_CONFIG_PATH . '/plugin.php';
+    $config = is_readable($configFile) ? require $configFile : [];
+    $enabled = is_array($config)
+        && is_array($config['recovery'] ?? null)
+        && ($config['recovery']['safe_mode'] ?? false);
+
+    if ($enabled) {
         define('PRESS_SENTINEL_SAFE_MODE', true);
     }
 }

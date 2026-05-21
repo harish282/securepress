@@ -16,6 +16,7 @@ final class MiddlewareRegistry
     {
         if (!is_subclass_of($middlewareClass, MiddlewareInterface::class)) {
             throw new MiddlewareException(
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Internal middleware registration error.
                 sprintf('Middleware "%s" must implement %s.', $middlewareClass, MiddlewareInterface::class)
             );
         }
@@ -29,7 +30,10 @@ final class MiddlewareRegistry
     public function resolve(string $alias): string
     {
         if (!isset($this->aliases[$alias])) {
-            throw new MiddlewareException(sprintf('Middleware alias "%s" is not registered.', $alias));
+            throw new MiddlewareException(
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Internal middleware registration error.
+                sprintf('Middleware alias "%s" is not registered.', $alias)
+            );
         }
 
         return $this->aliases[$alias];

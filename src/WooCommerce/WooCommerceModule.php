@@ -246,8 +246,8 @@ final class WooCommerceModule
     {
         $token = $this->clock()->startToken();
         $field = (string) ($this->options->all()['registration']['honeypot_field_name'] ?? 'presssentinel_hp');
-        echo '<input type="hidden" name="presssentinel_clock_token" value="' . WpHelper::escapeAttribute($token) . '" />';
-        echo '<input type="text" name="' . WpHelper::escapeAttribute($field) . '" value="" autocomplete="off" tabindex="-1" '
+        echo '<input type="hidden" name="presssentinel_clock_token" value="' . esc_attr($token) . '" />';
+        echo '<input type="text" name="' . esc_attr($field) . '" value="" autocomplete="off" tabindex="-1" '
             . 'aria-hidden="true" style="position:absolute !important; left:-9999px !important; height:0; width:0; opacity:0;" />';
     }
 

@@ -95,7 +95,7 @@ final class LicensePage
 
         if ($statusFlag !== '') {
             echo '<div class="notice notice-info is-dismissible"><p>'
-                . WpHelper::escapeHtml($statusFlag) . '</p></div>';
+                . esc_html($statusFlag) . '</p></div>';
         }
 
         $this->renderStatusBanner($status);
@@ -105,9 +105,9 @@ final class LicensePage
         $isEarly = $status->state === LicenseStatus::STATE_EARLY_ACCESS;
         $isBetaTrial = $status->state === LicenseStatus::STATE_BETA_TRIAL;
         echo '<h2>' . ($isEarly ? 'License key (optional)' : 'Enter your license key') . '</h2>';
-        echo '<form method="post" action="' . WpHelper::escapeUrl($adminUrl) . '">';
+        echo '<form method="post" action="' . esc_url($adminUrl) . '">';
         echo '<input type="hidden" name="action" value="presssentinel_license_save" />';
-        echo $nonceField(self::NONCE_ACTION);
+        echo wp_kses_post($nonceField(self::NONCE_ACTION));
         echo '<table class="form-table" role="presentation"><tbody>';
         echo '<tr><th scope="row"><label for="presssentinel-license-key">License key</label></th><td>';
         echo '<input type="text" id="presssentinel-license-key" name="license_key" value="" class="regular-text" autocomplete="off" placeholder="SP-PRO-1714780800-1746316800-………" />';
@@ -117,7 +117,7 @@ final class LicensePage
         } elseif ($isBetaTrial) {
             $keyHelp = 'Paste a valid key below any time before the trial ends; it takes over automatically when accepted.';
         }
-        echo '<p class="description">' . WpHelper::escapeHtml($keyHelp) . '</p>';
+        echo '<p class="description">' . esc_html($keyHelp) . '</p>';
         echo '</td></tr></tbody></table>';
         \call_user_func('submit_button', 'Save license');
         echo '</form>';
@@ -132,9 +132,9 @@ final class LicensePage
             || $status->state === LicenseStatus::STATE_EXPIRED;
 
         if ($mayClearStoredKey) {
-            echo '<form method="post" action="' . WpHelper::escapeUrl($adminUrl) . '" style="margin-top: 1em;">';
+            echo '<form method="post" action="' . esc_url($adminUrl) . '" style="margin-top: 1em;">';
             echo '<input type="hidden" name="action" value="presssentinel_license_clear" />';
-            echo $nonceField(self::NONCE_ACTION);
+            echo wp_kses_post($nonceField(self::NONCE_ACTION));
             echo '<button type="submit" class="button" onclick="return confirm(\'Remove the current license?\');">Remove license</button>';
             echo '</form>';
         }
@@ -156,7 +156,7 @@ final class LicensePage
             . 'your signing tool must use the same secret.</p>';
         echo '<table class="form-table" role="presentation"><tbody><tr><th scope="row">Secret</th><td>';
         echo '<input type="text" readonly class="large-text code" style="font-size:12px;" value="'
-            . WpHelper::escapeAttribute($secret) . '" onclick="this.select();" />';
+            . esc_attr($secret) . '" onclick="this.select();" />';
         echo '<p class="description">Click the field to select, then copy. Anyone with this string can forge keys that '
             . 'validate on this install — treat it like a password.</p>';
         echo '</td></tr></tbody></table>';
@@ -199,8 +199,8 @@ final class LicensePage
         if ($status->isActive()) {
             echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>'
                 . '<strong>Pro license active.</strong> Tier: <code>'
-                . WpHelper::escapeHtml($status->tier) . '</code>'
-                . ($status->expiresAt ? ' &mdash; expires ' . WpHelper::escapeHtml(gmdate('Y-m-d', $status->expiresAt)) : '')
+                . esc_html($status->tier) . '</code>'
+                . ($status->expiresAt ? ' &mdash; expires ' . esc_html(gmdate('Y-m-d', $status->expiresAt)) : '')
                 . '</p></div>';
 
             return;
@@ -219,13 +219,13 @@ final class LicensePage
         if ($status->state === LicenseStatus::STATE_BETA_TRIAL) {
             $days = $status->daysRemaining();
             $until = $status->expiresAt !== null
-                ? WpHelper::escapeHtml(gmdate('Y-m-d', $status->expiresAt))
+                ? gmdate('Y-m-d', $status->expiresAt)
                 : '';
             echo '<div class="notice notice-info inline" style="margin-bottom:1em;"><p>'
                 . '<strong>Public beta trial active.</strong> '
                 . 'All Pro features are unlocked without a license key until '
-                . ($until !== '' ? '<strong>' . $until . '</strong> (UTC)' : 'the trial end date')
-                . ($days !== null ? ' &mdash; about <strong>' . (int) $days . '</strong> day(s) remaining.' : '.')
+                . ($until !== '' ? '<strong>' . esc_html($until) . '</strong> (UTC)' : 'the trial end date')
+                . ($days !== null ? ' &mdash; about <strong>' . esc_html((string) (int) $days) . '</strong> day(s) remaining.' : '.')
                 . ' Enter a valid key below any time; it takes over automatically when accepted.'
                 . '</p></div>';
 
@@ -236,10 +236,13 @@ final class LicensePage
             LicenseStatus::STATE_INVALID => 'License invalid',
             default => 'No license',
         };
-        $detail = $status->reason !== '' ? ' &mdash; ' . WpHelper::escapeHtml($status->reason) : '';
-        $masked = $status->maskedKey !== null ? ' (' . WpHelper::escapeHtml((string) $status->maskedKey) . ')' : '';
+        $detail = $status->reason !== '' ? ' &mdash; ' . $status->reason : '';
+        $masked = $status->maskedKey !== null ? ' (' . (string) $status->maskedKey . ')' : '';
         echo '<div class="notice notice-warning inline" style="margin-bottom:1em;"><p>'
-            . '<strong>' . WpHelper::escapeHtml($label) . '.</strong>' . $detail . $masked . '</p></div>';
+            . '<strong>' . esc_html($label) . '.</strong>'
+            . esc_html($detail)
+            . esc_html($masked)
+            . '</p></div>';
     }
 
     private function guardWriteRequest(): void

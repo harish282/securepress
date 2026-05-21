@@ -60,6 +60,7 @@ final class AuditLogSchema
     {
         $wpdb = $this->wpdb();
         if ($wpdb !== null && method_exists($wpdb, 'query')) {
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- DROP TABLE uses schema-derived table name.
             $wpdb->query('DROP TABLE IF EXISTS ' . $this->tableName());
         }
 
@@ -73,8 +74,7 @@ final class AuditLogSchema
         $table = $this->tableName();
         $charsetCollate = $this->charsetCollate();
 
-        return <<<SQL
-CREATE TABLE {$table} (
+        return 'CREATE TABLE ' . $table . ' (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     occurred_at DATETIME NOT NULL,
     level VARCHAR(20) NOT NULL,
@@ -95,8 +95,7 @@ CREATE TABLE {$table} (
     KEY category_action_idx (category, action),
     KEY level_idx (level),
     KEY target_idx (target_type, target_id)
-) {$charsetCollate};
-SQL;
+) ' . $charsetCollate . ';';
     }
 
     private function runDbDelta(string $sql): bool

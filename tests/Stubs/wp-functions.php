@@ -41,6 +41,13 @@ if (!function_exists('wp_unslash')) {
     }
 }
 
+if (!function_exists('esc_html')) {
+    function esc_html(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
 if (!function_exists('wp_doing_ajax')) {
     function wp_doing_ajax(): bool
     {

@@ -108,7 +108,7 @@ final class WooCommerceProtectionPage
                 echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>'
                     . '<strong>Early access.</strong> WooCommerce Protection and the rest of the Pro tier are '
                     . 'unlocked without a commercial license. Optional keys are managed on the '
-                    . '<a href="' . WpHelper::escapeUrl(PressSentinelMenuPage::submenuUrl(LicensePage::PAGE_SLUG)) . '">License</a> page.</p></div>';
+                    . '<a href="' . esc_url(PressSentinelMenuPage::submenuUrl(LicensePage::PAGE_SLUG)) . '">License</a> page.</p></div>';
 
                 return;
             }
@@ -125,21 +125,21 @@ final class WooCommerceProtectionPage
             }
 
             $remaining = $status->daysRemaining();
-            $msg = '<strong>Pro license active.</strong> Tier: <code>' . WpHelper::escapeHtml($status->tier) . '</code>';
+            $msg = '<strong>Pro license active.</strong> Tier: <code>' . esc_html($status->tier) . '</code>';
             if ($remaining !== null) {
                 $msg .= ' &mdash; renews in ' . (int) $remaining . ' day(s).';
             }
-            echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>' . $msg . '</p></div>';
+            echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>' . wp_kses_post($msg) . '</p></div>';
             return;
         }
         $reason = $status->reason !== '' ? $status->reason : 'No active Pro license.';
         $licenseHint = LicensePage::shouldShowAdminMenu($status)
             ? ' Configure a license on the <a href="'
-                . WpHelper::escapeUrl(PressSentinelMenuPage::submenuUrl(LicensePage::PAGE_SLUG))
+                . esc_url(PressSentinelMenuPage::submenuUrl(LicensePage::PAGE_SLUG))
                 . '">License</a> page.'
             : '';
         echo '<div class="notice notice-warning inline" style="margin-bottom:1em;"><p>'
-            . '<strong>' . WpHelper::escapeHtml($reason) . '</strong>' . $licenseHint . '</p></div>';
+            . '<strong>' . esc_html($reason) . '</strong>' . wp_kses_post($licenseHint) . '</p></div>';
     }
 
     private function renderUpgradePrompt(): void
@@ -246,17 +246,17 @@ final class WooCommerceProtectionPage
 
     private function toggleRow(string $name, string $label, bool $value): void
     {
-        echo '<tr><th scope="row">' . WpHelper::escapeHtml($label) . '</th><td>';
-        echo '<label><input type="checkbox" name="' . WpHelper::escapeAttribute($name) . '" value="1"' . ($value ? ' checked' : '') . ' /> Enabled</label>';
+        echo '<tr><th scope="row">' . esc_html($label) . '</th><td>';
+        echo '<label><input type="checkbox" name="' . esc_attr($name) . '" value="1"' . ($value ? ' checked' : '') . ' /> Enabled</label>';
         echo '</td></tr>';
     }
 
     private function numberRow(string $name, string $label, int $value, string $description = ''): void
     {
-        echo '<tr><th scope="row">' . WpHelper::escapeHtml($label) . '</th><td>';
-        echo '<input type="number" min="0" name="' . WpHelper::escapeAttribute($name) . '" value="' . (int) $value . '" class="small-text" />';
+        echo '<tr><th scope="row">' . esc_html($label) . '</th><td>';
+        echo '<input type="number" min="0" name="' . esc_attr($name) . '" value="' . (int) $value . '" class="small-text" />';
         if ($description !== '') {
-            echo '<p class="description">' . $description . '</p>';
+            echo '<p class="description">' . esc_html($description) . '</p>';
         }
         echo '</td></tr>';
     }
@@ -264,18 +264,18 @@ final class WooCommerceProtectionPage
     private function timingActionRow(string $name, string $label, string $value): void
     {
         $isReport = $value !== BotCheckoutMiddleware::TIMING_BLOCK;
-        echo '<tr><th scope="row">' . WpHelper::escapeHtml($label) . '</th><td>';
+        echo '<tr><th scope="row">' . esc_html($label) . '</th><td>';
         printf(
             '<label style="display:block;margin-bottom:6px;"><input type="radio" name="%1$s" value="%2$s"%3$s> <strong>Report only (recommended)</strong> — log to audit trail and increase fraud score. Does not block checkout by itself.</label>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute(BotCheckoutMiddleware::TIMING_REPORT),
-            $isReport ? ' checked' : ''
+            esc_attr($name),
+            esc_attr(BotCheckoutMiddleware::TIMING_REPORT),
+            esc_attr($isReport ? ' checked' : '')
         );
         printf(
             '<label style="display:block;"><input type="radio" name="%1$s" value="%2$s"%3$s> <strong>Block checkout</strong> — immediately reject the order.</label>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute(BotCheckoutMiddleware::TIMING_BLOCK),
-            $isReport ? '' : ' checked'
+            esc_attr($name),
+            esc_attr(BotCheckoutMiddleware::TIMING_BLOCK),
+            esc_attr($isReport ? '' : ' checked')
         );
         echo '<p class="description">Requires minimum seconds &gt; 0. Mobile, autofill, password managers, and Shop Pay can be fast — start with <strong>Report only</strong> and review the audit log before enabling blocking.</p>';
         echo '</td></tr>';

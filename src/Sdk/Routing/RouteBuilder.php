@@ -216,6 +216,7 @@ final class RouteBuilder
                 ->process($this->middlewares, $context);
 
             if (($context['halted'] ?? false) === true) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Route guard halt propagated as exception.
                 throw $this->translateHalt($context);
             }
         }
@@ -245,6 +246,7 @@ final class RouteBuilder
             ->process($this->middlewares, $context);
 
         if (($context['halted'] ?? false) === true) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Route guard halt propagated as exception.
             throw $this->translateHalt($context);
         }
 
@@ -296,6 +298,7 @@ final class RouteBuilder
                 throw new RouteGuardException(
                     'capability',
                     403,
+                    // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Route guard rejection message.
                     sprintf('Missing required capability "%s".', $capability)
                 );
             }

@@ -18,11 +18,9 @@ use PressSentinel\Core\Support\WpHelper;
  * in config — typically the first front-end or admin request after activation.
  * The end timestamp is `started_at + duration_days` (from {@see Config}, clamped to 1–730 days).
  *
- * Operators can disable the programme entirely via
- * `pro_license.beta_trial.enabled` in `config/plugin.php`, or override at
- * deploy time with the `PRESS_SENTINEL_BETA_TRIAL_ENABLED` environment variable
- * (the test suite sets this to `false` so unit tests never accidentally flip
- * into Pro mode).
+ * Operators enable or disable the programme via `pro_license.beta_trial.enabled`
+ * in config/plugin.php. PHPUnit forces the programme off unless a test opts in
+ * through the `presssentinel_config` filter.
  */
 final class BetaTrial
 {

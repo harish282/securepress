@@ -299,7 +299,7 @@ final class Plugin
         }
 
         echo '<div class="notice notice-warning is-dismissible"><p><strong>PressSentinel logging:</strong> '
-            . WpHelper::escapeHtml($error)
+            . esc_html($error)
             . '</p></div>';
     }
 
@@ -323,7 +323,7 @@ final class Plugin
             . 'Check that the database is writable and PHP can use <code>random_bytes()</code> or '
             . '<code>wp_generate_password()</code>. Optional overrides: '
             . '<code>define(\'PRESS_SENTINEL_LICENSE_SECRET\', \'…\');</code> in <code>wp-config.php</code> '
-            . 'or <code>PRESS_SENTINEL_LICENSE_SECRET</code> in environment / <code>.env</code>.</p></div>';
+            . 'or <code>licensing.secret</code> in <code>config/plugin.php</code>.</p></div>';
     }
 
     public function renderMuLoaderNotice(): void

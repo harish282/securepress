@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+if (! defined('ABSPATH')) {
+    exit;
+}
 
 use PressSentinel\Admin\PressSentinelMenuPage;
 use PressSentinel\Core\Support\WpHelper;
@@ -24,7 +27,7 @@ use PressSentinel\Core\Support\WpHelper;
             <p>
                 <strong>Audit logging is off.</strong>
                 Events are not recorded until you enable the feature on the
-                <a href="<?= WpHelper::escapeAttribute(
+                <a href="<?php echo esc_attr(
                     \function_exists('admin_url')
                         ? (string) \call_user_func('admin_url', 'admin.php?page=' . PressSentinelMenuPage::PARENT_SLUG)
                         : '#'
@@ -41,8 +44,8 @@ use PressSentinel\Core\Support\WpHelper;
     <?php elseif ($autoPruneEnabled): ?>
         <div class="notice notice-info">
             <p>
-                Automatic pruning is on: entries older than <strong><?= (int) $retentionDays ?></strong> days are deleted daily.
-                Minimum stored level: <code><?= WpHelper::escapeHtml($minStorageLevel) ?></code>.
+                Automatic pruning is on: entries older than <strong><?php echo (int) $retentionDays ?></strong> days are deleted daily.
+                Minimum stored level: <code><?php echo esc_html($minStorageLevel) ?></code>.
             </p>
         </div>
     <?php endif; ?>
@@ -63,7 +66,7 @@ use PressSentinel\Core\Support\WpHelper;
 
     <hr>
     <p class="description">
-        <a href="<?= WpHelper::escapeAttribute(
+        <a href="<?php echo esc_attr(
             \function_exists('admin_url')
                 ? (string) \call_user_func('admin_url', 'admin.php?page=' . $logsPageSlug)
                 : '#'

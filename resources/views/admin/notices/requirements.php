@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+if (! defined('ABSPATH')) {
+    exit;
+}
 
 use PressSentinel\Core\Support\WpHelper;
 
@@ -12,7 +15,7 @@ use PressSentinel\Core\Support\WpHelper;
     <p><strong>PressSentinel:</strong></p>
     <ul>
         <?php foreach ($errors as $error): ?>
-            <li><?= WpHelper::escapeHtml($error); ?></li>
+            <li><?php echo esc_html($error); ?></li>
         <?php endforeach; ?>
     </ul>
 </div>

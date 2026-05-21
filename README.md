@@ -1,3 +1,17 @@
+=== PressSentinel ===
+Contributors: harish282
+Tags: security, authentication, audit, two-factor, woocommerce
+Requires at least: 6.4
+Tested up to: 7.0
+Requires PHP: 8.2
+Stable tag: 0.1.0
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Application-layer security for WordPress: login hardening, 2FA, audit log, security headers, file integrity, and optional WooCommerce protection.
+
+---
+
 # PressSentinel
 
 > Laravel-inspired security infrastructure for WordPress.

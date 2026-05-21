@@ -13,8 +13,8 @@ use PressSentinel\Core\Support\WpHelper;
  * Resolution order (first match wins, low priority → high):
  *
  *   1. `wp_option('presssentinel_pro_license')` — the admin-managed key on the Settings → License page.
- *   2. `PRESS_SENTINEL_PRO_LICENSE` environment variable — handy for CI / containerised installs.
- *   3. `PRESS_SENTINEL_PRO_LICENSE` constant — for hard-coded staging boxes.
+ *   2. `pro_license.license_key` in config/plugin.php — optional shipped default (usually empty).
+ *   3. `PRESS_SENTINEL_PRO_LICENSE` constant in wp-config.php — staging / CI overrides.
  *   4. `apply_filters('presssentinel.pro_license', '')` — programmatic override (extensions, tests).
  *
  * After resolution the key is validated through the injected
@@ -33,8 +33,6 @@ use PressSentinel\Core\Support\WpHelper;
 final class LicenseManager
 {
     public const OPTION_NAME = 'presssentinel_pro_license';
-
-    public const ENV_VAR = 'PRESS_SENTINEL_PRO_LICENSE';
 
     public const PHP_CONSTANT = 'PRESS_SENTINEL_PRO_LICENSE';
 
@@ -134,7 +132,7 @@ final class LicenseManager
     {
         $candidates = [
             (string) WpHelper::getOption(self::OPTION_NAME, ''),
-            (string) (getenv(self::ENV_VAR) ?: ''),
+            (string) $this->config->get('pro_license.license_key', ''),
             \defined(self::PHP_CONSTANT) ? (string) \constant(self::PHP_CONSTANT) : '',
         ];
 

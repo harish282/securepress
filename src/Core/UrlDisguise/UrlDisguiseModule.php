@@ -170,7 +170,7 @@ final class UrlDisguiseModule
         $reqUri = rawurldecode($rawPath);
         $reqUri = trim($reqUri, '/');
 
-        $homePathRaw = parse_url(WpHelper::homeUrl('/'), PHP_URL_PATH);
+        $homePathRaw = WpHelper::parseUrl(WpHelper::homeUrl('/'), PHP_URL_PATH);
         $homePath = is_string($homePathRaw) ? trim($homePathRaw, '/') : '';
         if ($homePath !== '') {
             $pattern = '|^' . preg_quote($homePath, '|') . '|i';
@@ -178,7 +178,7 @@ final class UrlDisguiseModule
             $reqUri = trim($reqUri, '/');
         }
 
-        $sitePathRaw = parse_url(WpHelper::siteUrl('/'), PHP_URL_PATH);
+        $sitePathRaw = WpHelper::parseUrl(WpHelper::siteUrl('/'), PHP_URL_PATH);
         $sitePath = is_string($sitePathRaw) ? trim($sitePathRaw, '/') : '';
         if ($sitePath !== '' && $sitePath !== $homePath) {
             if (str_starts_with($reqUri, $sitePath . '/')) {
@@ -366,9 +366,9 @@ final class UrlDisguiseModule
         } else {
             $url = html_entity_decode($url, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         }
-        $parts = parse_url($url);
+        $parts = WpHelper::parseUrl($url);
         $query = [];
-        if (isset($parts['query']) && is_string($parts['query'])) {
+        if (is_array($parts) && isset($parts['query']) && is_string($parts['query'])) {
             parse_str($parts['query'], $query);
         }
 
@@ -394,7 +394,7 @@ final class UrlDisguiseModule
         if ($uri === null) {
             return false;
         }
-        $path = parse_url($uri, PHP_URL_PATH);
+        $path = WpHelper::parseUrl($uri, PHP_URL_PATH);
         if (!is_string($path)) {
             return false;
         }

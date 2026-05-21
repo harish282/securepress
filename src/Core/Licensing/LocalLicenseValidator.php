@@ -26,7 +26,8 @@ namespace PressSentinel\Core\Licensing;
  *  - the vendor controls issuance via a CLI that signs with the same `$secret`.
  *
  * The shared secret is injected via {@see Config} (typically
- * `define('PRESS_SENTINEL_LICENSE_SECRET', …)` in `wp-config.php`, or `.env` / server
+ * `define('PRESS_SENTINEL_LICENSE_SECRET', …)` in `wp-config.php`, or `licensing.secret` in
+ * `config/plugin.php`
  * env). The plugin only verifies signatures and never has to know the vendor’s
  * signing material beyond that shared secret.
  *

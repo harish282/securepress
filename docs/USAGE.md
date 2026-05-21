@@ -37,12 +37,12 @@ When you activate PressSentinel (and optionally install the MU loader for earlie
 2. **`Plugin::boot()`** is called on the `plugins_loaded` hook (or earlier if MU loader is installed):
    - Validates PHP / WordPress requirements via `SystemRequirementsChecker`.
    - Builds the dependency-injection `Container` and registers all services:
-     - `Config` (reads `config/plugin.php` + ENV overrides)
+     - `Config` (reads `config/plugin.php`)
      - `LoggerInterface` (file-backed by default → `storage/logs/presssentinel.log`)
      - `MiddlewareManager`, `MiddlewarePipeline`, `MiddlewareRegistry`, `MiddlewareStack`
      - `RateLimiter`, `RateLimitMiddleware`, `RateLimitStoreInterface` (transient-backed)
      - `CsrfProtectionMiddleware`
-     - `UrlSigner`, `SignedUrlMiddleware`, `NonceStoreInterface` (transient-backed), `SecretProviderInterface` (`PRESS_SENTINEL_URL_SECRET` env → `wp_salt('auth')`)
+     - `UrlSigner`, `SignedUrlMiddleware`, `NonceStoreInterface` (transient-backed), `SecretProviderInterface` (`signed_url.secret` in config → `wp_salt('auth')`)
      - `SecurityHeadersOptions`, `HeaderRegistryFactory`, `SecurityHeadersDispatcher`, `SecurityHeadersMiddleware`, `SecurityHeadersSettingsPage`
      - `SessionSchema`, `SessionRepositoryInterface`, `SessionService`, session pruner (`presssentinel_sessions_prune` daily cron)
      - `AuthenticationHardeningKernel`, `TwoFactorChallengeController`, two-factor services (`TotpProvider`, `EmailOtpProvider`, `RecoveryCodeService`, `TwoFactorService`), lockout + suspicion detector, `AuthNotifier`, `UserSecurityProfilePage`
@@ -88,13 +88,13 @@ The `$context` array is the shared envelope — a middleware can read from it, a
 
 | Key | Read by | Written by | Notes |
 |---|---|---|---|
-| `request.method` | CSRF | — | HTTP method (any case) |
-| `request.headers` | CSRF | — | Lowercased header map |
-| `request.body` | CSRF | — | Posted form body |
-| `request.query` | CSRF, Signed-URL | — | Query string array |
-| `request.ip` | Rate-Limit | — | Pre-resolved client IP (override) |
-| `request.url` | Signed-URL | — | Full URL or path+query |
-| `user.id` | Rate-Limit | — | Authenticated user id (overrides IP bucketing) |
+| `request.method` | CSRF HTTP method (any case) |
+| `request.headers` | CSRF Lowercased header map |
+| `request.body` | CSRF Posted form body |
+| `request.query` | CSRF, Signed-URL Query string array |
+| `request.ip` | Rate-Limit Pre-resolved client IP (override) |
+| `request.url` | Signed-URL Full URL or path+query |
+| `user.id` | Rate-Limit Authenticated user id (overrides IP bucketing) |
 | `csrf` | downstream | CSRF | `verified`, `action`, `tick`, `fresh` |
 | `rate_limit` | downstream | Rate-Limit | `allowed`, `key`, `limit`, `hits`, `remaining`, `retry_after` |
 | `signed_url` | downstream | Signed-URL | `verified`, `reason`, `path`, `params`, `expires_at`, `one_time`, `consumed` |
@@ -481,7 +481,7 @@ $result['signed_url'] === [
 | Attacker-extended expiry | `expires` is part of the signed payload — bumping it invalidates signature |
 | Forged `expires` (non-numeric) | Detected as `tampered` |
 | One-time-use bypass | When middleware has `NonceStoreInterface`, presence of `n=` triggers consume; replays are rejected |
-| Hardcoded fallback secret | None — `WpSaltSecretProvider` throws if neither `PRESS_SENTINEL_URL_SECRET` nor `wp_salt('auth')` resolves |
+| Hardcoded fallback secret | None — `WpSaltSecretProvider` uses `signed_url.secret` from config when set, otherwise `wp_salt('auth')` |
 
 ---
 
@@ -1313,7 +1313,7 @@ Free tier still gets the full middleware framework, CSRF, rate limiting, signed 
 
 The default validator is **offline HMAC**: keys look like `SP-PRO-1714780800-1746316800-3f6d1c2e9f6d1c2e` and embed the tier, issuance timestamp, expiry timestamp, and a truncated HMAC-SHA256 signature.
 
-The vendor signs keys with a shared secret (configured via `licensing.secret` in `config/plugin.php` or, recommended, the `PRESS_SENTINEL_LICENSE_SECRET` environment variable). No outbound network call is required to validate — your install can be air-gapped and still authenticate the key correctly.
+The vendor signs keys with a shared secret (auto-provisioned in the database, or set via `PRESS_SENTINEL_LICENSE_SECRET` in `wp-config.php`, or `licensing.secret` in `config/plugin.php`). No outbound network call is required to validate — your install can be air-gapped and still authenticate the key correctly.
 
 ### Entering a license
 
@@ -1327,8 +1327,8 @@ Go to **Press Sentinel → License**, paste the key, hit **Save license**. The p
 Alternative configuration sources (resolved in this order, first match wins):
 
 1. `wp_option('presssentinel_pro_license')` — what the Settings page writes to.
-2. `PRESS_SENTINEL_PRO_LICENSE` environment variable.
-3. `PRESS_SENTINEL_PRO_LICENSE` PHP constant.
+2. `pro_license.license_key` in `config/plugin.php` — optional shipped default (usually empty).
+3. `PRESS_SENTINEL_PRO_LICENSE` PHP constant in `wp-config.php`.
 4. `apply_filters('presssentinel.pro_license', '')` — programmatic override (extensions, tests).
 
 ### Checking Pro status from your code
@@ -1357,102 +1357,104 @@ Security::isFeatureEnabled('pro');                    // alias
 
 ## Configuration reference
 
-`config/plugin.php` ships with sensible defaults. Every value can be overridden per environment via an env variable, except `security_headers.*`, `audit_log.*`, and `auth_hardening.*`, which are intended to be configured from the admin UI (`Press Sentinel → Security Headers` / `Press Sentinel → Authentication`) or `config/plugin.php` (`audit_log.*`). Admin overrides are stored in autoloaded `wp_options` and merged on top of the file defaults; no ENV wiring is needed for those.
+`config/plugin.php` ships with sensible defaults. Edit that file (or use `wp-config.php` constants documented below) to tune deploy-time behaviour. `security_headers.*`, `audit_log.*`, and `auth_hardening.*` are also configurable from the admin UI (`Press Sentinel → Security Headers` / `Press Sentinel → Authentication`); admin overrides are stored in autoloaded `wp_options` and merged on top of the file defaults.
 
-| Config key | ENV variable | Default | Used by |
-|---|---|---|---|
-| `app.env` | `PRESS_SENTINEL_APP_ENV` | `production` | logger / debug toggles |
-| `app.debug` | `PRESS_SENTINEL_DEBUG` | `false` | logger verbosity |
-| `requirements.php` | `PRESS_SENTINEL_MIN_PHP_VERSION` | `8.2.0` | activation gate |
-| `requirements.wordpress` | `PRESS_SENTINEL_MIN_WP_VERSION` | `6.4` | activation gate |
-| `logging.channel` | `PRESS_SENTINEL_LOG_CHANNEL` | `file` | `file` or anything else (NullLogger) |
-| `logging.level` | `PRESS_SENTINEL_LOG_LEVEL` | `info` | reserved (FileLogger) |
-| `logging.file` | `PRESS_SENTINEL_LOG_FILE` | `presssentinel.log` | log filename under `storage/logs/` |
-| `rate_limit.limit` | — | `60` | global RateLimitMiddleware |
-| `rate_limit.window` | — | `60` | global RateLimitMiddleware (seconds) |
-| `signed_url.ttl_default` | `PRESS_SENTINEL_SIGNED_URL_TTL` | `3600` | `Security::signedUrl()` when no `expires` is passed |
-| `security_headers.hsts.enabled` | — | `false` | HSTS dispatcher / middleware |
-| `security_headers.hsts.max_age` | — | `31536000` | HSTS `max-age` directive |
-| `security_headers.hsts.include_subdomains` | — | `false` | HSTS `includeSubDomains` flag |
-| `security_headers.hsts.preload` | — | `false` | HSTS `preload` flag (irreversible) |
-| `security_headers.csp.enabled` | — | `false` | CSP dispatcher / middleware |
-| `security_headers.csp.policy` | — | conservative WP-friendly policy | CSP directive string |
-| `security_headers.csp.report_only` | — | `true` | switch wire name to `Content-Security-Policy-Report-Only` |
-| `security_headers.x_frame_options.enabled` | — | `true` | X-Frame-Options dispatcher / middleware |
-| `security_headers.x_frame_options.value` | — | `SAMEORIGIN` | `DENY` or `SAMEORIGIN` |
-| `security_headers.referrer_policy.enabled` | — | `true` | Referrer-Policy dispatcher / middleware |
-| `security_headers.referrer_policy.policy` | — | `strict-origin-when-cross-origin` | one of the 8 standard values |
-| `security_headers.permissions_policy.enabled` | — | `true` | Permissions-Policy dispatcher / middleware |
-| `security_headers.permissions_policy.policy` | — | conservative deny-list | comma-separated `feature=(allowlist)` |
-| `security_headers.x_content_type_options.enabled` | — | `true` | emits `nosniff` |
-| `licensing.secret` | `PRESS_SENTINEL_LICENSE_SECRET` | `change-me-in-production` | HMAC secret for `LocalLicenseValidator` |
-| `woocommerce_protection.enabled` | — | `true` | Module master switch (Pro-gated) |
-| `woocommerce_protection.checkout.enabled` | — | `true` | Fake checkout protection |
-| `woocommerce_protection.checkout.velocity_soft` | — | `3` | Per-IP/email soft velocity threshold |
-| `woocommerce_protection.checkout.velocity_hard` | — | `8` | Per-IP/email hard velocity threshold |
-| `woocommerce_protection.checkout.velocity_window` | — | `120` | Velocity window (seconds) |
-| `woocommerce_protection.checkout.min_seconds_to_submit` | — | `3` | Impossible-timing floor (seconds) |
-| `woocommerce_protection.checkout.fraud.challenge_threshold` | — | `40` | Fraud-score challenge cutoff |
-| `woocommerce_protection.checkout.fraud.deny_threshold` | — | `80` | Fraud-score deny cutoff |
-| `woocommerce_protection.registration.enabled` | — | `true` | Registration spam protection |
-| `woocommerce_protection.registration.rate_limit` | — | `5` | Max registrations per IP per window |
-| `woocommerce_protection.registration.window` | — | `600` | Registration window (seconds) |
-| `woocommerce_protection.registration.deny_disposable_emails` | — | `true` | Hard-deny disposable email domains |
-| `woocommerce_protection.registration.honeypot_field_name` | — | `presssentinel_hp` | Hidden honeypot field name |
-| `woocommerce_protection.registration.min_seconds_to_submit` | — | `2` | Honeypot-timing floor (seconds) |
-| `woocommerce_protection.api.enabled` | — | `true` | WC REST API abuse protection |
-| `woocommerce_protection.api.default_limit` | — | `60` | Per-IP default RPS limit |
-| `woocommerce_protection.api.default_window` | — | `60` | API rate window (seconds) |
-| `woocommerce_protection.api.pass_when_authenticated` | — | `true` | Skip checks for logged-in callers |
-| `woocommerce_protection.api.deny_on_scanner_ua` | — | `true` | Block known scanner User-Agents |
-| `woocommerce_protection.api.per_route` | — | `[]` | Per-route overrides `{prefix:{limit,window}}` |
-| `woocommerce_protection.cart.enabled` | — | `true` | Cart abuse detection |
-| `woocommerce_protection.cart.velocity_soft` | — | `20` | Cart soft velocity threshold |
-| `woocommerce_protection.cart.velocity_hard` | — | `60` | Cart hard velocity threshold |
-| `woocommerce_protection.cart.window` | — | `60` | Cart window (seconds) |
-| `woocommerce_protection.cart.coupon_soft` | — | `4` | Coupon failures soft threshold |
-| `woocommerce_protection.cart.coupon_hard` | — | `10` | Coupon failures hard threshold |
-| `audit_log.enabled` | — | `true` | Master killswitch for audit logging |
-| `audit_log.retention_days` | — | `90` | Days of audit history kept; `0` = forever |
-| `audit_log.mirror_to_file_logger` | — | `false` | Mirror every event to `storage/logs/presssentinel.log` |
-| `audit_log.listeners.auth` | — | `true` | Login / logout / failed-login tracking |
-| `audit_log.listeners.plugin` | — | `true` | Plugin activate / deactivate / install / update / delete |
-| `audit_log.listeners.user` | — | `true` | User register / delete / role change / password reset |
-| `audit_log.listeners.options` | — | `true` | Allowlisted option changes |
-| `audit_log.listeners.file_editor` | — | `true` | Built-in theme / plugin file editor usage |
-| `audit_log.listeners.woocommerce` | — | `true` | WooCommerce orders / payments / refunds (no-op if WC inactive) |
-| `audit_log.option_allowlist` | — | siteurl, home, admin_email, users_can_register, default_role, blogname, blogdescription, wp_user_roles, permalink_structure, template, stylesheet | List of options the `OptionsListener` watches — extend as needed |
-| `auth_hardening.enabled` | — | `true` | Master killswitch for login lockout, 2FA gate, sessions, suspicion alerts |
-| `auth_hardening.two_factor.issuer` | — | `PressSentinel` | Issuer label embedded in `otpauth://` provisioning URIs |
-| `auth_hardening.two_factor.challenge_ttl_seconds` | — | `600` | Pending password→2FA window |
-| `auth_hardening.lockout.enabled` | — | `true` | Failed-login counter / temporary bans |
-| `auth_hardening.lockout.max_attempts` | — | `5` | Failures allowed inside the rolling window |
-| `auth_hardening.lockout.window_seconds` | — | `900` | Rolling counter window |
-| `auth_hardening.lockout.lock_seconds` | — | `900` | Lock duration once threshold exceeded |
-| `auth_hardening.sessions.enabled` | — | `true` | Persist PressSentinel session rows + daily prune |
-| `auth_hardening.sessions.retention_days` | — | `90` | Session table pruning horizon |
-| `auth_hardening.suspicion.enabled` | — | `true` | Aggregate suspicion scoring after login |
-| `auth_hardening.suspicion.alert_threshold` | — | `50` | Minimum score before emailing “new device” |
-| `auth_hardening.suspicion.rules.new_device` | — | `true` | Compare device fingerprint against prior sessions |
-| `auth_hardening.notifications.enabled` | — | `true` | Reserved — gate future SMTP overrides |
-| (none) | `PRESS_SENTINEL_URL_SECRET` | `wp_salt('auth')` | URL signing secret — **set this in production** |
-
+| Config key | Default | Used by |
+|---|---|---|
+| `app.env` | `production` | logger / debug toggles |
+| `app.debug` | `false` | logger verbosity |
+| `requirements.php` | `8.2.0` | activation gate |
+| `requirements.wordpress` | `6.4` | activation gate |
+| `logging.channel` | `file` | `file` or anything else (NullLogger) |
+| `logging.level` | `info` | reserved (FileLogger) |
+| `logging.file` | `presssentinel.log` | log filename under `storage/logs/` |
+| `rate_limit.limit` `60` | global RateLimitMiddleware |
+| `rate_limit.window` `60` | global RateLimitMiddleware (seconds) |
+| `signed_url.ttl_default` | `3600` | `Security::signedUrl()` when no `expires` is passed |
+| `signed_url.secret` | `` (empty) | URL signing secret; empty uses `wp_salt('auth')` — **set in production** |
+| `recovery.safe_mode` | `false` | Emergency bypass for disguise, lockouts, rate limits |
+| `pro_license.license_key` | `` (empty) | Optional default Pro key |
+| `pro_license.early_access` | `false` | Pro unlock without a key (no expiry) |
+| `pro_license.beta_trial.enabled` | `true` | Time-boxed Pro trial when no key |
+| `pro_license.beta_trial.duration_days` | `182` | Beta trial length (1–730 days) |
+| `security_headers.hsts.enabled` `false` | HSTS dispatcher / middleware |
+| `security_headers.hsts.max_age` `31536000` | HSTS `max-age` directive |
+| `security_headers.hsts.include_subdomains` `false` | HSTS `includeSubDomains` flag |
+| `security_headers.hsts.preload` `false` | HSTS `preload` flag (irreversible) |
+| `security_headers.csp.enabled` `false` | CSP dispatcher / middleware |
+| `security_headers.csp.policy` conservative WP-friendly policy | CSP directive string |
+| `security_headers.csp.report_only` `true` | switch wire name to `Content-Security-Policy-Report-Only` |
+| `security_headers.x_frame_options.enabled` `true` | X-Frame-Options dispatcher / middleware |
+| `security_headers.x_frame_options.value` `SAMEORIGIN` | `DENY` or `SAMEORIGIN` |
+| `security_headers.referrer_policy.enabled` `true` | Referrer-Policy dispatcher / middleware |
+| `security_headers.referrer_policy.policy` `strict-origin-when-cross-origin` | one of the 8 standard values |
+| `security_headers.permissions_policy.enabled` `true` | Permissions-Policy dispatcher / middleware |
+| `security_headers.permissions_policy.policy` conservative deny-list | comma-separated `feature=(allowlist)` |
+| `security_headers.x_content_type_options.enabled` `true` | emits `nosniff` |
+| `licensing.secret` | `change-me-in-production` | HMAC fallback for `LocalLicenseValidator` (DB option or `PRESS_SENTINEL_LICENSE_SECRET` constant preferred) |
+| `woocommerce_protection.enabled` `true` | Module master switch (Pro-gated) |
+| `woocommerce_protection.checkout.enabled` `true` | Fake checkout protection |
+| `woocommerce_protection.checkout.velocity_soft` `3` | Per-IP/email soft velocity threshold |
+| `woocommerce_protection.checkout.velocity_hard` `8` | Per-IP/email hard velocity threshold |
+| `woocommerce_protection.checkout.velocity_window` `120` | Velocity window (seconds) |
+| `woocommerce_protection.checkout.min_seconds_to_submit` `3` | Impossible-timing floor (seconds) |
+| `woocommerce_protection.checkout.fraud.challenge_threshold` `40` | Fraud-score challenge cutoff |
+| `woocommerce_protection.checkout.fraud.deny_threshold` `80` | Fraud-score deny cutoff |
+| `woocommerce_protection.registration.enabled` `true` | Registration spam protection |
+| `woocommerce_protection.registration.rate_limit` `5` | Max registrations per IP per window |
+| `woocommerce_protection.registration.window` `600` | Registration window (seconds) |
+| `woocommerce_protection.registration.deny_disposable_emails` `true` | Hard-deny disposable email domains |
+| `woocommerce_protection.registration.honeypot_field_name` `presssentinel_hp` | Hidden honeypot field name |
+| `woocommerce_protection.registration.min_seconds_to_submit` `2` | Honeypot-timing floor (seconds) |
+| `woocommerce_protection.api.enabled` `true` | WC REST API abuse protection |
+| `woocommerce_protection.api.default_limit` `60` | Per-IP default RPS limit |
+| `woocommerce_protection.api.default_window` `60` | API rate window (seconds) |
+| `woocommerce_protection.api.pass_when_authenticated` `true` | Skip checks for logged-in callers |
+| `woocommerce_protection.api.deny_on_scanner_ua` `true` | Block known scanner User-Agents |
+| `woocommerce_protection.api.per_route` `[]` | Per-route overrides `{prefix:{limit,window}}` |
+| `woocommerce_protection.cart.enabled` `true` | Cart abuse detection |
+| `woocommerce_protection.cart.velocity_soft` `20` | Cart soft velocity threshold |
+| `woocommerce_protection.cart.velocity_hard` `60` | Cart hard velocity threshold |
+| `woocommerce_protection.cart.window` `60` | Cart window (seconds) |
+| `woocommerce_protection.cart.coupon_soft` `4` | Coupon failures soft threshold |
+| `woocommerce_protection.cart.coupon_hard` `10` | Coupon failures hard threshold |
+| `audit_log.enabled` `true` | Master killswitch for audit logging |
+| `audit_log.retention_days` `90` | Days of audit history kept; `0` = forever |
+| `audit_log.mirror_to_file_logger` `false` | Mirror every event to `storage/logs/presssentinel.log` |
+| `audit_log.listeners.auth` `true` | Login / logout / failed-login tracking |
+| `audit_log.listeners.plugin` `true` | Plugin activate / deactivate / install / update / delete |
+| `audit_log.listeners.user` `true` | User register / delete / role change / password reset |
+| `audit_log.listeners.options` `true` | Allowlisted option changes |
+| `audit_log.listeners.file_editor` `true` | Built-in theme / plugin file editor usage |
+| `audit_log.listeners.woocommerce` `true` | WooCommerce orders / payments / refunds (no-op if WC inactive) |
+| `audit_log.option_allowlist` siteurl, home, admin_email, users_can_register, default_role, blogname, blogdescription, wp_user_roles, permalink_structure, template, stylesheet | List of options the `OptionsListener` watches — extend as needed |
+| `auth_hardening.enabled` `true` | Master killswitch for login lockout, 2FA gate, sessions, suspicion alerts |
+| `auth_hardening.two_factor.issuer` `PressSentinel` | Issuer label embedded in `otpauth://` provisioning URIs |
+| `auth_hardening.two_factor.challenge_ttl_seconds` `600` | Pending password→2FA window |
+| `auth_hardening.lockout.enabled` `true` | Failed-login counter / temporary bans |
+| `auth_hardening.lockout.max_attempts` `5` | Failures allowed inside the rolling window |
+| `auth_hardening.lockout.window_seconds` `900` | Rolling counter window |
+| `auth_hardening.lockout.lock_seconds` `900` | Lock duration once threshold exceeded |
+| `auth_hardening.sessions.enabled` `true` | Persist PressSentinel session rows + daily prune |
+| `auth_hardening.sessions.retention_days` `90` | Session table pruning horizon |
+| `auth_hardening.suspicion.enabled` `true` | Aggregate suspicion scoring after login |
+| `auth_hardening.suspicion.alert_threshold` `50` | Minimum score before emailing “new device” |
+| `auth_hardening.suspicion.rules.new_device` `true` | Compare device fingerprint against prior sessions |
+| `auth_hardening.notifications.enabled` `true` | Reserved — gate future SMTP overrides |
 ### Recommended production setup
 
-In your server environment (e.g. nginx, Apache, `wp-config.php`, or a `.env` file consumed by `getenv()`):
-
-```bash
-export PRESS_SENTINEL_URL_SECRET="<at least 32 random bytes, base64 or hex>"
-```
+Pin a dedicated URL-signing secret in `config/plugin.php` so it survives WordPress salt rotation:
 
 ```php
-// wp-config.php — alternative if you can't set env vars
-putenv('PRESS_SENTINEL_URL_SECRET=' . file_get_contents(ABSPATH . '/.presssentinel-secret'));
+'signed_url' => [
+    'ttl_default' => 3600,
+    'secret' => '<at least 32 random bytes, base64 or hex>',
+],
 ```
 
-Why: the default fallback is `wp_salt('auth')`, which is fine until someone runs WordPress salt rotation — that invalidates **every** outstanding signed URL (password resets, magic links, etc.). A dedicated secret outlives salt rotation.
+Why: the default fallback is `wp_salt('auth')`, which is fine until someone runs WordPress salt rotation — that invalidates **every** outstanding signed URL (password resets, magic links, etc.). A dedicated secret in config outlives salt rotation.
 
-To rotate the secret intentionally, change the env var and redeploy. All existing signed URLs immediately become invalid, which is the desired behavior on a key compromise.
+To rotate the secret intentionally, change `signed_url.secret` and redeploy. All existing signed URLs immediately become invalid, which is the desired behavior on a key compromise.
 
 ---
 
@@ -1764,7 +1766,7 @@ $context['request']['ip'] = sanitize_text_field($_SERVER['HTTP_CF_CONNECTING_IP'
 
 ### Signed URLs all return `tampered` after a salt rotation
 
-You're using the default `wp_salt('auth')` source for the URL secret. Rotating WordPress salts invalidates every outstanding signed URL. Set `PRESS_SENTINEL_URL_SECRET` instead — that pins the secret to the env variable so it survives WP salt rotation. See [Recommended production setup](#recommended-production-setup).
+You're using the default `wp_salt('auth')` source for the URL secret. Rotating WordPress salts invalidates every outstanding signed URL. Set `signed_url.secret` in `config/plugin.php` instead — that pins the secret so it survives WP salt rotation. See [Recommended production setup](#recommended-production-setup).
 
 ### Signed URL expired but the user clicked it within seconds
 
@@ -1772,9 +1774,9 @@ Check server clock skew. The signer uses `time()` and the `expires` field is bou
 
 ### "Cannot resolve URL-signing secret" exception
 
-`PRESS_SENTINEL_URL_SECRET` env var is not set AND `wp_salt()` is not loaded. This typically happens when the plugin runs before WordPress core in a non-standard bootstrap. Either:
+`signed_url.secret` is empty AND `wp_salt()` is not loaded. This typically happens when the plugin runs before WordPress core in a non-standard bootstrap. Either:
 
-- Set `PRESS_SENTINEL_URL_SECRET` in your server environment, or
+- Set `signed_url.secret` in `config/plugin.php`, or
 - Ensure `wp-includes/pluggable.php` is loaded before any code that calls `Security::signedUrl()`.
 
 ### CSP breaks the WP admin / Gutenberg

@@ -1,6 +1,9 @@
 <?php
 
 declare(strict_types=1);
+if (! defined('ABSPATH')) {
+    exit;
+}
 
 use PressSentinel\Core\Support\WpHelper;
 
@@ -19,7 +22,7 @@ use PressSentinel\Core\Support\WpHelper;
             <p>
                 <strong>Security headers are currently off.</strong>
                 The master switch below (also available on the
-                <a href="<?= WpHelper::escapeAttribute(
+                <a href="<?php echo esc_attr(
                     \function_exists('admin_url')
                         ? (string) \call_user_func('admin_url', 'admin.php?page=' . \PressSentinel\Admin\PressSentinelMenuPage::PARENT_SLUG)
                         : '#'
@@ -47,7 +50,7 @@ use PressSentinel\Core\Support\WpHelper;
     <p>
         <strong>Tip:</strong> after saving, open your site in a fresh browser tab and inspect the response headers
         (DevTools → Network → click any request → Headers) or run
-        <code>curl -sI <?= WpHelper::escapeHtml(\function_exists('home_url') ? (string) \call_user_func('home_url', '/') : '/') ?></code>
+        <code>curl -sI <?php echo esc_html(\function_exists('home_url') ? (string) \call_user_func('home_url', '/') : '/') ?></code>
         from a terminal to verify the headers are being emitted as expected.
     </p>
 </div>

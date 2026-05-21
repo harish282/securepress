@@ -115,7 +115,7 @@ final class HealthDiagnosticsCollector
             'label' => 'License HMAC secret',
             'state' => $weakSecret ? 'blocked' : 'active',
             'detail' => $weakSecret
-                ? 'Ensure the database option presssentinel_license_hmac_secret is writable, or set PRESS_SENTINEL_LICENSE_SECRET (24+ chars) via wp-config.php, .env, or environment.'
+                ? 'Ensure the database option presssentinel_license_hmac_secret is writable, or set PRESS_SENTINEL_LICENSE_SECRET (24+ chars) in wp-config.php or licensing.secret in config/plugin.php.'
                 : 'Strong secret resolved (auto-generated option, constant, or environment).',
         ];
 

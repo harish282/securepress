@@ -232,8 +232,8 @@ final class AuthHardeningSettingsPage
         $name = $this->name(['two_factor', 'issuer']);
         printf(
             '<input type="text" name="%s" value="%s" class="regular-text" maxlength="64"> <span class="description">Shown inside authenticator apps next to each enrolment.</span>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute($value)
+            esc_attr($name),
+            esc_attr($value)
         );
     }
 
@@ -261,9 +261,9 @@ final class AuthHardeningSettingsPage
         $name = $this->name($path);
         printf(
             '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> %3$s</label>',
-            WpHelper::escapeAttribute($name),
-            $checked,
-            $label
+            esc_attr($name),
+            esc_attr($checked),
+            esc_html($label)
         );
     }
 
@@ -275,12 +275,12 @@ final class AuthHardeningSettingsPage
         $value = (int) $this->valueOf($path);
         $name = $this->name($path);
         printf(
-            '<input type="number" name="%s" value="%s" min="%d" max="%d" class="small-text"> <span class="description">%s</span>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute((string) $value),
-            $min,
-            $max,
-            $description
+            '<input type="number" name="%s" value="%s" min="%s" max="%s" class="small-text"> <span class="description">%s</span>',
+            esc_attr($name),
+            esc_attr((string) $value),
+            esc_attr((string) $min),
+            esc_attr((string) $max),
+            esc_html($description)
         );
     }
 

@@ -34,6 +34,7 @@ final class MiddlewareManager
             }
 
             if (!$instance instanceof MiddlewareInterface) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Internal middleware resolution error.
                 throw new MiddlewareException(sprintf('Resolved middleware "%s" is invalid.', $class));
             }
 

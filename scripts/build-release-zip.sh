@@ -75,14 +75,10 @@ stage_plugin_to() {
   copy_if_exists "$dest" "src"
   copy_if_exists "$dest" "resources"
   copy_if_exists "$dest" "mu-loader"
-  copy_if_exists "$dest" ".env.example"
   copy_if_exists "$dest" "README.md"
 
   # Storage: ship directory skeleton + lockdown files only (never local *.log).
   mkdir -p "$dest/storage/logs"
-  if [[ -f "$ROOT/storage/logs/.htaccess" ]]; then
-    cp -a "$ROOT/storage/logs/.htaccess" "$dest/storage/logs/"
-  fi
   if [[ -f "$ROOT/storage/logs/index.html" ]]; then
     cp -a "$ROOT/storage/logs/index.html" "$dest/storage/logs/"
   fi
@@ -102,7 +98,7 @@ stage_plugin_to() {
 }
 
 if [[ "$MODE" == "dev" ]]; then
-  DEV_DEST="$(cd "$ROOT/../plugins" && pwd)/$PLUGIN_SLUG"
+  DEV_DEST="$(cd "$ROOT/../../plugins" && pwd)/$PLUGIN_SLUG"
   mkdir -p "$(dirname "$DEV_DEST")"
   stage_plugin_to "$DEV_DEST"
   echo "Deployed to $DEV_DEST (version $VERSION)"
