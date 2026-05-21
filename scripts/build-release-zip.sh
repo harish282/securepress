@@ -86,7 +86,7 @@ stage_plugin_to() {
     if [[ -d "$ROOT/storage/$subdir" ]]; then
       mkdir -p "$dest/storage/$subdir"
       shopt -s nullglob
-      for f in "$ROOT/storage/$subdir"/index.html "$ROOT/storage/$subdir"/.htaccess "$ROOT/storage/$subdir"/.gitkeep; do
+      for f in "$ROOT/storage/$subdir"/index.html "$ROOT/storage/$subdir"/.gitkeep; do
         [[ -e "$f" ]] || continue
         cp -a "$f" "$dest/storage/$subdir/"
       done
@@ -97,6 +97,7 @@ stage_plugin_to() {
   # Drop legacy paths removed from source (cp -a does not delete stale deploy files).
   rm -f "$dest/bootstrap/env.php" "$dest/env.example" "$dest/.env" "$dest/.env.local"
   rm -f "$dest/storage/tmp/"*.php "$dest/storage/cache/"*.php 2>/dev/null || true
+  rm -f "$dest/storage/tmp/.htaccess" "$dest/storage/cache/.htaccess" 2>/dev/null || true
 }
 
 if [[ "$MODE" == "dev" ]]; then
