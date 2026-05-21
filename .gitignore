@@ -2,6 +2,9 @@
 storage/logs/*.log
 storage/cache/*
 storage/tmp/*
+!storage/tmp/index.html
+!storage/tmp/.htaccess
+!storage/tmp/.gitkeep
 
 # Keep storage folders when needed
 !storage/logs/.gitkeep

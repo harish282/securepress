@@ -27,10 +27,8 @@ require PRESS_SENTINEL_BOOTSTRAP_PATH . '/safe-mode.php';
 echo (defined('PRESS_SENTINEL_SAFE_MODE') && PRESS_SENTINEL_SAFE_MODE) ? '1' : '0';
 PHP;
 
-        $tmp = $root . '/storage/tmp/safe-mode-bootstrap-test.php';
-        if (!is_dir(dirname($tmp))) {
-            mkdir(dirname($tmp), 0775, true);
-        }
+        $tmp = tempnam(sys_get_temp_dir(), 'ps-safe-mode-');
+        self::assertNotFalse($tmp);
         file_put_contents($tmp, $script);
 
         $output = [];
