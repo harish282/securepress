@@ -1,524 +1,142 @@
 === PressSentinel ===
 Contributors: harish282
-Tags: security, authentication, audit, two-factor, woocommerce
+Tags: security, two-factor, audit, login, woocommerce
 Requires at least: 6.4
-Tested up to: 7.0
+Tested up to: 6.7
 Requires PHP: 8.2
 Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-2FA, audit log, login lockouts, security headers, file integrity, and WooCommerce protection.
+Application-layer security for WordPress: 2FA, login lockouts, audit log, headers, integrity scans, rate limits, and optional WooCommerce protection.
 
 == Description ==
 
+See [readme.txt](readme.txt) for the WordPress.org-formatted plugin description (required for directory submissions).
+
+---
+
 # PressSentinel
 
-> Laravel-inspired security infrastructure for WordPress.
+Laravel-inspired security infrastructure for WordPress — middleware, developer APIs, authentication hardening, audit logging, and WooCommerce protection.
 
-PressSentinel is a modern security framework plugin for WordPress focused on middleware-based protection, developer experience, WooCommerce security, and lightweight architecture.
+| | |
+| --- | --- |
+| **Version** | 0.1.0 (beta) |
+| **PHP** | 8.2+ |
+| **WordPress** | 6.4+ |
+| **Tests** | 509 PHPUnit tests passing |
+| **Plugin Check** | Clean (errors and warnings resolved) |
 
-Unlike traditional bloated firewall plugins, PressSentinel focuses on application-layer security inspired by modern PHP frameworks like Laravel.
+## Quick start
 
----
+1. Clone or copy into `wp-content/plugins/presssentinel` (or run `bash scripts/build-release-zip.sh dev` from this repo).
+2. Activate **PressSentinel** in wp-admin.
+3. Optional: install the [MU loader](docs/MU_LOADER_INSTALL.md) for earlier bootstrap.
+4. Read [docs/USAGE.md](docs/USAGE.md) for CSRF, rate limits, signed URLs, and route protection.
 
-# Vision
+## Implementation status (vs project plan)
 
-PressSentinel aims to become:
+This table maps [presssentinel_wordpress_security_plugin_project_plan.md](presssentinel_wordpress_security_plugin_project_plan.md) and [ROADMAP_AGILE.md](ROADMAP_AGILE.md) to what ships in **0.1.0** and how it is verified.
 
-> "The Laravel-style security framework for WordPress developers."
+### MVP and core security (plan §6 — Version 1.0)
 
-Core principles:
+| Feature | Status | Notes |
+| --- | --- | --- |
+| Login protection (lockout, failed-login tracking) | **Shipped** | `LoginLockoutService`, transients/options; tested |
+| Rate limiting (login, REST, front end) | **Shipped** | Global subscriber + `RateLimitMiddleware` SDK; wp-admin excluded by default |
+| Security headers (CSP, HSTS, XFO, etc.) | **Shipped** | Per-header toggles; `SecurityHeadersDispatcher` |
+| Signed URLs | **Shipped** | `UrlSigner`, `SignedUrlMiddleware`; tested |
+| CSRF layer | **Shipped** | `CsrfProtectionMiddleware`, `CsrfTokenManager`, `Security` facade |
+| Audit logging | **Shipped** | DB storage, listeners (auth, plugins, roles, file editor, WooCommerce); admin UI |
+| Developer SDK | **Shipped** | `Security` / `AuditLog` facades, `RouteBuilder`, middleware registration |
 
-* Modern architecture
-* Middleware-driven security
-* Developer-first APIs
-* Lightweight and modular
-* WooCommerce-friendly
-* Extensible and scalable
+### Version 1.1 items (plan §7) — largely included in 0.1.0
 
----
+| Feature | Status | Notes |
+| --- | --- | --- |
+| Two-factor (TOTP, email OTP, recovery codes) | **Shipped** | `TwoFactorService`, wp-login challenge flow; tested |
+| Device & session management | **Shipped** | Custom sessions table, revoke, pruning; tested |
+| WooCommerce security pack | **Shipped (Pro)** | Checkout/cart/registration/API pipelines; PHPUnit coverage |
+| Laravel-style validation layer | **Not shipped** | No `Validator::make()` module yet |
 
-# Current Status
+### Version 2.0 / advanced (plan §8)
 
-## Project Stage
+| Feature | Status | Notes |
+| --- | --- | --- |
+| File integrity monitoring | **Shipped** | Core checksums, manifest diff, heuristics (free tier) |
+| Malware / heuristic scanning | **Partial** | PHP heuristics only — not a full AV engine (by design) |
+| Threat intelligence / cloud SaaS | **Not shipped** | Future roadmap |
 
-* [ ] Planning
-* [ ] Architecture Design
-* [ ] MVP Development
-* [ ] Alpha Release
-* [ ] Beta Release
-* [ ] Public Launch
+### Agile sprints (ROADMAP_AGILE.md)
 
-## Agile Roadmap
+| Sprint | Goal | Status |
+| --- | --- | --- |
+| 0 — Initialization | Repo, standards, backlog | **Partial** — code and tests exist; GitHub Projects/issue seeding optional |
+| 1 — Foundation | Bootstrap, container, config, logging | **Done** |
+| 2 — Middleware core | Pipeline, ordering, short-circuit | **Done** — 87+ middleware-related tests |
+| 3 — Auth & abuse | Lockout, suspicious login, REST throttle | **Done** — XML-RPC not a separate module; may fall under global/front-end limits |
+| 4 — CSRF, signed URLs, headers | Integrity controls | **Done** |
+| 5 — Audit & admin UX | Log UI, retention | **Mostly done** — **audit export (CSV) not implemented** |
+| 6 — WooCommerce | Abuse prevention pack | **Done in code** — requires WooCommerce + Pro/eval on site for live checks |
+| 7 — Beta launch | Security review, docs, release | **In progress** — Plugin Check clean; formal OWASP checklist not automated in repo |
 
-* [ ] Roadmap document created: [`ROADMAP_AGILE.md`](ROADMAP_AGILE.md)
-* [ ] Sprint issues created in GitHub project
-* [ ] Sprint 0 initialized
+### Architecture plan vs codebase
 
-## MU Loader (Early Load)
+| Planned (plan §3–5) | Actual 0.1.0 |
+| --- | --- |
+| Monolog, Symfony HTTP, dotenv | **Not used** — lightweight `FileLogger`, `config/plugin.php`, wp-config constants |
+| React / Gutenberg admin UI | **Not used** — PHP admin views under `resources/views/` |
+| PestPHP | **PHPUnit only** |
+| `routes/` directory | **Not present** — route guards via SDK / `RouteGuardRegistry` |
+| Bot / geo middleware | **Not shipped** |
 
-To make PressSentinel load earlier in WordPress lifecycle, install the MU loader:
+### Extra features (not in original MVP list)
 
-* [ ] Copy `mu-loader/00-press-sentinel-loader.php` to `wp-content/mu-plugins/00-press-sentinel-loader.php`
-* [ ] Keep `PressSentinel` active in normal plugin list
-* [ ] Verify plugin list shows: `MU Loader: Installed`
+| Feature | Status |
+| --- | --- |
+| Login URL disguise | Shipped |
+| Safe mode recovery | Shipped |
+| MU loader early bootstrap | Shipped |
+| Health diagnostics admin page | Shipped |
+| Offline Pro licensing (HMAC) | Shipped |
 
-Install guide: [`docs/MU_LOADER_INSTALL.md`](docs/MU_LOADER_INSTALL.md)
+## Working as intended?
 
-## Usage Guide
+**Automated verification:** `vendor/bin/phpunit` — **509 tests, 1372 assertions, all passing** (security middleware, lockout, 2FA, integrity, WooCommerce pipelines, licensing, signed URLs, CSRF).
 
-How to use what's already shipped (CSRF, rate limiter, signed URLs) inside WordPress, with end-to-end recipes for REST endpoints, admin-post forms, magic-link login, paid downloads, and WooCommerce checkout throttling: [`docs/USAGE.md`](docs/USAGE.md).
+**Manual verification recommended on a staging site:**
 
----
+* Enable auth hardening → confirm lockout after failed logins and 2FA challenge on wp-login.
+* Toggle security headers → inspect response headers on front end and REST.
+* Run a file integrity scan → confirm findings table updates.
+* With WooCommerce + Pro/eval → place test checkout/cart actions and review audit log / blocked responses.
+* Enable global rate limit → confirm HTTP 429 on burst REST or front-end requests (not wp-admin).
 
-# Core Features
+**Known gaps (functionality unchanged by Plugin Check fixes):** Plugin Check work was PHPCS suppressions, `WpHelper` input wrappers, and view syntax fixes — no intentional weakening of security logic. Remaining product gaps are listed above (export, validation layer, full-site auto-middleware kernel, SaaS).
 
-## Security Middleware System
+## Development
 
-* [ ] Middleware pipeline
-* [ ] Request interception
-* [ ] Route protection
-* [ ] Middleware registration system
-* [ ] Custom middleware support
-
-Example:
-
-```php
-Security::middleware([
-    RateLimit::class,
-    CsrfProtection::class,
-    BotProtection::class,
-]);
+```bash
+composer install
+vendor/bin/phpunit
+bash scripts/build-release-zip.sh dev    # sync to wp-content/plugins/presssentinel
+bash scripts/build-release-zip.sh prod   # zip under ./build
 ```
 
----
+Configuration: `config/plugin.php` and optional `wp-config.php` constants (`PRESS_SENTINEL_SAFE_MODE`, `PRESS_SENTINEL_PRO_LICENSE`, `PRESS_SENTINEL_LICENSE_SECRET`). See [docs/USAGE.md](docs/USAGE.md) and [PRIVACY.md](PRIVACY.md).
 
-## Rate Limiting
+## Documentation
 
-* [ ] Login rate limiting
-* [ ] REST API throttling
-* [ ] XML-RPC protection
-* [ ] WooCommerce checkout throttling
-* [ ] Contact form protection
-* [ ] User/IP-based throttling
-* [ ] Temporary bans
+| Document | Purpose |
+| --- | --- |
+| [readme.txt](readme.txt) | WordPress.org plugin directory readme |
+| [docs/USAGE.md](docs/USAGE.md) | Developer and operator usage |
+| [docs/MU_LOADER_INSTALL.md](docs/MU_LOADER_INSTALL.md) | Early-load MU plugin setup |
+| [docs/STAGING_TEST_PLAN.md](docs/STAGING_TEST_PLAN.md) | Step-by-step staging QA checklist |
+| [ROADMAP_AGILE.md](ROADMAP_AGILE.md) | Sprint backlog |
+| [presssentinel_wordpress_security_plugin_project_plan.md](presssentinel_wordpress_security_plugin_project_plan.md) | Product vision and phases |
 
-Example:
+## License
 
-```php
-RateLimiter::for('login', 5, 'minute');
-```
-
----
-
-## Authentication Security
-
-* [ ] Brute-force protection
-* [ ] Failed login detection
-* [ ] Session management
-* [ ] Suspicious login alerts
-* [ ] Device tracking
-* [ ] Login notifications
-
----
-
-## Two-Factor Authentication
-
-* [ ] TOTP support
-* [ ] Email OTP
-* [ ] Backup codes
-* [ ] Trusted devices
-* [ ] Recovery flow
-
----
-
-## CSRF Protection
-
-* [ ] Secure token generation
-* [ ] Token expiration
-* [ ] Middleware validation
-* [ ] Form protection helpers
-* [ ] API token support
-
----
-
-## Signed URLs
-
-* [ ] Temporary signed URLs
-* [ ] Expiring links
-* [ ] Download protection
-* [ ] Invite links
-* [ ] Password reset links
-
-Example:
-
-```php
-Security::signedUrl('/download/123', expires: 3600);
-```
-
----
-
-## Security Headers
-
-* [ ] CSP support
-* [ ] HSTS support
-* [ ] X-Frame-Options
-* [ ] Referrer Policy
-* [ ] Permissions Policy
-* [ ] Header presets
-
----
-
-## Audit Logging
-
-* [ ] Login logs
-* [ ] Failed login logs
-* [ ] Plugin change logs
-* [ ] Role change logs
-* [ ] Admin activity logs
-* [ ] WooCommerce activity logs
-* [ ] Export functionality
-
----
-
-## Developer SDK
-
-* [ ] Security helper APIs
-* [ ] Route protection helpers
-* [ ] Middleware registration APIs
-* [ ] Event system
-* [ ] Extension support
-* [ ] Validation system
-
-Example:
-
-```php
-Security::protectRoute('/admin/export');
-```
-
----
-
-# WooCommerce Security
-
-## Planned Features
-
-* [ ] Fake checkout prevention
-* [ ] Coupon abuse prevention
-* [ ] Bot cart protection
-* [ ] Registration spam protection
-* [ ] API abuse protection
-* [ ] Checkout anomaly detection
-
----
-
-# Malware & Integrity Features
-
-## Future Features
-
-* [ ] File integrity monitoring
-* [ ] Core file verification
-* [ ] Suspicious PHP detection
-* [ ] Malware signature scanning
-* [ ] Obfuscated code detection
-
----
-
-# SaaS Roadmap
-
-## Cloud Features
-
-* [ ] Central dashboard
-* [ ] Multi-site management
-* [ ] Attack analytics
-* [ ] Shared threat intelligence
-* [ ] Remote controls
-* [ ] Security reports
-
----
-
-# Technical Architecture
-
-## Backend Stack
-
-* [ ] PHP 8.2+
-* [ ] Composer
-* [ ] PSR-4 autoloading
-* [ ] Dependency Injection Container
-* [ ] WordPress REST API
-* [ ] Event system
-* [ ] Monolog integration
-
----
-
-## Frontend Stack
-
-* [ ] React admin dashboard
-* [ ] Gutenberg components
-* [ ] Responsive admin UI
-* [ ] Settings dashboard
-* [ ] Log viewer
-
----
-
-# Suggested Folder Structure
-
-```txt
-presssentinel/
-├── bootstrap/
-├── config/
-├── resources/
-├── routes/
-├── src/
-│   ├── Core/
-│   ├── Middleware/
-│   ├── Security/
-│   ├── Auth/
-│   ├── Logging/
-│   ├── Validation/
-│   ├── Http/
-│   ├── Admin/
-│   └── WooCommerce/
-├── storage/
-│   ├── logs/
-│   └── cache/
-├── tests/
-├── vendor/
-├── press-sentinel.php
-└── composer.json
-```
-
----
-
-# Development Roadmap
-
-# Phase 1 — Foundation
-
-## Architecture
-
-* [ ] Setup GitHub repository
-* [ ] Setup Composer
-* [ ] Configure PSR-4 autoloading
-* [ ] Create plugin bootstrap
-* [ ] Build service container
-* [ ] Create configuration system
-* [ ] Setup logging
-* [ ] Setup coding standards
-
----
-
-# Phase 2 — Security Core
-
-## Middleware Engine
-
-* [ ] Request pipeline
-* [ ] Middleware manager
-* [ ] Middleware execution order
-* [ ] Request interception
-* [ ] Response handling
-
-## Security Features
-
-* [ ] Rate limiter
-* [ ] Login protection
-* [ ] CSRF middleware
-* [ ] Signed URLs
-* [ ] Security headers
-
----
-
-# Phase 3 — Developer APIs
-
-## SDK
-
-* [ ] Security helper functions
-* [ ] Public API documentation
-* [ ] Validation system
-* [ ] Event system
-* [ ] Extension architecture
-
----
-
-# Phase 4 — Logging & Dashboard
-
-## Dashboard
-
-* [ ] Security overview page
-* [ ] Logs page
-* [ ] Settings page
-* [ ] Threat analytics
-* [ ] Alerts UI
-
-## Logging
-
-* [ ] Audit logs
-* [ ] Search logs
-* [ ] Export logs
-* [ ] Log retention settings
-
----
-
-# Phase 5 — WooCommerce Security
-
-## WooCommerce Module
-
-* [ ] Checkout protection
-* [ ] Registration protection
-* [ ] API throttling
-* [ ] Fraud detection basics
-
----
-
-# Phase 6 — Testing & Launch
-
-## Testing
-
-* [ ] Unit tests
-* [ ] Integration tests
-* [ ] WordPress compatibility tests
-* [ ] WooCommerce compatibility tests
-* [ ] Performance testing
-* [ ] Shared hosting tests
-
-## Launch
-
-* [ ] Documentation website
-* [ ] Landing page
-* [ ] GitHub releases
-* [ ] Demo videos
-* [ ] Beta user onboarding
-
----
-
-# Monetization Plan
-
-## Free Version
-
-* [ ] Middleware engine
-* [ ] Basic rate limiting
-* [ ] Security headers
-* [ ] Audit logs
-* [ ] Signed URLs
-
----
-
-## Pro Version
-
-* [ ] 2FA
-* [ ] WooCommerce protection
-* [ ] Advanced analytics
-* [ ] Threat intelligence
-* [ ] Device management
-* [ ] Premium support
-
----
-
-# Documentation Checklist
-
-## Developer Docs
-
-* [ ] Installation guide
-* [ ] Middleware guide
-* [ ] SDK documentation
-* [ ] API references
-* [ ] Extension development guide
-* [ ] WooCommerce integration guide
-
-## User Docs
-
-* [ ] Quick start guide
-* [ ] Security best practices
-* [ ] Troubleshooting
-* [ ] FAQ
-
----
-
-# Branding Checklist
-
-* [ ] Logo design
-* [ ] Brand colors
-* [ ] Website domain
-* [ ] Documentation branding
-* [ ] Social media accounts
-* [ ] GitHub organization
-
----
-
-# Marketing Checklist
-
-## Content Strategy
-
-* [ ] Launch website
-* [ ] Technical blog
-* [ ] YouTube tutorials
-* [ ] Dev articles
-* [ ] SEO pages
-* [ ] Product Hunt launch
-
-## Community Building
-
-* [ ] GitHub community
-* [ ] Discord server
-* [ ] Reddit engagement
-* [ ] Facebook groups
-* [ ] WordPress communities
-
----
-
-# Performance Goals
-
-* [ ] Minimal memory usage
-* [ ] Low request overhead
-* [ ] Shared hosting compatibility
-* [ ] Fast admin dashboard
-* [ ] Lazy-loaded modules
-
----
-
-# Security Goals
-
-* [ ] Secure coding standards
-* [ ] OWASP best practices
-* [ ] Dependency scanning
-* [ ] Static analysis
-* [ ] Responsible disclosure policy
-
----
-
-# Future Vision
-
-PressSentinel evolves into:
-
-* Security framework for WordPress
-* Developer infrastructure layer
-* WooCommerce security platform
-* SaaS security management suite
-* Cloud-integrated security ecosystem
-
----
-
-# License
-
-Planned License:
-
-* Open-source core
-* Commercial premium modules
-
----
-
-# Inspiration
-
-Inspired by:
-
-* Laravel
-* Symfony
-* Modern PHP architecture
-* Developer-first tooling
-
----
-
-# Final Goal
-
-PressSentinel should feel like:
-
-> "What WordPress security would look like if Laravel designed it today."
+GPL-2.0-or-later. See [LICENSE](LICENSE) if present in your distribution package.

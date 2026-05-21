@@ -1,126 +1,124 @@
 === PressSentinel ===
 Contributors: harish282
-Tags: security, authentication, audit, two-factor, woocommerce
+Tags: security, two-factor, audit, login, woocommerce
 Requires at least: 6.4
-Tested up to: 7.0
+Tested up to: 6.7
 Requires PHP: 8.2
 Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-2FA, audit log, login lockouts, security headers, file integrity, and WooCommerce protection.
+Application-layer security for WordPress: 2FA, login lockouts, audit log, headers, integrity scans, rate limits, and optional WooCommerce protection.
 
 == Description ==
 
-PressSentinel adds a structured security layer to WordPress without replacing your host firewall or CDN. It is built around clear modules, an admin dashboard, and optional developer APIs inspired by modern PHP application design.
+PressSentinel adds structured, modular security inside WordPress. It does not replace your hosting firewall, WAF, or CDN. It focuses on login abuse, request integrity, visibility, and WooCommerce-specific threats.
 
-**Free features (always available on your site)**
+**Included in the free release (0.1.0)**
 
-* **Authentication hardening** — login lockout, email/TOTP two-factor authentication, recovery codes, session tracking, and suspicious-login alerts.
-* **Security headers** — HSTS, CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy, and X-Content-Type-Options (each can be toggled).
-* **Audit log** — records authentication events, plugin changes, role changes, selected option changes, file-editor use, and WooCommerce-related events when WooCommerce is active.
-* **File integrity monitoring** — baseline and diff scans for plugins; optional themes/uploads scopes; WordPress core checksum comparison.
-* **Rate limiting** — optional global HTTP throttling for front end, REST, AJAX, and wp-login (wp-admin dashboard loads are excluded by default).
-* **Login URL disguise** — optional custom login path instead of `wp-login.php` (off by default; configure carefully).
-* **Safe mode** — emergency recovery via `PRESS_SENTINEL_SAFE_MODE` in `wp-config.php` or `recovery.safe_mode` in `config/plugin.php` to bypass disguise, lockouts, and global rate limits without changing saved settings.
+* **Authentication hardening** — configurable login lockouts (IP and username), TOTP and email two-factor authentication, recovery codes, session tracking with remote revoke, and suspicious-login email alerts.
+* **Security headers** — HSTS, Content-Security-Policy, X-Frame-Options, Referrer-Policy, Permissions-Policy, and X-Content-Type-Options (each header can be toggled).
+* **Audit log** — stores events for logins, plugin changes, role changes, selected option changes, built-in file editor use, and WooCommerce-related actions when WooCommerce is active. Includes admin list UI, detail view, retention settings, and scheduled pruning.
+* **File integrity monitoring** — WordPress.org core checksum comparison, plugin manifest diff scans, suspicious PHP heuristics, and optional themes/uploads scopes.
+* **Rate limiting** — optional global throttling for front-end, AJAX, wp-login, and REST API traffic (wp-admin dashboard loads are excluded by default).
+* **CSRF middleware and SDK helpers** — nonce verification for custom routes, forms, and REST handlers you register via the developer API.
+* **Signed URLs** — time-limited HMAC links for downloads, invites, and other sensitive actions.
+* **Login URL disguise** — optional custom login path instead of `wp-login.php` (off by default; test on staging first).
+* **Safe mode** — emergency bypass via `PRESS_SENTINEL_SAFE_MODE` in `wp-config.php` or `recovery.safe_mode` in `config/plugin.php` without changing saved settings.
+* **Health diagnostics** — admin screen for hooks, database tables, and environment checks.
+* **MU loader helper** — downloadable must-use loader so the plugin can initialize earlier in the request lifecycle.
 
-**Pro features**
+**Pro module (evaluation period or license key)**
 
-* **WooCommerce Protection** — behavioural checks for checkout, registration, cart, and WooCommerce REST traffic (velocity, honeypots, fraud scoring, API limits, and related controls).
+* **WooCommerce Protection** — middleware pipelines for checkout, cart, registration, and Store API traffic (velocity limits, honeypots, disposable-email checks, fraud scoring, coupon abuse, and related controls).
 
-New installs include an **evaluation period** during which Pro capabilities are unlocked so you can test WooCommerce Protection before entering a license key. After that period, Pro features require a valid license key stored in your database. The free feature set remains available without a key.
+New installs include a built-in **evaluation period** with Pro features unlocked for testing. After that period, WooCommerce Protection requires a license key validated **on your server** (offline HMAC). The plugin does not phone home for licensing or analytics.
 
-PressSentinel does **not** phone home to the plugin author for licensing or analytics. License validation is performed **on your server** using keys you paste in wp-admin (offline HMAC verification).
+**Developer APIs**
 
-For developers, middleware-style helpers (CSRF, rate limiting, signed URLs) are documented in the plugin repository. See `docs/USAGE.md` after installation.
-
-== Installation ==
-
-1. Upload the `press-sentinel` folder to `/wp-content/plugins/`, or install through **Plugins → Add New** once the plugin is listed on WordPress.org.
-2. Activate **PressSentinel** through the **Plugins** screen.
-3. Open **Press Sentinel** in the admin menu and review the dashboard feature toggles.
-4. (Recommended) Install the optional MU loader so PressSentinel loads earlier in the request lifecycle — see **Press Sentinel → Dashboard** or `docs/MU_LOADER_INSTALL.md` in the plugin folder.
-5. Configure subsystems (Authentication, Security Headers, Rate Limiting, File Integrity, Audit Log) from their settings pages before enabling aggressive rules on production.
+Middleware-style helpers (`Security` facade), route guards, CSRF fields, rate limiters, signed URLs, and audit APIs are documented in `docs/USAGE.md` in the plugin directory. Middleware runs on routes you protect; it is not a blanket replacement for every WordPress hook until you wire it. Before production, follow the staging checklist in `docs/STAGING_TEST_PLAN.md`.
 
 **Requirements**
 
-* WordPress 6.4 or later
-* PHP 8.2 or later
-* MySQL 5.7+ / MariaDB 10.3+ (standard WordPress database requirements)
+* WordPress 6.4+
+* PHP 8.2+
+* MySQL 5.7+ or MariaDB 10.3+ (standard WordPress database)
+
+== Installation ==
+
+1. Upload the `presssentinel` folder to `/wp-content/plugins/` (or install from the WordPress.org plugin directory when listed).
+2. Activate **PressSentinel** on the **Plugins** screen.
+3. Open **Press Sentinel** in the admin menu and review dashboard feature toggles.
+4. (Recommended) Install the optional MU loader from **Press Sentinel → Dashboard** or follow `docs/MU_LOADER_INSTALL.md`.
+5. Configure Authentication, Security Headers, Rate Limiting, File Integrity, and Audit Log on their settings pages before enabling strict rules on production.
 
 == Frequently Asked Questions ==
 
-= Does PressSentinel replace my hosting firewall or Cloudflare? =
+= Does PressSentinel replace Cloudflare or my host firewall? =
 
-No. PressSentinel runs inside WordPress and focuses on application-layer controls (login abuse, headers, audit trail, integrity scans, WooCommerce abuse). Use host and edge firewalls together with this plugin.
+No. PressSentinel is an in-application security layer. Use it together with edge and host protections.
 
-= Does the plugin send data to the author or a third-party analytics service? =
+= Does the plugin send data to the author? =
 
-No telemetry or license callbacks to the plugin author are included. The only routine outbound request is to the **WordPress.org Core Checksums API** when file integrity monitoring needs official core file hashes (`api.wordpress.org`). See the Privacy section and `PRIVACY.md` in the plugin directory.
+No telemetry or license callbacks are included. The routine outbound request is to the **WordPress.org Core Checksums API** when integrity monitoring compares core files (`api.wordpress.org`). See `PRIVACY.md`.
 
 = How does licensing work? =
 
-Pro features (WooCommerce Protection) can be used during the built-in evaluation period without a key. After that, paste a license key on **Press Sentinel → License** (when shown). Keys are validated locally and stored in the WordPress database (`presssentinel_pro_license`). No WordPress.org account is required to use the free features.
+Use Pro features during the evaluation period without a key. After that, enter a key on **Press Sentinel → License** when shown. Keys are stored in your database and validated locally.
 
-= I locked myself out after enabling login disguise or lockout. What do I do? =
+= I am locked out after enabling login disguise or lockout. What should I do? =
 
-Enable **safe mode** by adding `define( 'PRESS_SENTINEL_SAFE_MODE', true );` to `wp-config.php` (before WordPress loads plugins) or set `recovery.safe_mode` to `true` in `config/plugin.php`. This bypasses login disguise, lockouts, and global rate limiting until you regain access. Turn safe mode off after fixing settings.
+Add `define( 'PRESS_SENTINEL_SAFE_MODE', true );` to `wp-config.php` (before WordPress loads plugins) or set `recovery.safe_mode` to `true` in `config/plugin.php`. Disable safe mode after you regain access.
 
-= Does PressSentinel work with WooCommerce? =
+= Does it work with WooCommerce? =
 
-WooCommerce Protection is a **Pro** module. It registers hooks only when WooCommerce is active and the site has Pro access (evaluation period or valid license). Other features work without WooCommerce.
+WooCommerce Protection is a Pro module and loads only when WooCommerce is active and the site has Pro access. Other features work without WooCommerce.
+
+= Is multisite supported? =
+
+Multisite has not been formally certified in 0.1.0. Test on staging first.
 
 = Where is personal data stored? =
 
-On your server: custom tables for audit logs, sessions, and integrity data; WordPress options and transients for settings, rate limits, and lockouts; user meta for two-factor state. Details are in `PRIVACY.md`.
-
-= Is the code obfuscated? =
-
-No. PHP source is shipped as readable files under the GPL.
-
-= Can I use PressSentinel on multisite? =
-
-Multisite has not been formally certified in this release. Test on staging before production use.
+On your server: custom tables for audit logs, sessions, and integrity data; WordPress options and transients for settings and rate limits; user meta for two-factor state. See `PRIVACY.md`.
 
 == Screenshots ==
 
-1. Press Sentinel dashboard — feature toggles and status overview.
-2. Authentication hardening settings — lockout and two-factor options.
-3. Audit log — searchable security event list.
-4. File integrity — findings and scan controls.
+1. Dashboard — feature toggles and module status.
+2. Authentication settings — lockout and two-factor options.
+3. Audit log — filterable event list.
+4. File integrity — scan results and findings.
 5. WooCommerce Protection settings (Pro).
 
 == Changelog ==
 
 = 0.1.0 =
-* Initial public release.
+* Initial release.
+* Middleware pipeline, CSRF protection, signed URLs, and Security SDK facade.
 * Authentication hardening: lockout, TOTP/email 2FA, sessions, suspicious-login notifications.
 * Security headers module with per-header controls.
-* Audit log with retention and pruning.
+* Audit log with retention, pruning, and admin UI.
 * File integrity: core checksums, manifest diff, suspicious PHP heuristics.
-* Optional global rate limiting (REST and front end; wp-admin excluded).
-* Optional login URL disguise and safe mode recovery.
+* Global rate limiting for REST, front end, AJAX, and wp-login.
+* Login URL disguise and safe mode recovery.
 * WooCommerce Protection module (Pro / evaluation period).
-* Offline license key storage and local HMAC validation.
-* Health diagnostics and MU loader download helper.
+* Offline license validation, health diagnostics, MU loader download.
 
 == Upgrade Notice ==
 
 = 0.1.0 =
-Initial release. Review authentication and URL disguise settings on staging before enabling on production.
+Initial release. Test authentication, URL disguise, and rate limits on staging before production.
 
 == Privacy ==
 
-PressSentinel processes security-related data **on your WordPress server** (IP addresses, user agents, user IDs, audit events, session metadata, and similar fields when features are enabled). It does not sell personal data or include advertising trackers.
+PressSentinel processes security-related data on your WordPress server (IP addresses, user agents, user IDs, audit events, session metadata, and similar fields when features are enabled). It does not sell personal data or include advertising trackers.
 
 **Third-party service**
 
-* **WordPress.org Core Checksums API** (`https://api.wordpress.org/core/checksums/1.0/`) — used when file integrity monitoring compares WordPress core files. Sends WordPress version and locale only. Responses may be cached in transients for about 12 hours.
+* **WordPress.org Core Checksums API** (`https://api.wordpress.org/core/checksums/1.0/`) — used for core file integrity checks (WordPress version and locale only; responses may be cached about 12 hours).
 
 **Email**
 
-Optional security emails (for example two-factor codes or suspicious-login alerts) are sent using WordPress `wp_mail()` and your site’s mail configuration.
+Optional security emails (two-factor codes, suspicious-login alerts) use WordPress `wp_mail()` and your site's mail configuration.
 
-**Site owner responsibility**
-
-You are responsible for your site’s privacy policy and lawful basis for processing. Full details: `PRIVACY.md` in the plugin folder.
+Full details: `PRIVACY.md` in the plugin folder.
