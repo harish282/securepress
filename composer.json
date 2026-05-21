@@ -1,0 +1,25 @@
+{
+    "name": "presssentinel/press-sentinel",
+    "description": "Laravel-inspired security infrastructure for WordPress",
+    "license": "GPL-2.0-or-later",
+    "type": "wordpress-plugin",
+    "require": {
+        "php": ">=8.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload": {
+        "psr-4": {
+            "PressSentinel\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "PressSentinel\\Tests\\": "tests/"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

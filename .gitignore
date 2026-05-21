@@ -1,0 +1,28 @@
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Runtime artifacts
+storage/logs/*.log
+storage/cache/*
+storage/tmp/*
+
+# Keep storage folders when needed
+!storage/logs/.gitkeep
+!storage/cache/.gitkeep
+!storage/tmp/.gitkeep
+
+# Dependency directories
+vendor/
+node_modules/
+
+# Release artifacts
+build/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.phpunit.result.cache
