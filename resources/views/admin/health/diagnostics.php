@@ -95,7 +95,7 @@ $protectionLabel = static function (string $state): string {
         <?php foreach ($report['protections'] as $row) : ?>
             <tr>
                 <td><strong><?php echo esc_html($row['label']); ?></strong></td>
-                <td><?php echo wp_kses_post($badge($row['state'], $protectionLabel($row['state'])); ?></td>
+                <td><?php echo wp_kses_post($badge($row['state'], $protectionLabel($row['state']))); ?></td>
                 <td style="color:#50575e;"><?php echo esc_html($row['detail']); ?></td>
             </tr>
         <?php endforeach; ?>
@@ -127,7 +127,7 @@ $protectionLabel = static function (string $state): string {
                 <td><code><?php echo esc_html($row['kind'] . ':' . $row['hook']); ?></code></td>
                 <td><?php echo esc_html($row['expected'] ? 'Yes' : 'No'); ?></td>
                 <td><?php echo esc_html($row['registered'] ? 'Yes' : 'No'); ?></td>
-                <td><?php echo wp_kses_post($badge($row['status'], $hookLabel($row['status'])); ?></td>
+                <td><?php echo wp_kses_post($badge($row['status'], $hookLabel($row['status']))); ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>
@@ -155,7 +155,7 @@ $protectionLabel = static function (string $state): string {
                 <td><?php echo esc_html($row['exists'] ? 'Yes' : 'No'); ?></td>
                 <td><?php echo esc_html($row['version'] !== null ? (string) (int) $row['version'] : '—'); ?></td>
                 <td><?php echo esc_html($row['row_count'] !== null ? number_format($row['row_count']) : '—'); ?></td>
-                <td><?php echo wp_kses_post($badge($row['status'], $storageLabel($row['status'])); ?></td>
+                <td><?php echo wp_kses_post($badge($row['status'], $storageLabel($row['status']))); ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>

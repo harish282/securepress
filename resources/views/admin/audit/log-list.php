@@ -181,7 +181,7 @@ $levelClass = static function (string $level): string {
                         <td><code><?php echo esc_html((string) ($event->ip ?? '—')); ?></code></td>
                         <td>
                             <?php if ($event->id !== null): ?>
-                                <a href="<?php echo esc_url($buildLink(['detail' => (string) $event->id]); ?>">View</a>
+                                <a href="<?php echo esc_url($buildLink(['detail' => (string) $event->id])); ?>">View</a>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -198,15 +198,15 @@ $levelClass = static function (string $level): string {
             </span>
             <span class="pagination-links">
                 <?php if ($page->page > 1): ?>
-                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => '1']); ?>">&laquo;</a>
-                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => (string) ($page->page - 1)]); ?>">&lsaquo;</a>
+                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => '1'])); ?>">&laquo;</a>
+                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => (string) ($page->page - 1)])); ?>">&lsaquo;</a>
                 <?php endif; ?>
                 <span class="paging-input">
                     <?php echo esc_html(sprintf('%d of %d', $page->page, $totalPages)); ?>
                 </span>
                 <?php if ($page->page < $totalPages): ?>
-                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => (string) ($page->page + 1)]); ?>">&rsaquo;</a>
-                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => (string) $totalPages]); ?>">&raquo;</a>
+                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => (string) ($page->page + 1)])); ?>">&rsaquo;</a>
+                    <a class="button" href="<?php echo esc_url($buildLink(['paged' => (string) $totalPages])); ?>">&raquo;</a>
                 <?php endif; ?>
             </span>
         </div></div>
@@ -243,13 +243,13 @@ $levelClass = static function (string $level): string {
 
     <form method="post" action="<?php echo esc_url(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block; margin-right: 8px;" onsubmit="return confirm('Run pruner now? Entries beyond the configured retention window will be deleted.');">
         <input type="hidden" name="action" value="presssentinel_prune_audit_logs">
-        <?php echo wp_kses_post($nonceField($nonceAction); ?>
+        <?php echo wp_kses_post($nonceField($nonceAction)); ?>
         <button type="submit" class="button">Run prune now</button>
     </form>
 
     <form method="post" action="<?php echo esc_url(WpHelper::adminUrl('admin-post.php')); ?>" style="display: inline-block;" onsubmit="return confirm('Permanently delete every audit log entry? This cannot be undone.');">
         <input type="hidden" name="action" value="presssentinel_clear_audit_logs">
-        <?php echo wp_kses_post($nonceField($nonceAction); ?>
+        <?php echo wp_kses_post($nonceField($nonceAction)); ?>
         <button type="submit" class="button button-link-delete">Clear all logs</button>
     </form>
 </div>

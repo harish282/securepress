@@ -464,11 +464,15 @@ final class WpHelper
     public static function parseUrl(string $url, int $component = -1): array|int|string|null
     {
         if (\function_exists('wp_parse_url')) {
-            return \call_user_func('wp_parse_url', $url, $component);
+            $parsed = \call_user_func('wp_parse_url', $url, $component);
+
+            return $parsed === false ? null : $parsed;
         }
 
         // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback when wp_parse_url is unavailable (tests/CLI).
-        return parse_url($url, $component);
+        $parsed = parse_url($url, $component);
+
+        return $parsed === false ? null : $parsed;
     }
 
     public static function adminUrl(string $path = ''): string

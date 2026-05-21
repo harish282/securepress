@@ -114,7 +114,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
                   action="<?php echo esc_url($muLoader['downloadUrl']) ?>"
                   style="display:inline-flex;gap:10px;align-items:center;flex-wrap:wrap;">
                 <input type="hidden" name="action" value="<?php echo esc_attr($muLoader['downloadAction']) ?>">
-                <?php echo wp_kses_post($nonceField($muLoader['downloadAction']) ?>
+                <?php echo wp_kses_post($nonceField($muLoader['downloadAction'])); ?>
                 <button type="submit" class="button button-primary">
                     Download MU loader (.zip)
                 </button>
@@ -145,7 +145,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
     <form method="post" action="<?php echo esc_url($features['formAction']) ?>"
           style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:20px;margin-top:8px;">
         <input type="hidden" name="action" value="<?php echo esc_attr($features['actionName']) ?>">
-        <?php echo wp_kses_post($nonceField($features['nonceAction']) ?>
+        <?php echo wp_kses_post($nonceField($features['nonceAction'])); ?>
 
         <table class="form-table" role="presentation" style="margin-top:0;">
             <tbody>
@@ -201,7 +201,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
             'Login lockout, two-factor enforcement, session tracking, and suspicious-login alerts.',
             $links['authentication'],
             'Configure authentication',
-        ); ?>
+        )); ?>
 
         <?php echo wp_kses_post($card(
             'Security Headers',
@@ -211,7 +211,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
             'HSTS, CSP, X-Frame-Options, Referrer-Policy, Permissions-Policy, and X-Content-Type-Options.',
             $links['headers'],
             'Configure headers',
-        ); ?>
+        )); ?>
 
         <?php echo wp_kses_post($card(
             'File Integrity',
@@ -221,7 +221,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
                 : 'No open findings. Core, plugins, themes and uploads are clean as of the last scan.',
             $links['integrity'],
             'Review file integrity',
-        ); ?>
+        )); ?>
 
         <?php echo wp_kses_post($card(
             'Audit Log',
@@ -229,7 +229,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
             'Plugin activations, role changes, file-editor edits, authentication events, and (Pro) WooCommerce decisions.',
             $links['auditLog'],
             'Open audit log',
-        ); ?>
+        )); ?>
 
         <?php
         $licenseMenuVisible = $license['menuVisible'] ?? true;
@@ -245,7 +245,7 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
             $licenseBody,
             $licenseMenuVisible ? $links['license'] : null,
             $licenseMenuVisible ? ($license['isPro'] ? 'Manage license' : 'Activate Pro') : '',
-        ); ?>
+        )); ?>
     </div>
 
     <hr style="margin-top:28px;">
