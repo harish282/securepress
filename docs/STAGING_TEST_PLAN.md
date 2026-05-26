@@ -390,5 +390,5 @@ A subset of this plan is covered by Cypress specs under `cypress/e2e/staging/`. 
 - [CYPRESS_E2E.md](CYPRESS_E2E.md) — staging E2E runner and env flags  
 - [USAGE.md](USAGE.md) — developer APIs and configuration reference  
 - [MU_LOADER_INSTALL.md](MU_LOADER_INSTALL.md) — early load setup  
-- [PRIVACY.md](../PRIVACY.md) — data stored and third-party requests  
+- [PRIVACY.md](PRIVACY.md) — data stored and third-party requests  
 - [README.md](../README.md) — feature list and implementation status  

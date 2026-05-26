@@ -2,7 +2,7 @@
 #
 # Package Press Sentinel for WordPress.
 # Excludes tests, dev tooling, git metadata, and Composer dev dependencies.
-# Ships readme.txt, PRIVACY.md, and license.txt (required for WordPress.org).
+# Ships readme.txt and license.txt (required for WordPress.org). Privacy policy: docs/PRIVACY.md.
 #
 # Usage (from repo root):
 #   bash scripts/build-release-zip.sh dev
@@ -87,11 +87,15 @@ stage_plugin_to() {
   copy_if_exists "$dest" "src"
   copy_if_exists "$dest" "resources"
   copy_if_exists "$dest" "mu-loader"
-  copy_if_exists "$dest" "README.md"
+  for doc in docs/WHY_PRESSSENTINEL.md docs/USAGE.md docs/MU_LOADER_INSTALL.md docs/STAGING_TEST_PLAN.md docs/PRIVACY.md; do
+    if [[ -f "$ROOT/$doc" ]]; then
+      mkdir -p "$dest/docs"
+      cp -a "$ROOT/$doc" "$dest/docs/"
+    fi
+  done
 
-  # Required for WordPress.org (readme parser, privacy policy link, GPL distribution).
+  # Required for WordPress.org (readme parser, GPL distribution). Only readme.txt at plugin root (Plugin Check).
   copy_required "$dest" "readme.txt"
-  copy_required "$dest" "PRIVACY.md"
   copy_required "$dest" "license.txt"
 
   # Storage: ship directory skeleton + lockdown files only (never local *.log).
