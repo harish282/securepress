@@ -24,7 +24,7 @@ PressSentinel is **security infrastructure** for WordPress. It does **not** oper
 | Data sent to the plugin author | **No** telemetry or analytics to PressSentinel by default |
 | Data sent to third parties | **Only** when a documented feature makes an outbound request (see below) |
 | Visitor tracking / profiling | **No** cross-site tracking or ad networks |
-| Account required with vendor | **No** (offline license validation; optional license key stored locally) |
+| Account required with vendor | **No** (free plugin; no license account) |
 | Email | Uses WordPress `wp_mail()` only when you enable notifications (e.g. 2FA, suspicious login alerts) |
 
 ---
@@ -36,7 +36,7 @@ Personal data is processed **only when the relevant features are enabled** and a
 ### Identifiers and account data
 
 - **WordPress user ID**, **username**, and **email address** (from the logged-in user or order context).
-- **License key** (if the administrator saves one on **PressSentinel → License**), stored in the database option `presssentinel_pro_license`.
+- **License key** — not used in the free WordPress.org edition. Commercial builds that add the optional licensing module may store a key in `presssentinel_pro_license`.
 
 ### Network and device data
 
@@ -71,7 +71,7 @@ When enabled, request counts are stored in **transients** keyed by user ID and/o
 
 Plugin settings are stored in WordPress **options** (for example `presssentinel_auth_hardening`, `presssentinel_audit_log`, `presssentinel_security_headers`, `presssentinel_integrity`, `presssentinel_rate_limit`, `presssentinel_url_disguise`, `presssentinel_woocommerce_protection`).  
 A per-site **license HMAC secret** is stored in `presssentinel_license_hmac_secret` (used to verify offline license keys; treat as confidential).  
-Beta trial start time may be stored in `presssentinel_beta_trial_started_at`.
+Beta trial data (`presssentinel_beta_trial_started_at`) applies only if you use the optional commercial licensing module.
 
 ### Log files
 
@@ -110,7 +110,7 @@ All data listed above is stored **on the same server** as the WordPress installa
 | Login lockout transients | Expire automatically after the lockout/window TTL |
 | Rate limit / WooCommerce abuse transients | Expire automatically after their window TTL |
 | 2FA challenge transients | Short TTL (minutes) |
-| License key | Until removed by an administrator |
+| License key (commercial add-on only) | Until removed by an administrator |
 | Beta trial timestamp | Until removed manually or on uninstall (no automatic erasure) |
 
 Administrators can clear audit logs from the admin UI and adjust retention in plugin settings.

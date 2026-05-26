@@ -4,10 +4,7 @@ declare(strict_types=1);
 
 namespace PressSentinel\WooCommerce\Admin;
 
-use PressSentinel\Admin\LicensePage;
 use PressSentinel\Admin\PressSentinelMenuPage;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\Licensing\LicenseStatus;
 use PressSentinel\Core\Support\WpHelper;
 use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
 
@@ -20,9 +17,6 @@ use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
  * that matter most. Power-users can still hand-edit the JSON in
  * `config/plugin.php` for finer control.
  *
- * Pro gating: when the license isn't active, the page renders a "Upgrade to Pro"
- * panel instead of the form. We still register the menu item so admins can SEE the
- * feature exists — discovery beats hiding it altogether for conversion reasons.
  */
 final class WooCommerceProtectionPage
 {
@@ -31,7 +25,6 @@ final class WooCommerceProtectionPage
 
     public function __construct(
         private readonly WooCommerceProtectionOptions $options,
-        private readonly LicenseManager $license,
     ) {
     }
 
@@ -68,20 +61,10 @@ final class WooCommerceProtectionPage
             return;
         }
 
-        $status = $this->license->status();
-        $isPro = $this->license->isPro();
         $values = $this->options->all();
 
         echo '<div class="wrap">';
         echo '<h1>PressSentinel &mdash; WooCommerce Protection</h1>';
-
-        $this->renderLicenseBanner($status, $isPro);
-
-        if (!$isPro) {
-            $this->renderUpgradePrompt();
-            echo '</div>';
-            return;
-        }
 
         if (!class_exists('WooCommerce', false)) {
             echo '<div class="notice notice-warning"><p>WooCommerce does not appear to be active. Activate WooCommerce to enable this module.</p></div>';
@@ -99,55 +82,6 @@ final class WooCommerceProtectionPage
         \call_user_func('submit_button');
         echo '</form>';
         echo '</div>';
-    }
-
-    private function renderLicenseBanner(LicenseStatus $status, bool $isPro): void
-    {
-        if ($isPro) {
-            if ($status->state === LicenseStatus::STATE_EARLY_ACCESS) {
-                echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>'
-                    . '<strong>Early access.</strong> WooCommerce Protection and the rest of the Pro tier are '
-                    . 'unlocked without a commercial license. Optional keys are managed on the '
-                    . '<a href="' . esc_url(PressSentinelMenuPage::submenuUrl(LicensePage::PAGE_SLUG)) . '">License</a> page.</p></div>';
-
-                return;
-            }
-
-            if ($status->state === LicenseStatus::STATE_BETA_TRIAL) {
-                $days = $status->daysRemaining();
-                echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>'
-                    . '<strong>Beta trial active.</strong> WooCommerce Protection and the rest of the Pro tier are '
-                    . 'unlocked during your evaluation period'
-                    . ($days !== null ? ' (about <strong>' . (int) $days . '</strong> day(s) remaining)' : '')
-                    . '.</p></div>';
-
-                return;
-            }
-
-            $remaining = $status->daysRemaining();
-            $msg = '<strong>Pro license active.</strong> Tier: <code>' . esc_html($status->tier) . '</code>';
-            if ($remaining !== null) {
-                $msg .= ' &mdash; renews in ' . (int) $remaining . ' day(s).';
-            }
-            echo '<div class="notice notice-success inline" style="margin-bottom:1em;"><p>' . wp_kses_post($msg) . '</p></div>';
-            return;
-        }
-        $reason = $status->reason !== '' ? $status->reason : 'No active Pro license.';
-        $licenseHint = LicensePage::shouldShowAdminMenu($status)
-            ? ' Configure a license on the <a href="'
-                . esc_url(PressSentinelMenuPage::submenuUrl(LicensePage::PAGE_SLUG))
-                . '">License</a> page.'
-            : '';
-        echo '<div class="notice notice-warning inline" style="margin-bottom:1em;"><p>'
-            . '<strong>' . esc_html($reason) . '</strong>' . wp_kses_post($licenseHint) . '</p></div>';
-    }
-
-    private function renderUpgradePrompt(): void
-    {
-        echo '<div class="notice notice-info"><p>'
-            . 'WooCommerce Protection is part of the <strong>PressSentinel Pro</strong> tier. '
-            . 'It includes behavioural fake-checkout, registration spam, API abuse, and cart abuse defences.'
-            . '</p></div>';
     }
 
     /**

@@ -9,7 +9,6 @@ use ReflectionClass;
 use PressSentinel\Admin\AuditLogPage;
 use PressSentinel\Admin\FileIntegrityPage;
 use PressSentinel\Admin\HealthDiagnosticsPage;
-use PressSentinel\Admin\LicensePage;
 use PressSentinel\Tests\Stubs\WpStubState;
 
 /**
@@ -89,15 +88,6 @@ final class AdminPageRegistrationTest extends TestCase
             WpStubState::hasAction('admin_menu'),
             'HealthDiagnosticsPage must register admin_menu to add its submenu.'
         );
-    }
-
-    public function test_license_page_registers_save_and_clear_admin_post_hooks(): void
-    {
-        $page = (new ReflectionClass(LicensePage::class))->newInstanceWithoutConstructor();
-        $page->register();
-
-        self::assertTrue(WpStubState::hasAction('admin_post_presssentinel_license_save'));
-        self::assertTrue(WpStubState::hasAction('admin_post_presssentinel_license_clear'));
     }
 
     /**

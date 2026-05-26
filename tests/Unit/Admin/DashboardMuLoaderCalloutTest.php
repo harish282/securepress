@@ -16,9 +16,6 @@ use PressSentinel\Core\Config\Config;
 use PressSentinel\Core\Headers\SecurityHeadersOptions;
 use PressSentinel\Core\Integrity\ArrayFindingRepository;
 use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\Licensing\LicenseStatus;
-use PressSentinel\Core\Licensing\LicenseValidatorInterface;
 use PressSentinel\Core\RateLimit\RateLimitOptions;
 use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
 use PressSentinel\Core\View\View;
@@ -132,14 +129,6 @@ final class DashboardMuLoaderCalloutTest extends TestCase
 
         $status = new MuLoaderStatus($template, $muPluginsDir);
 
-        $validator = new class () implements LicenseValidatorInterface {
-            public function validate(string $key): LicenseStatus
-            {
-                return LicenseStatus::none();
-            }
-        };
-        $license = new LicenseManager($validator, new Config());
-
         $features = new FeatureRegistry(
             new AuditLogOptions($config),
             new AuthHardeningOptions($config),
@@ -148,13 +137,12 @@ final class DashboardMuLoaderCalloutTest extends TestCase
             new WooCommerceProtectionOptions($config),
             new RateLimitOptions($config),
             new UrlDisguiseOptions($config),
-            $license,
         );
 
         $viewsDir = \dirname(__DIR__, 3) . '/resources/views';
 
         return new PressSentinelMenuPage(
-            $license,
+            $config,
             new AuthHardeningOptions($config),
             new SecurityHeadersOptions($config),
             new IntegrityOptions($config),

@@ -17,9 +17,6 @@ use PressSentinel\Core\Config\Config;
 use PressSentinel\Core\Headers\SecurityHeadersOptions;
 use PressSentinel\Core\Integrity\IntegrityOptions;
 use PressSentinel\Core\Integrity\IntegritySchema;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\Licensing\LicenseStatus;
-use PressSentinel\Core\Licensing\LicenseValidatorInterface;
 use PressSentinel\Core\RateLimit\RateLimitOptions;
 use PressSentinel\Core\Support\WpHelper;
 use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
@@ -97,19 +94,11 @@ final class HealthDiagnosticsCollectorTest extends TestCase
         self::assertContains('audit_log', $keys);
         self::assertContains('mu_loader', $keys);
         self::assertContains('rate_limit_http', $keys);
-        self::assertContains('license_hmac_secret', $keys);
     }
 
     private function collector(): HealthDiagnosticsCollector
     {
         $config = new Config(require dirname(__DIR__, 3) . '/config/plugin.php');
-        $validator = new class implements LicenseValidatorInterface {
-            public function validate(string $key): LicenseStatus
-            {
-                return LicenseStatus::none();
-            }
-        };
-        $license = new LicenseManager($validator, $config);
 
         return new HealthDiagnosticsCollector(
             new FeatureRegistry(
@@ -120,9 +109,7 @@ final class HealthDiagnosticsCollectorTest extends TestCase
                 new WooCommerceProtectionOptions($config),
                 new RateLimitOptions($config),
                 new UrlDisguiseOptions($config),
-                $license,
             ),
-            $license,
             new SecurityHeadersOptions($config),
             new UrlDisguiseOptions($config),
             new RateLimitOptions($config),

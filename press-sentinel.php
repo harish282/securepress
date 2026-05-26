@@ -27,13 +27,6 @@ require_once PRESS_SENTINEL_SRC_PATH . '/Core/Plugin.php';
 
 \PressSentinel\Core\Support\Autoloader::register();
 
-\register_activation_hook(
-    PRESS_SENTINEL_FILE,
-    static function (): void {
-        \PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner::ensure();
-    }
-);
-
 if (!defined('PRESS_SENTINEL_BOOTED')) {
     define('PRESS_SENTINEL_BOOTED', true);
     (new \PressSentinel\Core\Plugin())->boot();

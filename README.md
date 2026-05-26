@@ -2,7 +2,7 @@
 Contributors: harish282
 Tags: security, two-factor, audit, login, woocommerce
 Requires at least: 6.4
-Tested up to: 6.7
+Tested up to: 7.0
 Requires PHP: 8.2
 Stable tag: 0.1.0
 License: GPLv2 or later
@@ -22,7 +22,8 @@ Laravel-inspired security infrastructure for WordPress — middleware, developer
 
 | | |
 | --- | --- |
-| **Version** | 0.1.0 (beta) |
+| **Version** | 0.1.0 |
+| **Edition** | Free — all features included |
 | **PHP** | 8.2+ |
 | **WordPress** | 6.4+ |
 | **Tests** | 509 PHPUnit tests passing |
@@ -57,7 +58,7 @@ This table maps [presssentinel_wordpress_security_plugin_project_plan.md](presss
 | --- | --- | --- |
 | Two-factor (TOTP, email OTP, recovery codes) | **Shipped** | `TwoFactorService`, wp-login challenge flow; tested |
 | Device & session management | **Shipped** | Custom sessions table, revoke, pruning; tested |
-| WooCommerce security pack | **Shipped (Pro)** | Checkout/cart/registration/API pipelines; PHPUnit coverage |
+| WooCommerce security pack | **Shipped** | Checkout/cart/registration/API pipelines; PHPUnit coverage |
 | Laravel-style validation layer | **Not shipped** | No `Validator::make()` module yet |
 
 ### Version 2.0 / advanced (plan §8)
@@ -78,7 +79,7 @@ This table maps [presssentinel_wordpress_security_plugin_project_plan.md](presss
 | 3 — Auth & abuse | Lockout, suspicious login, REST throttle | **Done** — XML-RPC not a separate module; may fall under global/front-end limits |
 | 4 — CSRF, signed URLs, headers | Integrity controls | **Done** |
 | 5 — Audit & admin UX | Log UI, retention | **Mostly done** — **audit export (CSV) not implemented** |
-| 6 — WooCommerce | Abuse prevention pack | **Done in code** — requires WooCommerce + Pro/eval on site for live checks |
+| 6 — WooCommerce | Abuse prevention pack | **Done in code** — requires WooCommerce active on site for live checks |
 | 7 — Beta launch | Security review, docs, release | **In progress** — Plugin Check clean; formal OWASP checklist not automated in repo |
 
 ### Architecture plan vs codebase
@@ -99,18 +100,18 @@ This table maps [presssentinel_wordpress_security_plugin_project_plan.md](presss
 | Safe mode recovery | Shipped |
 | MU loader early bootstrap | Shipped |
 | Health diagnostics admin page | Shipped |
-| Offline Pro licensing (HMAC) | Shipped |
+| Optional offline licensing (HMAC) | **Extracted** | `packages/press-sentinel-licensing/` |
 
 ## Working as intended?
 
-**Automated verification:** `vendor/bin/phpunit` — **509 tests, 1372 assertions, all passing** (security middleware, lockout, 2FA, integrity, WooCommerce pipelines, licensing, signed URLs, CSRF).
+**Automated verification:** `vendor/bin/phpunit` — all unit tests passing (security middleware, lockout, 2FA, integrity, WooCommerce pipelines, signed URLs, CSRF).
 
 **Manual verification recommended on a staging site:**
 
 * Enable auth hardening → confirm lockout after failed logins and 2FA challenge on wp-login.
 * Toggle security headers → inspect response headers on front end and REST.
 * Run a file integrity scan → confirm findings table updates.
-* With WooCommerce + Pro/eval → place test checkout/cart actions and review audit log / blocked responses.
+* With WooCommerce active → place test checkout/cart actions and review audit log / blocked responses.
 * Enable global rate limit → confirm HTTP 429 on burst REST or front-end requests (not wp-admin).
 
 **Known gaps (functionality unchanged by Plugin Check fixes):** Plugin Check work was PHPCS suppressions, `WpHelper` input wrappers, and view syntax fixes — no intentional weakening of security logic. Remaining product gaps are listed above (export, validation layer, full-site auto-middleware kernel, SaaS).
@@ -128,7 +129,15 @@ npm install
 npm run test:e2e
 ```
 
-Configuration: `config/plugin.php` and optional `wp-config.php` constants (`PRESS_SENTINEL_SAFE_MODE`, `PRESS_SENTINEL_PRO_LICENSE`, `PRESS_SENTINEL_LICENSE_SECRET`). See [docs/USAGE.md](docs/USAGE.md) and [PRIVACY.md](PRIVACY.md).
+Configuration: `config/plugin.php` and optional `wp-config.php` constants (`PRESS_SENTINEL_SAFE_MODE`, `PRESS_SENTINEL_INTERNAL_SECRET`). Set `support.donation_url` for optional tips via [Ko-fi](https://ko-fi.com/). See [docs/USAGE.md](docs/USAGE.md) and [PRIVACY.md](PRIVACY.md).
+
+### Optional licensing module (commercial builds)
+
+```bash
+bash packages/press-sentinel-licensing/scripts/build-licensing-zip.sh
+```
+
+See [packages/press-sentinel-licensing/INTEGRATION.md](packages/press-sentinel-licensing/INTEGRATION.md).
 
 ## Documentation
 

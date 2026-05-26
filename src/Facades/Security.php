@@ -26,8 +26,8 @@ use PressSentinel\Sdk\AuditApi;
 use PressSentinel\Sdk\Csrf\CsrfTokenManager;
 use PressSentinel\Sdk\Events\EventDispatcher;
 use PressSentinel\Sdk\Exceptions\RateLimitExceededException;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\Licensing\LicenseStatus;
+use PressSentinel\Core\Edition\EditionAccess;
+use PressSentinel\Core\Edition\EditionStatus;
 use PressSentinel\Sdk\IntegrityApi;
 use PressSentinel\Sdk\LockoutApi;
 use PressSentinel\Sdk\WooCommerceApi;
@@ -321,29 +321,27 @@ final class Security
     }
 
     /**
-     * True if the current install has an active Pro license.
-     *
-     * Cheap to call (resolves through `LicenseManager`'s per-request cache).
-     * Plugins / extensions can use this to gate their own Pro-only UI:
-     *
-     *     if (Security::isPro()) { ... }
+     * True when premium-tier features are available. The free distribution always returns true.
      */
     public static function isPro(): bool
     {
-        if (!self::container()->has(LicenseManager::class)) {
-            return false;
+        if (!self::container()->has(EditionAccess::class)) {
+            return true;
         }
 
-        return self::container()->get(LicenseManager::class)->isPro();
+        return self::container()->get(EditionAccess::class)->isPro();
     }
 
-    public static function licenseStatus(): LicenseStatus
+    /**
+     * Edition metadata for admin UI. Free builds return {@see EditionStatus::free()}.
+     */
+    public static function licenseStatus(): EditionStatus
     {
-        if (!self::container()->has(LicenseManager::class)) {
-            return LicenseStatus::none();
+        if (!self::container()->has(EditionAccess::class)) {
+            return EditionStatus::free();
         }
 
-        return self::container()->get(LicenseManager::class)->status();
+        return self::container()->get(EditionAccess::class)->status();
     }
 
     public static function events(): EventDispatcher

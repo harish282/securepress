@@ -11,9 +11,6 @@ use PressSentinel\Core\Auth\AuthHardeningOptions;
 use PressSentinel\Core\Config\Config;
 use PressSentinel\Core\Headers\SecurityHeadersOptions;
 use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\Licensing\LicenseStatus;
-use PressSentinel\Core\Licensing\LicenseValidatorInterface;
 use PressSentinel\Core\RateLimit\RateLimitOptions;
 use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
 use PressSentinel\Core\Support\WpHelper;
@@ -138,36 +135,9 @@ final class FeatureRegistryTest extends TestCase
         self::assertSame(['audit_log'], $changed);
     }
 
-    public function test_is_pro_reflects_license_manager(): void
-    {
-        // Default validator: no license = not pro.
-        $free = $this->makeRegistry();
-        self::assertFalse($free->isPro());
-
-        // Same fixture but with a static "always pro" validator.
-        $pro = $this->makeRegistry(isPro: true);
-        self::assertTrue($pro->isPro());
-    }
-
-    private function makeRegistry(bool $isPro = false): FeatureRegistry
+    private function makeRegistry(): FeatureRegistry
     {
         $config = new Config();
-        $validator = new class ($isPro) implements LicenseValidatorInterface {
-            public function __construct(private readonly bool $isPro)
-            {
-            }
-
-            public function validate(string $key): LicenseStatus
-            {
-                return $this->isPro
-                    ? LicenseStatus::active('pro', null)
-                    : LicenseStatus::none();
-            }
-        };
-        if ($isPro) {
-            // Any non-empty key triggers the validator above.
-            WpStubState::$options[LicenseManager::OPTION_NAME] = 'KEY-FOR-TESTING';
-        }
 
         return new FeatureRegistry(
             new AuditLogOptions($config),
@@ -177,7 +147,6 @@ final class FeatureRegistryTest extends TestCase
             new WooCommerceProtectionOptions($config),
             new RateLimitOptions($config),
             new UrlDisguiseOptions($config),
-            new LicenseManager($validator, new Config()),
         );
     }
 }
