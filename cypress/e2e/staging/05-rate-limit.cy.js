@@ -15,20 +15,25 @@ describe('Global rate limiting', () => {
     cy.wpLogin()
     cy.setDashboardFeature('rate_limit', false)
     cy.visitPressSentinel('presssentinel-rate-limit')
-    cy.get(`input[name="${enabled}"]`).uncheck({ force: true })
-    cy.saveWpOptionsForm()
+    cy.get('body').then(($body) => {
+      if ($body.find(`input[type="checkbox"][name="${enabled}"]`).length) {
+        cy.uncheckWpSetting(enabled)
+        cy.saveWpOptionsForm()
+      }
+    })
   })
 
   it('returns 429 on REST after burst when limit is low', () => {
     cy.setDashboardFeature('rate_limit', true)
     cy.visitPressSentinel('presssentinel-rate-limit')
-    cy.get(`input[name="${enabled}"]`).check({ force: true })
+    cy.checkWpSetting(enabled)
     cy.get(`input[name="${limit}"]`).clear().type('10')
     cy.get(`input[name="${window}"]`).clear().type('60')
     cy.saveWpOptionsForm()
 
-    cy.burstRest(restPath, 15).then((codes) => {
-      expect(codes.filter((c) => c === 429).length, '429 responses').to.be.gte(1)
+    cy.burstRest(restPath, 20).then((codes) => {
+      const throttled = codes.filter((c) => c === 429).length
+      expect(throttled, `expected 429s, got statuses: ${codes.join(',')}`).to.be.gte(1)
     })
 
     cy.visitPressSentinel('presssentinel')

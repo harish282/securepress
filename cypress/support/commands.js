@@ -23,8 +23,17 @@ Cypress.Commands.add('wpLogin', () => {
 /**
  * @param {PressSentinelPage} page
  */
-Cypress.Commands.add('visitPressSentinel', (page = 'presssentinel') => {
-  cy.visit(`/wp-admin/admin.php?page=${page}`)
+Cypress.Commands.add('visitPressSentinel', (page = 'presssentinel', options = {}) => {
+  cy.visit(`/wp-admin/admin.php?page=${page}`, options)
+})
+
+/** WordPress Settings API checkboxes are preceded by a hidden `value="0"` input. */
+Cypress.Commands.add('checkWpSetting', (fieldName) => {
+  cy.get(`input[type="checkbox"][name="${fieldName}"]`).check({ force: true })
+})
+
+Cypress.Commands.add('uncheckWpSetting', (fieldName) => {
+  cy.get(`input[type="checkbox"][name="${fieldName}"]`).uncheck({ force: true })
 })
 
 /**
@@ -49,7 +58,10 @@ Cypress.Commands.add('setDashboardFeature', (featureKey, enable) => {
  */
 Cypress.Commands.add('saveWpOptionsForm', () => {
   cy.get('#submit').click()
-  cy.contains('.notice-success', 'Settings saved', { timeout: 15000 }).should('be.visible')
+  // WP 6.x shows a classic notice; WP 7+ often only sets settings-updated in the redirect URL.
+  cy.location('search', { timeout: 15000 }).should((search) => {
+    expect(search).to.match(/settings-updated=true/)
+  })
 })
 
 /**

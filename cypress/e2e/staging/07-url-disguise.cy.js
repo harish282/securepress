@@ -14,22 +14,23 @@ describe('URL disguise', () => {
     cy.wpLogin()
   })
 
-  after(() => {
+  after(function () {
+    if (!Cypress.env('runDestructive')) {
+      return
+    }
     cy.wpLogin()
     cy.setDashboardFeature('url_disguise', false)
     cy.visitPressSentinel('presssentinel-url-disguise')
-    cy.get('input[name="presssentinel_url_disguise[enabled]"]').uncheck({ force: true })
+    cy.uncheckWpSetting('presssentinel_url_disguise[enabled]')
     cy.saveWpOptionsForm()
   })
 
   it('serves login at custom slug and blocks default when configured', () => {
     cy.setDashboardFeature('url_disguise', true)
     cy.visitPressSentinel('presssentinel-url-disguise')
-    cy.get('input[name="presssentinel_url_disguise[enabled]"]').check({ force: true })
+    cy.checkWpSetting('presssentinel_url_disguise[enabled]')
     cy.get('input[name="presssentinel_url_disguise[login_slug]"]').clear().type(slug)
-    cy.get('input[name="presssentinel_url_disguise[block_default_wp_login]"]').check({
-      force: true,
-    })
+    cy.checkWpSetting('presssentinel_url_disguise[block_default_wp_login]')
     cy.saveWpOptionsForm()
 
     cy.visit('/wp-admin/options-permalink.php')

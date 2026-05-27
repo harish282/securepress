@@ -28,6 +28,7 @@ describe('Audit log', () => {
       .clear()
       .type('90')
     cy.saveWpOptionsForm()
+    cy.get('input[name="presssentinel_audit_log[retention_days]"]').should('have.value', '90')
   })
 
   it('runs prune now from maintenance section', () => {

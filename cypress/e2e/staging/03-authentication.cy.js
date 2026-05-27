@@ -33,7 +33,7 @@ describe('Authentication hardening', () => {
         method: 'POST',
         url: '/wp-login.php',
         form: true,
-        body: { log: user, pwd: 'wrong-password-intentionally', wp-submit: 'Log In' },
+        body: { log: user, pwd: 'wrong-password-intentionally', 'wp-submit': 'Log In' },
         failOnStatusCode: false,
       })
       // Repeat via API is environment-specific; manual follow-up per STAGING_TEST_PLAN §5.1

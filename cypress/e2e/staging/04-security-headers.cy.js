@@ -14,9 +14,9 @@ describe('Security headers', () => {
   after(() => {
     cy.wpLogin()
     cy.visitPressSentinel('presssentinel-security-headers')
-    cy.get(`input[name="${master}"]`).then(($el) => {
+    cy.get(`input[type="checkbox"][name="${master}"]`).then(($el) => {
       if ($el.prop('checked')) {
-        cy.wrap($el).click({ force: true })
+        cy.uncheckWpSetting(master)
         cy.saveWpOptionsForm()
       }
     })
@@ -24,12 +24,12 @@ describe('Security headers', () => {
 
   it('enables X-Frame-Options on the front end', () => {
     cy.visitPressSentinel('presssentinel-security-headers')
-    cy.get(`input[name="${master}"]`).check({ force: true })
-    cy.get(`input[name="${xfoEnabled}"]`).check({ force: true })
+    cy.checkWpSetting(master)
+    cy.checkWpSetting(xfoEnabled)
     cy.get(`select[name="${xfoValue}"]`).select('SAMEORIGIN')
     cy.saveWpOptionsForm()
 
-    cy.request('/').then((res) => {
+    cy.request({ url: '/', failOnStatusCode: false }).then((res) => {
       const h = res.headers['x-frame-options'] || res.headers['X-Frame-Options']
       expect(h, 'X-Frame-Options response header').to.match(/SAMEORIGIN/i)
     })
@@ -37,7 +37,7 @@ describe('Security headers', () => {
 
   it('stops emitting headers when master switch is off', () => {
     cy.visitPressSentinel('presssentinel-security-headers')
-    cy.get(`input[name="${master}"]`).uncheck({ force: true })
+    cy.uncheckWpSetting(master)
     cy.saveWpOptionsForm()
 
     cy.request('/').then((res) => {

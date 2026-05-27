@@ -29,6 +29,8 @@ module.exports = defineConfig({
     runDestructive: false,
     /** Set true when WooCommerce + Pro are active on staging. */
     runWooCommerce: false,
+    /** Set true only when a real PressSentinel license is installed. */
+    hasLicense: false,
     /** Custom login slug when testing URL disguise (section 9). */
     urlDisguiseSlug: 'secure-login-staging-cy',
   },
