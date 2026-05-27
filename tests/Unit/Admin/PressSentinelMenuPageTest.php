@@ -13,9 +13,6 @@ use PressSentinel\Core\Auth\AuthHardeningOptions;
 use PressSentinel\Core\Config\Config;
 use PressSentinel\Core\Headers\SecurityHeadersOptions;
 use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\Licensing\LicenseStatus;
-use PressSentinel\Core\Licensing\LicenseValidatorInterface;
 use PressSentinel\Core\RateLimit\RateLimitOptions;
 use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
 use PressSentinel\Tests\Stubs\WpDieException;
@@ -182,12 +179,6 @@ final class PressSentinelMenuPageTest extends TestCase
     private function makePage(): PressSentinelMenuPage
     {
         $config = new Config();
-        $validator = new class () implements LicenseValidatorInterface {
-            public function validate(string $key): LicenseStatus
-            {
-                return LicenseStatus::none();
-            }
-        };
         $registry = new FeatureRegistry(
             new AuditLogOptions($config),
             new AuthHardeningOptions($config),
@@ -196,7 +187,6 @@ final class PressSentinelMenuPageTest extends TestCase
             new WooCommerceProtectionOptions($config),
             new RateLimitOptions($config),
             new UrlDisguiseOptions($config),
-            new LicenseManager($validator, $config),
         );
 
         $page = (new ReflectionClass(PressSentinelMenuPage::class))->newInstanceWithoutConstructor();

@@ -7,22 +7,18 @@ if (! defined('ABSPATH')) {
 
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
 
-
 use PressSentinel\Admin\FeatureDescriptor;
-use PressSentinel\Core\Licensing\LicenseStatus;
 use PressSentinel\Core\Support\WpHelper;
 
-// Nonce fields must be echoed via WpHelper::adminNonceField() — wp_kses_post() strips hidden inputs.
-
 /**
- * @var array{isPro:bool,status:LicenseStatus,menuVisible:bool}             $license
  * @var array{enabled:bool}                                                  $auth
  * @var array{enabledCount:int,totalCount:int,masterEnabled:bool}           $headers
  * @var array{enabled:bool,openFindings:int}                                 $integrity
  * @var array{totalEvents:int}                                               $audit
- * @var array{list:list<FeatureDescriptor>,isPro:bool,formAction:string,nonceAction:string,actionName:string} $features
+ * @var array{list:list<FeatureDescriptor>,formAction:string,nonceAction:string,actionName:string} $features
+ * @var array{review_url:string,donation_url:string,donation_label:string} $support
  * @var string|null                                                          $status
- * @var array{authentication:string,headers:string,integrity:string,auditLog:string,license:string} $links
+ * @var array{authentication:string,headers:string,integrity:string,auditLog:string} $links
  * @var array{isInstalled:bool,expectedPath:string,expectedDirectory:string,loaderFilename:string,downloadAction:string,downloadUrl:string} $muLoader
  */
 
@@ -52,22 +48,6 @@ $card = static function (string $title, string $statusHtml, string $bodyHtml, ?s
         . '</div>';
 };
 
-$licenseStatus = $license['status'];
-$licenseLabel = match ($licenseStatus->state) {
-    LicenseStatus::STATE_ACTIVE => 'Active (' . $licenseStatus->tier . ')',
-    LicenseStatus::STATE_EARLY_ACCESS => 'Early access (Pro)',
-    LicenseStatus::STATE_BETA_TRIAL => 'Beta trial'
-        . ($licenseStatus->expiresAt !== null
-            ? ' (~' . (string) (int) $licenseStatus->daysRemaining() . ' d left)'
-            : ''),
-    LicenseStatus::STATE_EXPIRED => 'Expired',
-    LicenseStatus::STATE_INVALID => 'Invalid',
-    default => 'Not configured',
-};
-
-// Parse the redirect status flag (set by handleSaveFeatures). Shape is
-// "saved:N" where N is the number of toggles that actually changed. We
-// keep the parser tolerant — an unrecognised flag just renders nothing.
 $savedCount = null;
 if (is_string($status) && str_starts_with($status, 'saved:')) {
     $candidate = substr($status, strlen('saved:'));
@@ -75,6 +55,10 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
         $savedCount = (int) $candidate;
     }
 }
+
+$reviewUrl = $support['review_url'] ?? '';
+$donationUrl = $support['donation_url'] ?? '';
+$donationLabel = $support['donation_label'] ?? 'Support on Ko-fi';
 
 ?>
 <div class="wrap">
@@ -130,7 +114,46 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
         </div>
     <?php endif; ?>
 
-    <h2 style="margin-top:24px;">Feature toggles</h2>
+    <h2 style="margin-top:28px;">Enjoying PressSentinel?</h2>
+    <p class="description">PressSentinel is free and open source. A short review or a small donation helps other site owners discover it and supports ongoing development.</p>
+    <div style="display:grid;grid-template-columns:repeat(2,minmax(280px,1fr));gap:16px;margin-top:8px;">
+        <div style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:12px;">
+            <h3 style="margin:0;font-size:15px;">Leave a review</h3>
+            <p style="margin:0;color:#50575e;font-size:13px;line-height:1.6;">
+                Honest ratings on WordPress.org help other administrators choose security tools they can trust.
+                If PressSentinel saved you time or caught something important, please share your experience.
+            </p>
+            <?php if ($reviewUrl !== ''): ?>
+                <p style="margin:0;">
+                    <a class="button button-primary" href="<?php echo esc_url($reviewUrl) ?>" target="_blank" rel="noopener noreferrer">
+                        Rate PressSentinel on WordPress.org
+                    </a>
+                </p>
+            <?php else: ?>
+                <p class="description" style="margin:0;">Set <code>support.review_url</code> in <code>config/plugin.php</code> to show the review button.</p>
+            <?php endif; ?>
+        </div>
+        <div style="background:#fff;border:1px solid #dcdcde;border-radius:6px;padding:20px;display:flex;flex-direction:column;gap:12px;">
+            <h3 style="margin:0;font-size:15px;">Support development</h3>
+            <p style="margin:0;color:#50575e;font-size:13px;line-height:1.6;">
+                Donations are optional and go toward maintenance, documentation, and new security features.
+                Tips are handled on <a href="https://ko-fi.com/" target="_blank" rel="noopener noreferrer">Ko-fi</a>.
+            </p>
+            <?php if ($donationUrl !== ''): ?>
+                <p style="margin:0;">
+                    <a class="button button-primary" href="<?php echo esc_url($donationUrl) ?>" target="_blank" rel="noopener noreferrer">
+                        <?php echo esc_html($donationLabel) ?>
+                    </a>
+                </p>
+            <?php else: ?>
+                <p class="description" style="margin:0;">
+                    Set <code>support.donation_url</code> in <code>config/plugin.php</code> (for example your Ko-fi page).
+                </p>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <h2 style="margin-top:32px;">Feature toggles</h2>
     <p class="description">Turn entire PressSentinel modules on or off in one click. Detailed per-module settings stay on each module's dedicated page &mdash; this only flips the master switch.</p>
 
     <form method="post" action="<?php echo esc_url($features['formAction']) ?>"
@@ -141,21 +164,11 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
         <table class="form-table" role="presentation" style="margin-top:0;">
             <tbody>
             <?php foreach ($features['list'] as $feature): ?>
-                <?php
-                $isOn = $feature->isEnabled();
-                // Pro-gated features stay clickable in the UI — flipping them
-                // pre-configures the desired state. The module's own bootstrap
-                // decides whether to actually run based on the license. The
-                // visible "Pro" badge sets expectations without being a hard
-                // block, matching the WC settings page convention.
-                $proBadge = $feature->isPro
-                    ? ' <span style="display:inline-block;background:#1d2327;color:#fff;font-size:10px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:3px;vertical-align:middle;">PRO</span>'
-                    : '';
-                ?>
+                <?php $isOn = $feature->isEnabled(); ?>
                 <tr>
                     <th scope="row" style="padding-left:0;">
                         <label for="presssentinel_feature_<?php echo esc_attr($feature->key) ?>" style="display:block;">
-                            <strong><?php echo esc_html($feature->label) ?></strong><?php echo wp_kses_post($proBadge); ?>
+                            <strong><?php echo esc_html($feature->label) ?></strong>
                         </label>
                     </th>
                     <td>
@@ -167,12 +180,6 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
                                    <?php echo $isOn ? 'checked' : '' ?>>
                             <span><?php echo esc_html($feature->description) ?></span>
                         </label>
-                        <?php if ($feature->isPro && !$features['isPro']): ?>
-                            <p class="description" style="margin-top:6px;">
-                                Pro license required for this feature to take effect.
-                                <a href="<?php echo esc_url($links['license']) ?>">Activate Pro</a>.
-                            </p>
-                        <?php endif; ?>
                     </td>
                 </tr>
             <?php endforeach; ?>
@@ -217,25 +224,9 @@ if (is_string($status) && str_starts_with($status, 'saved:')) {
         <?php echo wp_kses_post($card(
             'Audit Log',
             $badge($audit['totalEvents'] > 0, (string) $audit['totalEvents'] . ' events', 'Empty'),
-            'Plugin activations, role changes, file-editor edits, authentication events, and (Pro) WooCommerce decisions.',
+            'Plugin activations, role changes, file-editor edits, authentication events, and WooCommerce decisions.',
             $links['auditLog'],
             'Open audit log',
-        )); ?>
-
-        <?php
-        $licenseMenuVisible = $license['menuVisible'] ?? true;
-        $licenseBody = $license['isPro']
-            ? ($licenseMenuVisible
-                ? 'Pro features are unlocked: WooCommerce protection, file integrity heuristics, advanced audit listeners.'
-                : 'Pro features are unlocked during your evaluation trial. The License screen appears in the menu when the trial ends.')
-            : 'Free tier. Apply a license key to unlock the Pro feature set.';
-        ?>
-        <?php echo wp_kses_post($card(
-            'License',
-            $badge($license['isPro'], $licenseLabel, $licenseLabel),
-            $licenseBody,
-            $licenseMenuVisible ? $links['license'] : null,
-            $licenseMenuVisible ? ($license['isPro'] ? 'Manage license' : 'Activate Pro') : '',
         )); ?>
     </div>
 

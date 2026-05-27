@@ -19,7 +19,6 @@ use PressSentinel\Core\Headers\SecurityHeadersOptions;
 use PressSentinel\Core\Integrity\IntegrityOptions;
 use PressSentinel\Core\Integrity\IntegrityScheduler;
 use PressSentinel\Core\Integrity\IntegritySchema;
-use PressSentinel\Core\Licensing\LicenseManager;
 use PressSentinel\Core\RateLimit\RateLimitOptions;
 use PressSentinel\Core\Recovery\SafeMode;
 use PressSentinel\Core\Support\WpHelper;
@@ -37,7 +36,6 @@ final class HealthDiagnosticsCollector
 
     public function __construct(
         private readonly FeatureRegistry $features,
-        private readonly LicenseManager $license,
         private readonly SecurityHeadersOptions $headersOptions,
         private readonly UrlDisguiseOptions $urlDisguiseOptions,
         private readonly RateLimitOptions $rateLimitOptions,
@@ -109,17 +107,6 @@ final class HealthDiagnosticsCollector
                     : 'Disabled.'),
         ];
 
-        $secret = (string) $this->config->get('licensing.secret', '');
-        $weakSecret = $secret === '' || $secret === 'change-me-in-production' || strlen($secret) < 24;
-        $rows[] = [
-            'key' => 'license_hmac_secret',
-            'label' => 'License HMAC secret',
-            'state' => $weakSecret ? 'blocked' : 'active',
-            'detail' => $weakSecret
-                ? 'Ensure the database option presssentinel_license_hmac_secret is writable, or set PRESS_SENTINEL_LICENSE_SECRET (24+ chars) in wp-config.php or licensing.secret in config/plugin.php.'
-                : 'Strong secret resolved (auto-generated option, constant, or environment).',
-        ];
-
         $rows[] = [
             'key' => 'rate_limit_http',
             'label' => 'Global rate limiting (HTTP)',
@@ -129,7 +116,7 @@ final class HealthDiagnosticsCollector
                 : 'Disabled — enable from the dashboard or Rate Limiting settings after tuning limit/window.',
         ];
 
-        if ($this->license->isPro() && $this->wcOptions->isEnabled()) {
+        if ($this->wcOptions->isEnabled()) {
             $wc = $this->wcOptions->all();
             $checkout = is_array($wc['checkout'] ?? null) ? $wc['checkout'] : [];
             $parts = ['checkout', 'registration', 'cart', 'api'];
@@ -163,10 +150,7 @@ final class HealthDiagnosticsCollector
         $state = 'inactive';
         $detail = 'Disabled in settings.';
 
-        if ($enabled && $feature->isPro && !$this->license->isPro()) {
-            $state = 'blocked';
-            $detail = 'Enabled in settings but requires an active Pro license to run.';
-        } elseif ($enabled) {
+        if ($enabled) {
             $state = 'active';
             $detail = 'Enabled and eligible to run.';
         }
@@ -208,8 +192,7 @@ final class HealthDiagnosticsCollector
         $authEnabled = (bool) ($authOpts['enabled'] ?? true);
         $sessionsOn = $authEnabled && (bool) ($authOpts['sessions']['enabled'] ?? true);
 
-        $wcCanRun = $this->license->isPro()
-            && $this->wcOptions->isEnabled()
+        $wcCanRun = $this->wcOptions->isEnabled()
             && (class_exists('WooCommerce', false) || class_exists('WC_Cart', false));
 
         $integrityConfig = $this->integrityOptions->all();

@@ -11,7 +11,6 @@ use PressSentinel\Admin\Diagnostics\HealthDiagnosticsCollector;
 use PressSentinel\Admin\FeatureRegistry;
 use PressSentinel\Admin\FileIntegrityPage;
 use PressSentinel\Admin\HealthDiagnosticsPage;
-use PressSentinel\Admin\LicensePage;
 use PressSentinel\Admin\MuLoaderDownloadController;
 use PressSentinel\Admin\MuLoaderStatus;
 use PressSentinel\Admin\RateLimitSettingsPage;
@@ -65,10 +64,8 @@ use PressSentinel\Core\Config\Config;
 use PressSentinel\Core\Headers\HeaderRegistryFactory;
 use PressSentinel\Core\Headers\SecurityHeadersDispatcher;
 use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\Licensing\LicenseValidatorInterface;
-use PressSentinel\Core\Licensing\LocalLicenseValidator;
+use PressSentinel\Core\Edition\EditionAccess;
+use PressSentinel\Core\Edition\FreeEditionAccess;
 use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
 use PressSentinel\WooCommerce\Admin\WooCommerceProtectionPage;
 use PressSentinel\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
@@ -303,29 +300,6 @@ final class Plugin
             . '</p></div>';
     }
 
-    /**
-     * Warns when the offline license HMAC secret is still the shipped placeholder
-     * or is too short — forged keys are trivial if the secret is known.
-     */
-    public function renderLicenseSecretNotice(): void
-    {
-        if (!WpHelper::currentUserCan('manage_options')) {
-            return;
-        }
-
-        $secret = (string) $this->container->get(Config::class)->get('licensing.secret', '');
-        if ($secret !== '' && $secret !== 'change-me-in-production' && strlen($secret) >= 24) {
-            return;
-        }
-
-        echo '<div class="notice notice-error"><p><strong>PressSentinel licensing:</strong> '
-            . 'The install could not establish a strong signing secret for offline license keys. '
-            . 'Check that the database is writable and PHP can use <code>random_bytes()</code> or '
-            . '<code>wp_generate_password()</code>. Optional overrides: '
-            . '<code>define(\'PRESS_SENTINEL_LICENSE_SECRET\', \'…\');</code> in <code>wp-config.php</code> '
-            . 'or <code>licensing.secret</code> in <code>config/plugin.php</code>.</p></div>';
-    }
-
     public function renderMuLoaderNotice(): void
     {
         if (!WpHelper::currentUserCan('manage_options')) {
@@ -373,8 +347,6 @@ final class Plugin
 
     private function registerServices(): void
     {
-        LicenseHmacSecretProvisioner::ensure();
-
         $this->container->singleton(Config::class, static fn (): Config => new Config());
         $this->container->singleton(
             View::class,
@@ -608,7 +580,7 @@ final class Plugin
             )
         );
         $this->registerIntegrityServices();
-        $this->registerLicensingServices();
+        $this->registerEditionServices();
         $this->registerWooCommerceServices();
         $this->container->singleton(
             AuthListener::class,
@@ -974,26 +946,11 @@ final class Plugin
         );
     }
 
-    private function registerLicensingServices(): void
+    private function registerEditionServices(): void
     {
         $this->container->singleton(
-            LicenseValidatorInterface::class,
-            static fn (Container $container): LicenseValidatorInterface => new LocalLicenseValidator(
-                (string) $container->get(Config::class)->get('licensing.secret', 'change-me-in-production')
-            )
-        );
-        $this->container->singleton(
-            LicenseManager::class,
-            static fn (Container $container): LicenseManager => new LicenseManager(
-                $container->get(LicenseValidatorInterface::class),
-                $container->get(Config::class)
-            )
-        );
-        $this->container->singleton(
-            LicensePage::class,
-            static fn (Container $container): LicensePage => new LicensePage(
-                $container->get(LicenseManager::class)
-            )
+            EditionAccess::class,
+            static fn (): EditionAccess => new FreeEditionAccess()
         );
         $this->container->singleton(
             FeatureRegistry::class,
@@ -1005,13 +962,12 @@ final class Plugin
                 $container->get(WooCommerceProtectionOptions::class),
                 $container->get(RateLimitOptions::class),
                 $container->get(UrlDisguiseOptions::class),
-                $container->get(LicenseManager::class),
             )
         );
         $this->container->singleton(
             PressSentinelMenuPage::class,
             static fn (Container $container): PressSentinelMenuPage => new PressSentinelMenuPage(
-                $container->get(LicenseManager::class),
+                $container->get(Config::class),
                 $container->get(AuthHardeningOptions::class),
                 $container->get(SecurityHeadersOptions::class),
                 $container->get(IntegrityOptions::class),
@@ -1042,7 +998,6 @@ final class Plugin
             HealthDiagnosticsCollector::class,
             static fn (Container $container): HealthDiagnosticsCollector => new HealthDiagnosticsCollector(
                 $container->get(FeatureRegistry::class),
-                $container->get(LicenseManager::class),
                 $container->get(SecurityHeadersOptions::class),
                 $container->get(UrlDisguiseOptions::class),
                 $container->get(RateLimitOptions::class),
@@ -1077,7 +1032,7 @@ final class Plugin
         $this->container->singleton(
             AbuseCounterStoreInterface::class,
             static fn (Container $container): AbuseCounterStoreInterface => new TransientAbuseCounterStore(
-                (string) $container->get(Config::class)->get('licensing.secret', 'change-me-in-production')
+                (string) $container->get(Config::class)->get('security.internal_secret', 'change-me-in-production')
             )
         );
         $this->container->singleton(
@@ -1091,7 +1046,7 @@ final class Plugin
         $this->container->singleton(
             BehaviorClock::class,
             static fn (Container $container): BehaviorClock => new BehaviorClock(
-                (string) $container->get(Config::class)->get('licensing.secret', 'change-me-in-production')
+                (string) $container->get(Config::class)->get('security.internal_secret', 'change-me-in-production')
             )
         );
 
@@ -1227,7 +1182,6 @@ final class Plugin
             // inside the hook callbacks via the container so a request that
             // never lands on a checkout / cart / REST hook builds none of them.
             static fn (Container $container): WooCommerceModule => new WooCommerceModule(
-                $container->get(LicenseManager::class),
                 $container->get(WooCommerceProtectionOptions::class),
                 $container,
             )
@@ -1237,7 +1191,6 @@ final class Plugin
             WooCommerceProtectionPage::class,
             static fn (Container $container): WooCommerceProtectionPage => new WooCommerceProtectionPage(
                 $container->get(WooCommerceProtectionOptions::class),
-                $container->get(LicenseManager::class),
             )
         );
     }
@@ -1313,14 +1266,7 @@ final class Plugin
             $this->container->get(AuditLogPage::class)->register();
             $this->container->get(AuditLogSettingsPage::class)->register();
             $this->container->get(HealthDiagnosticsPage::class)->register();
-            // The WC settings page is registered unconditionally so admins can
-            // discover the feature even on Free. The page itself renders an
-            // upgrade prompt when the license isn't active.
             $this->container->get(WooCommerceProtectionPage::class)->register();
-            // License lives at the bottom of the menu — admins rarely need it
-            // after initial setup, and burying it reduces the chance of
-            // accidentally clearing a working key.
-            $this->container->get(LicensePage::class)->register();
 
             // Account Security stays as its own top-level menu (separate from
             // the PressSentinel parent menu above): it's gated by the `read`
@@ -1337,7 +1283,6 @@ final class Plugin
 
         WpHelper::addAction('admin_notices', [$this, 'renderMuLoaderNotice']);
         WpHelper::addAction('admin_notices', [$this, 'renderLoggerNotice']);
-        WpHelper::addAction('admin_notices', [$this, 'renderLicenseSecretNotice']);
         WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
 
         // Top-level menu must register before submenu pages (priority 0).

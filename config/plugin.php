@@ -13,32 +13,17 @@ return [
         'debug' => false,
     ],
     /**
-     * Pro licensing + optional early access + optional public beta trial.
+     * Review and donation prompts on the PressSentinel dashboard.
      *
-     * Default posture for a new plugin: **time-boxed trial** (no key during the
-     * window) so sites can evaluate Pro features before any license ask — same idea
-     * as a multi-month trial, then optional keys when you are ready to sell.
+     * `review_url` — WordPress.org (or other) review link. Leave empty to hide the button.
+     * `donation_url` — Ko-fi (or other) tip page. Leave empty to hide the donate button.
      *
-     * Beta trial: when `beta_trial.enabled` is true and there is no valid license key,
-     * the install receives Pro capabilities for `duration_days` from the first
-     * request that evaluates licensing (`presssentinel_beta_trial_started_at` is set
-     * once). Edit `beta_trial.enabled` and `duration_days` below to change the programme.
-     *
-     * Early access: when `early_access` is true and there is no valid key, Pro
-     * unlocks with **no expiry** (use sparingly, e.g. private previews). When on, it
-     * wins over the beta trial.
-     *
-     * Optional default key in this file (usually leave empty; admins set keys in wp-admin):
-     * `license_key` — also overridable via `define('PRESS_SENTINEL_PRO_LICENSE', '…')` in wp-config.php.
+     * Filter: `presssentinel_support` — adjust `review_url`, `donation_url`, `donation_label`.
      */
-    'pro_license' => [
-        'license_key' => '',
-        'early_access' => false,
-        'beta_trial' => [
-            'enabled' => true,
-            // ~6 calendar months (182 d). Clamped at runtime to 1–730 days.
-            'duration_days' => 182,
-        ],
+    'support' => [
+        'review_url' => 'https://wordpress.org/support/plugin/press-sentinel/reviews/#new-post',
+        'donation_url' => 'https://ko-fi.com/harish282gmailcom',
+        'donation_label' => 'Support on Ko-fi',
     ],
     'requirements' => [
         'php' => '8.2.0',
@@ -158,12 +143,10 @@ return [
             'enabled' => true,
         ],
     ],
-    'licensing' => [
-        // Offline HMAC keys use a per-install secret in the options table
-        // (`presssentinel_license_hmac_secret`), auto-created on activation.
-        // This value is only a fallback before the option exists. Override in wp-config.php:
-        // define('PRESS_SENTINEL_LICENSE_SECRET', '…');
-        'secret' => 'change-me-in-production',
+    'security' => [
+        // Salt for WooCommerce abuse counters and behaviour clocks (not licensing).
+        // Override in wp-config.php: define('PRESS_SENTINEL_INTERNAL_SECRET', '…');
+        'internal_secret' => 'change-me-in-production',
     ],
 
     'woocommerce_protection' => [

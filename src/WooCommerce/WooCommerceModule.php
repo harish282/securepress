@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PressSentinel\WooCommerce;
 
 use PressSentinel\Core\Container;
-use PressSentinel\Core\Licensing\LicenseManager;
 use PressSentinel\Core\Logging\LoggerInterface;
 use PressSentinel\Core\Logging\NullLogger;
 use PressSentinel\Core\Support\RequestContext;
@@ -69,7 +68,6 @@ final class WooCommerceModule
     public const COUPON_COUNTER_TTL = 600;
 
     public function __construct(
-        private readonly LicenseManager $license,
         private readonly WooCommerceProtectionOptions $options,
         private readonly Container $container,
     ) {
@@ -79,8 +77,7 @@ final class WooCommerceModule
      * Wires the module into WooCommerce / WordPress hooks based on the current
      * request context. Idempotent — safe to call once per request.
      *
-     * Returns true if hooks were registered (Pro + WC available + relevant
-     * context), false otherwise.
+     * Returns true if hooks were registered (WC available + relevant context), false otherwise.
      */
     public function register(): bool
     {
@@ -121,16 +118,10 @@ final class WooCommerceModule
     /**
      * "Is the module allowed to run on this site?"
      *
-     * The cheap checks run first — license status (cached after first call) and
-     * the `class_exists('WooCommerce', autoload: false)` test, which avoids the
-     * Composer autoloader entirely.
+     * The cheap check avoids the Composer autoloader entirely.
      */
     public function canRun(): bool
     {
-        if (!$this->license->isPro()) {
-            return false;
-        }
-
         return class_exists('WooCommerce', false) || class_exists('WC_Cart', false);
     }
 

@@ -4,20 +4,13 @@ declare(strict_types=1);
 
 namespace PressSentinel\Core\Config;
 
-use PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner;
 use PressSentinel\Core\Support\WpHelper;
 
 /**
  * Loads merged settings from {@see PRESS_SENTINEL_CONFIG_PATH}/plugin.php.
  *
- * Licensing secret resolution (first match wins): non-empty
- * {@see PRESS_SENTINEL_LICENSE_SECRET} constant → strong value in option
- * {@see LicenseHmacSecretProvisioner::OPTION_NAME} (auto-generated, plug-and-play)
- * → value in `licensing.secret` from the config file → {@see apply_filters()}
- * for hook `presssentinel_licensing_secret`.
- *
- * PHPUnit sets {@see PRESS_SENTINEL_TESTING}; {@see load()} forces early access and
- * beta trial off unless a test opts in via the `presssentinel_config` filter.
+ * Internal secret resolution: `PRESS_SENTINEL_INTERNAL_SECRET` constant →
+ * `security.internal_secret` in config → filter `presssentinel_internal_secret`.
  */
 final class Config
 {
@@ -70,40 +63,32 @@ final class Config
         $config['signed_url']['ttl_default'] = (int) ($config['signed_url']['ttl_default'] ?? 3600);
         $config['signed_url']['secret'] = (string) ($config['signed_url']['secret'] ?? '');
 
-        if (!is_array($config['pro_license'] ?? null)) {
-            $config['pro_license'] = [];
+        if (!is_array($config['support'] ?? null)) {
+            $config['support'] = [];
         }
-
-        $config['pro_license']['license_key'] = (string) ($config['pro_license']['license_key'] ?? '');
-        $config['pro_license']['early_access'] = (bool) ($config['pro_license']['early_access'] ?? false);
-
-        if (!is_array($config['pro_license']['beta_trial'] ?? null)) {
-            $config['pro_license']['beta_trial'] = [];
-        }
-
-        $config['pro_license']['beta_trial']['enabled'] = (bool) (
-            $config['pro_license']['beta_trial']['enabled'] ?? false
+        $config['support']['review_url'] = (string) ($config['support']['review_url'] ?? '');
+        $config['support']['donation_url'] = (string) ($config['support']['donation_url'] ?? '');
+        $config['support']['donation_label'] = (string) (
+            $config['support']['donation_label'] ?? 'Support on Ko-fi'
         );
-        $trialDays = (int) ($config['pro_license']['beta_trial']['duration_days'] ?? 182);
-        $config['pro_license']['beta_trial']['duration_days'] = max(1, min(730, $trialDays));
 
         if (!is_array($config['recovery'] ?? null)) {
             $config['recovery'] = [];
         }
         $config['recovery']['safe_mode'] = (bool) ($config['recovery']['safe_mode'] ?? false);
 
-        if (!is_array($config['licensing'] ?? null)) {
-            $config['licensing'] = [];
+        if (!is_array($config['security'] ?? null)) {
+            $config['security'] = [];
         }
-        $defaultLicenseSecret = (string) ($config['licensing']['secret'] ?? 'change-me-in-production');
-        $secret = $this->resolveLicensingSecret($defaultLicenseSecret);
+        $defaultSecret = (string) ($config['security']['internal_secret'] ?? 'change-me-in-production');
+        $secret = $this->resolveInternalSecret($defaultSecret);
         if (\function_exists('apply_filters')) {
-            $filtered = \apply_filters('presssentinel_licensing_secret', $secret);
+            $filtered = \apply_filters('presssentinel_internal_secret', $secret);
             if (is_string($filtered) && $filtered !== '') {
                 $secret = $filtered;
             }
         }
-        $config['licensing']['secret'] = $secret;
+        $config['security']['internal_secret'] = $secret;
 
         if (is_array($config['audit_log'] ?? null)) {
             $audit = $config['audit_log'];
@@ -115,12 +100,13 @@ final class Config
             $config['audit_log']['min_storage_level'] = (string) ($audit['min_storage_level'] ?? 'notice');
         }
 
-        if (\defined('PRESS_SENTINEL_TESTING') && PRESS_SENTINEL_TESTING) {
-            $config['pro_license']['early_access'] = false;
-            $config['pro_license']['beta_trial']['enabled'] = false;
-        }
-
         if (\function_exists('apply_filters')) {
+            $support = $config['support'];
+            $filteredSupport = \apply_filters('presssentinel_support', $support);
+            if (is_array($filteredSupport)) {
+                $config['support'] = array_merge($support, $filteredSupport);
+            }
+
             $filtered = \apply_filters('presssentinel_config', $config);
             if (is_array($filtered)) {
                 $config = $filtered;
@@ -130,21 +116,15 @@ final class Config
         return $config;
     }
 
-    private function resolveLicensingSecret(string $defaultLicenseSecret): string
+    private function resolveInternalSecret(string $defaultSecret): string
     {
-        if (\defined('PRESS_SENTINEL_LICENSE_SECRET')) {
-            $fromConstant = \constant('PRESS_SENTINEL_LICENSE_SECRET');
+        if (\defined('PRESS_SENTINEL_INTERNAL_SECRET')) {
+            $fromConstant = \constant('PRESS_SENTINEL_INTERNAL_SECRET');
             if (is_string($fromConstant) && $fromConstant !== '') {
                 return $fromConstant;
             }
         }
 
-        $dbRaw = WpHelper::getOption(LicenseHmacSecretProvisioner::OPTION_NAME, '');
-        $dbSecret = is_string($dbRaw) ? trim($dbRaw) : '';
-        if (LicenseHmacSecretProvisioner::isStoredSecretStrong($dbSecret)) {
-            return $dbSecret;
-        }
-
-        return $defaultLicenseSecret;
+        return $defaultSecret;
     }
 }
