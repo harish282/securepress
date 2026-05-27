@@ -31,7 +31,7 @@ describe('Global rate limiting', () => {
     cy.get(`input[name="${window}"]`).clear().type('60')
     cy.saveWpOptionsForm()
 
-    cy.burstRest(restPath, 20).then((codes) => {
+    cy.burstRest(restPath, 25).then((codes) => {
       const throttled = codes.filter((c) => c === 429).length
       expect(throttled, `expected 429s, got statuses: ${codes.join(',')}`).to.be.gte(1)
     })

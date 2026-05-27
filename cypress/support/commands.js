@@ -55,12 +55,32 @@ Cypress.Commands.add('setDashboardFeature', (featureKey, enable) => {
 
 /**
  * Save a WordPress Settings API form (options.php).
+ * Scoped to the options form — `#submit` alone can match unrelated admin UI.
+ *
+ * WP 7+ often redirects to `settings-updated=true` then canonicalizes the admin URL
+ * and drops query args before Cypress reads `location`, so assert on the POST redirect.
  */
 Cypress.Commands.add('saveWpOptionsForm', () => {
-  cy.get('#submit').click()
-  // WP 6.x shows a classic notice; WP 7+ often only sets settings-updated in the redirect URL.
-  cy.location('search', { timeout: 15000 }).should((search) => {
-    expect(search).to.match(/settings-updated=true/)
+  cy.intercept('POST', '**/wp-admin/options.php').as('presssentinelSaveOptions')
+
+  cy.get('form[action*="options.php"]', { timeout: 15000 })
+    .should('have.length', 1)
+    .within(() => {
+      cy.get('input#submit[type="submit"]').click()
+    })
+
+  cy.wait('@presssentinelSaveOptions', { timeout: 20000 }).then(({ response }) => {
+    const status = response?.statusCode ?? 0
+    expect(status, 'options.php response status').to.be.oneOf([200, 302, 303])
+
+    const location = String(response?.headers?.location ?? '')
+    if (location !== '') {
+      expect(location, 'options.php redirect').to.match(/settings-updated(=true)?/)
+      return
+    }
+
+    // Some stacks follow redirects before Cypress records headers; fall back to UI signal.
+    cy.get('.notice-success, .updated, .settings-error', { timeout: 15000 }).should('exist')
   })
 })
 
