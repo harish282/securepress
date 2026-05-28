@@ -56,7 +56,7 @@ Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in 
 | Account Security (users) | Top-level **Account Security** menu (when auth hardening is on) |
 
 **Log file (optional)**  
-`wp-content/plugins/niyiguard/storage/logs/niyiguard.log` (if file logging is enabled in config).
+`wp-content/uploads/niyiguard/logs/niyiguard.log` (if file logging is enabled in config).
 
 ---
 

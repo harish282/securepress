@@ -38,7 +38,7 @@ When you activate NiyiGuard (and optionally install the MU loader for earlier lo
    - Validates PHP / WordPress requirements via `SystemRequirementsChecker`.
    - Builds the dependency-injection `Container` and registers all services:
      - `Config` (reads `config/plugin.php`)
-     - `LoggerInterface` (file-backed by default → `storage/logs/niyiguard.log`)
+     - `LoggerInterface` (file-backed by default → `wp-content/uploads/niyiguard/logs/niyiguard.log`)
      - `MiddlewareManager`, `MiddlewarePipeline`, `MiddlewareRegistry`, `MiddlewareStack`
      - `RateLimiter`, `RateLimitMiddleware`, `RateLimitStoreInterface` (transient-backed)
      - `CsrfProtectionMiddleware`
@@ -836,7 +836,7 @@ $plugin->container->get(\NiyiGuard\Core\Audit\AuditLogPruner::class)->prune();
 
 ### Mirroring to the file logger (Laravel-style channels)
 
-Set `audit_log.mirror_to_file_logger` to `true` (default `false`) and every audit event will *also* be written to the existing `LoggerInterface` (which writes to `storage/logs/niyiguard.log` by default). Useful when you want to:
+Set `audit_log.mirror_to_file_logger` to `true` (default `false`) and every audit event will *also* be written to the existing `LoggerInterface` (which writes to `wp-content/uploads/niyiguard/logs/niyiguard.log` by default). Useful when you want to:
 
 - Ship audit events to a SIEM via tail / Filebeat / Vector without scraping the database.
 - Have a redundant copy in case the DB write fails.
@@ -1367,7 +1367,7 @@ Security::isFeatureEnabled('pro');                    // alias
 | `requirements.wordpress` | `6.4` | activation gate |
 | `logging.channel` | `file` | `file` or anything else (NullLogger) |
 | `logging.level` | `info` | reserved (FileLogger) |
-| `logging.file` | `niyiguard.log` | log filename under `storage/logs/` |
+| `logging.file` | `niyiguard.log` | log filename under `wp-content/uploads/niyiguard/logs/` |
 | `rate_limit.limit` `60` | global RateLimitMiddleware |
 | `rate_limit.window` `60` | global RateLimitMiddleware (seconds) |
 | `signed_url.ttl_default` | `3600` | `Security::signedUrl()` when no `expires` is passed |
@@ -1420,7 +1420,7 @@ Security::isFeatureEnabled('pro');                    // alias
 | `woocommerce_protection.cart.coupon_hard` `10` | Coupon failures hard threshold |
 | `audit_log.enabled` `true` | Master killswitch for audit logging |
 | `audit_log.retention_days` `90` | Days of audit history kept; `0` = forever |
-| `audit_log.mirror_to_file_logger` `false` | Mirror every event to `storage/logs/niyiguard.log` |
+| `audit_log.mirror_to_file_logger` `false` | Mirror every event to `wp-content/uploads/niyiguard/logs/niyiguard.log` |
 | `audit_log.listeners.auth` `true` | Login / logout / failed-login tracking |
 | `audit_log.listeners.plugin` `true` | Plugin activate / deactivate / install / update / delete |
 | `audit_log.listeners.user` `true` | User register / delete / role change / password reset |
@@ -1829,7 +1829,7 @@ Each failed login is one row; with brute-force traffic this can run to thousands
 
 ### `notice` for high-volume events drowns out important entries
 
-Use the level filter in **NiyiGuard → Audit Logs** to focus on `warning` / `critical` only. For programmatic SIEM exports, the `audit_log.mirror_to_file_logger` mode lets you tail `storage/logs/niyiguard.log` and grep for the level prefix.
+Use the level filter in **NiyiGuard → Audit Logs** to focus on `warning` / `critical` only. For programmatic SIEM exports, the `audit_log.mirror_to_file_logger` mode lets you tail `wp-content/uploads/niyiguard/logs/niyiguard.log` and grep for the level prefix.
 
 ### Pruner cron isn't running
 

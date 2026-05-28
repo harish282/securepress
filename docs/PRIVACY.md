@@ -75,7 +75,7 @@ Beta trial data (`niyiguard_beta_trial_started_at`) applies only if you use the 
 
 ### Log files
 
-If file logging is enabled, diagnostic messages may be written to `wp-content/plugins/niyiguard/storage/logs/` (or the path configured). These logs are intended for administrators and should not include end-user passwords.
+If file logging is enabled, diagnostic messages may be written to `wp-content/uploads/niyiguard/logs/` (or the path configured). These logs are intended for administrators and should not include end-user passwords.
 
 ---
 
