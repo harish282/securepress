@@ -196,7 +196,7 @@ final class MuLoaderDownloadController
             . "- Filename must be exactly: %s\n"
             . "- File must be readable by the PHP user (typically www-data / nobody).\n"
             . "- If your plugins directory has a custom location, edit the loader\n"
-            . "  file's `\$pressSentinelBootstrap = ...` line accordingly.\n",
+            . "  file's `\$niyiguard_bootstrap_candidates` paths accordingly.\n",
             $loaderFilename,
             $loaderFilename
         );
