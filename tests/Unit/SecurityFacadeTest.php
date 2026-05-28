@@ -161,7 +161,6 @@ final class SecurityFacadeTest extends TestCase
         Security::bootstrap($keep);
 
         $property = (new \ReflectionClass(Security::class))->getProperty('container');
-        $property->setAccessible(true);
         $property->setValue(null, null);
 
         $this->expectException(LogicException::class);

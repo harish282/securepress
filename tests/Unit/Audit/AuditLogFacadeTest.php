@@ -36,7 +36,6 @@ final class AuditLogFacadeTest extends TestCase
         // Reset the static facade to avoid leaking the test container into later test classes.
         $reflection = new \ReflectionClass(AuditLog::class);
         $property = $reflection->getProperty('container');
-        $property->setAccessible(true);
         $property->setValue(null, null);
     }
 
@@ -114,7 +113,6 @@ final class AuditLogFacadeTest extends TestCase
     {
         $reflection = new \ReflectionClass(AuditLog::class);
         $property = $reflection->getProperty('container');
-        $property->setAccessible(true);
         $property->setValue(null, null);
 
         $this->expectException(LogicException::class);

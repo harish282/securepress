@@ -85,7 +85,6 @@ final class UrlDisguiseModuleTest extends TestCase
         $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
         $ref = new \ReflectionClass($module);
         $m = $ref->getMethod('getRequestPathRelativeToHome');
-        $m->setAccessible(true);
 
         WpStubState::$siteUrl = 'https://example.test/blog';
         $_SERVER['REQUEST_URI'] = '/blog/my-login/?action=logout';
