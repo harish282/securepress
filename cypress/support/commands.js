@@ -10,7 +10,7 @@ Cypress.Commands.add('wpLogin', () => {
   cy.session(
     ['wp-admin', user],
     () => {
-      cy.visit('/wp-login.php')
+      cy.visit('wp-login.php')
       cy.get('#user_login').clear().type(user)
       cy.get('#user_pass').clear().type(pass, { log: false })
       cy.get('#wp-submit').click()
@@ -24,7 +24,7 @@ Cypress.Commands.add('wpLogin', () => {
  * @param {NiyiGuardPage} page
  */
 Cypress.Commands.add('visitNiyiGuard', (page = 'niyiguard', options = {}) => {
-  cy.visit(`/wp-admin/admin.php?page=${page}`, options)
+  cy.visit(`wp-admin/admin.php?page=${page}`, options)
 })
 
 /** WordPress Settings API checkboxes are preceded by a hidden `value="0"` input. */

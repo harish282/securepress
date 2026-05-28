@@ -5,7 +5,8 @@ describe('Global rate limiting', () => {
   const enabled = 'niyiguard_rate_limit[enabled]'
   const limit = 'niyiguard_rate_limit[limit]'
   const window = 'niyiguard_rate_limit[window]'
-  const restPath = '/wp-json/wp/v2/posts?per_page=1'
+  // Use rest_route form so the test works even when Apache/Nginx rewrites are disabled.
+  const restPath = '/?rest_route=/wp/v2/posts&per_page=1'
 
   beforeEach(() => {
     cy.wpLogin()
