@@ -575,7 +575,7 @@ final class WpHelper
      * a core WP slug like `tools.php`). Passing the same value for `$parentSlug` and
      * `$menuSlug` is the standard way to override the auto-created first submenu's
      * label — used by {@see \NiyiGuard\Admin\NiyiGuardMenuPage} to rename the
-     * landing item from "Secure Press" to "Dashboard".
+     * landing item from the auto-generated first submenu label to "Dashboard".
      */
     public static function addSubmenuPage(
         string $parentSlug,
