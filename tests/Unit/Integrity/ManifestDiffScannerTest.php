@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Integrity;
+namespace NiyiGuard\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Integrity\ArrayManifestRepository;
-use PressSentinel\Core\Integrity\FindingType;
-use PressSentinel\Core\Integrity\ManifestBuilder;
-use PressSentinel\Core\Integrity\Scanners\ManifestDiffScanner;
+use NiyiGuard\Core\Integrity\ArrayManifestRepository;
+use NiyiGuard\Core\Integrity\FindingType;
+use NiyiGuard\Core\Integrity\ManifestBuilder;
+use NiyiGuard\Core\Integrity\Scanners\ManifestDiffScanner;
 
 /**
- * @see \PressSentinel\Core\Integrity\Scanners\ManifestDiffScanner
+ * @see \NiyiGuard\Core\Integrity\Scanners\ManifestDiffScanner
  */
 final class ManifestDiffScannerTest extends TestCase
 {

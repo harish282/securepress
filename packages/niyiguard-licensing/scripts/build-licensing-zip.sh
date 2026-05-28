@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 #
-# Package the optional PressSentinel licensing module for archival or reuse.
+# Package the optional NiyiGuard licensing module for archival or reuse.
 #
 # Usage (from repo root):
-#   bash packages/press-sentinel-licensing/scripts/build-licensing-zip.sh
+#   bash packages/niyiguard-licensing/scripts/build-licensing-zip.sh
 #
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 PKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-SLUG="press-sentinel-licensing"
+SLUG="niyiguard-licensing"
 VERSION="1.0.0"
 OUT_DIR="$ROOT/build"
 
-STAGE="$(mktemp -d "${TMPDIR:-/tmp}/press-sentinel-licensing.XXXXXX")"
+STAGE="$(mktemp -d "${TMPDIR:-/tmp}/niyiguard-licensing.XXXXXX")"
 trap 'rm -rf "$STAGE"' EXIT
 
 DEST="$STAGE/$SLUG"

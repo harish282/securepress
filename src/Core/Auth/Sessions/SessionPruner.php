@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Sessions;
+namespace NiyiGuard\Core\Auth\Sessions;
 
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
- * Deletes stale rows from the PressSentinel sessions table on a daily cron tick.
+ * Deletes stale rows from the NiyiGuard sessions table on a daily cron tick.
  *
- * Mirrors {@see \PressSentinel\Core\Audit\AuditLogPruner}. Without pruning, revoked /
+ * Mirrors {@see \NiyiGuard\Core\Audit\AuditLogPruner}. Without pruning, revoked /
  * expired sessions accumulate indefinitely — rare but measurable on busy membership sites.
  */
 final class SessionPruner
 {
-    public const CRON_HOOK = 'presssentinel_sessions_prune';
+    public const CRON_HOOK = 'niyiguard_sessions_prune';
 
     public function __construct(
         private readonly SessionRepositoryInterface $repository,

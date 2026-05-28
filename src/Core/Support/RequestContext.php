@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Support;
+namespace NiyiGuard\Core\Support;
 
 /**
  * Cheap, side-effect-free detector for "what kind of WordPress request is this?"

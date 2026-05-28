@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Pipelines;
+namespace NiyiGuard\WooCommerce\Pipelines;
 
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Decision;
 
 /**
  * Bundles the original {@see DetectionContext}, the final {@see Decision}, and the

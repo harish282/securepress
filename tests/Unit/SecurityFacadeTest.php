@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit;
+namespace NiyiGuard\Tests\Unit;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Container;
-use PressSentinel\Core\Http\RouteGuardRegistry;
-use PressSentinel\Core\Middleware\MiddlewareInterface;
-use PressSentinel\Core\Middleware\MiddlewareRegistry;
-use PressSentinel\Core\Middleware\MiddlewareStack;
-use PressSentinel\Facades\Security;
-use PressSentinel\Sdk\Csrf\CsrfTokenManager;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Container;
+use NiyiGuard\Core\Http\RouteGuardRegistry;
+use NiyiGuard\Core\Middleware\MiddlewareInterface;
+use NiyiGuard\Core\Middleware\MiddlewareRegistry;
+use NiyiGuard\Core\Middleware\MiddlewareStack;
+use NiyiGuard\Facades\Security;
+use NiyiGuard\Sdk\Csrf\CsrfTokenManager;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class SecurityFacadeTest extends TestCase
 {
@@ -40,7 +40,7 @@ final class SecurityFacadeTest extends TestCase
         $container = $this->createMinimalContainer();
 
         Security::bootstrap($container);
-        $unknownClass = 'PressSentinel\\Tests\\Stub\\NonExistentMiddleware';
+        $unknownClass = 'NiyiGuard\\Tests\\Stub\\NonExistentMiddleware';
         Security::middleware([SecurityTestMiddlewareAlpha::class, $unknownClass]);
 
         self::assertSame([
@@ -48,7 +48,7 @@ final class SecurityFacadeTest extends TestCase
             $unknownClass,
         ], $container->get(MiddlewareStack::class)->all());
 
-        self::expectException(\PressSentinel\Core\Middleware\MiddlewareException::class);
+        self::expectException(\NiyiGuard\Core\Middleware\MiddlewareException::class);
         $container->get(MiddlewareRegistry::class)->resolve($unknownClass);
     }
 
@@ -98,7 +98,7 @@ final class SecurityFacadeTest extends TestCase
         $url = Security::signedUrl('/reset', expires: 600, params: ['user' => 7], oneTime: true);
         self::assertStringContainsString('n=', $url);
 
-        $store = $container->get(\PressSentinel\Core\Url\NonceStoreInterface::class);
+        $store = $container->get(\NiyiGuard\Core\Url\NonceStoreInterface::class);
         $params = $this->parseQuery($url);
         $nonce = $params['n'] ?? '';
 
@@ -187,17 +187,17 @@ final class SecurityFacadeTest extends TestCase
     {
         $container = $this->createMinimalContainer();
         $container->singleton(
-            \PressSentinel\Core\Config\Config::class,
-            static fn (): \PressSentinel\Core\Config\Config => new \PressSentinel\Core\Config\Config()
+            \NiyiGuard\Core\Config\Config::class,
+            static fn (): \NiyiGuard\Core\Config\Config => new \NiyiGuard\Core\Config\Config()
         );
 
-        $signer = new \PressSentinel\Core\Url\UrlSigner(
-            new \PressSentinel\Core\Url\ArraySecretProvider('test-secret-32-bytes-of-entropy-XX')
+        $signer = new \NiyiGuard\Core\Url\UrlSigner(
+            new \NiyiGuard\Core\Url\ArraySecretProvider('test-secret-32-bytes-of-entropy-XX')
         );
-        $container->set(\PressSentinel\Core\Url\UrlSigner::class, $signer);
+        $container->set(\NiyiGuard\Core\Url\UrlSigner::class, $signer);
         $container->singleton(
-            \PressSentinel\Core\Url\NonceStoreInterface::class,
-            static fn (): \PressSentinel\Core\Url\NonceStoreInterface => new \PressSentinel\Core\Url\ArrayNonceStore()
+            \NiyiGuard\Core\Url\NonceStoreInterface::class,
+            static fn (): \NiyiGuard\Core\Url\NonceStoreInterface => new \NiyiGuard\Core\Url\ArrayNonceStore()
         );
 
         return $container;

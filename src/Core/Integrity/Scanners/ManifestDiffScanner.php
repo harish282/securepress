@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity\Scanners;
+namespace NiyiGuard\Core\Integrity\Scanners;
 
-use PressSentinel\Core\Integrity\Finding;
-use PressSentinel\Core\Integrity\FindingSeverity;
-use PressSentinel\Core\Integrity\FindingType;
-use PressSentinel\Core\Integrity\Manifest;
-use PressSentinel\Core\Integrity\ManifestBuilder;
-use PressSentinel\Core\Integrity\ManifestDiff;
-use PressSentinel\Core\Integrity\ManifestRepositoryInterface;
+use NiyiGuard\Core\Integrity\Finding;
+use NiyiGuard\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingType;
+use NiyiGuard\Core\Integrity\Manifest;
+use NiyiGuard\Core\Integrity\ManifestBuilder;
+use NiyiGuard\Core\Integrity\ManifestDiff;
+use NiyiGuard\Core\Integrity\ManifestRepositoryInterface;
 
 /**
  * Diffs the live filesystem against a stored baseline for one scope.

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\SuspiciousLogin\Rules;
+namespace NiyiGuard\Core\Auth\SuspiciousLogin\Rules;
 
-use PressSentinel\Core\Auth\SuspiciousLogin\LoginContext;
+use NiyiGuard\Core\Auth\SuspiciousLogin\LoginContext;
 
 /**
  * Contract for individual suspicion rules.

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Sessions;
+namespace NiyiGuard\Core\Auth\Sessions;
 
 /**
- * DDL for the PressSentinel sessions table, mirrored on the audit-log schema pattern.
+ * DDL for the NiyiGuard sessions table, mirrored on the audit-log schema pattern.
  *
  * Stored separately from `wp_user_meta['session_tokens']` because that field is
  * (a) opaque/serialised, (b) overwritten on every login, and (c) not designed for
@@ -14,8 +14,8 @@ namespace PressSentinel\Core\Auth\Sessions;
 // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Schema DDL via dbDelta; DROP uses internal table names only.
 final class SessionSchema
 {
-    public const TABLE = 'presssentinel_sessions';
-    public const VERSION_OPTION = 'presssentinel_sessions_db_version';
+    public const TABLE = 'niyiguard_sessions';
+    public const VERSION_OPTION = 'niyiguard_sessions_db_version';
     public const VERSION = 1;
 
     public function tableName(): string

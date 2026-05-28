@@ -1,10 +1,10 @@
-# PressSentinel — Project Plan
+# NiyiGuard — Project Plan
 
 ## Vision
 
-PressSentinel aims to become a modern security infrastructure layer for WordPress inspired by Laravel’s architecture and developer experience.
+NiyiGuard aims to become a modern security infrastructure layer for WordPress inspired by Laravel’s architecture and developer experience.
 
-Instead of competing as another traditional firewall or malware scanner, PressSentinel will focus on:
+Instead of competing as another traditional firewall or malware scanner, NiyiGuard will focus on:
 
 - Middleware-based security
 - Developer-first APIs
@@ -105,7 +105,7 @@ Avoid building these in the first versions:
 # 4. Proposed Folder Structure
 
 ```txt
-presssentinel/
+niyiguard/
 ├── bootstrap/
 ├── config/
 ├── resources/
@@ -125,7 +125,7 @@ presssentinel/
 │   └── cache/
 ├── tests/
 ├── vendor/
-├── press-sentinel.php
+├── niyiguard.php
 └── composer.json
 ```
 
@@ -154,7 +154,7 @@ $app->bind(LoggerInterface::class, MonologLogger::class);
 
 ## 5.2 Middleware Pipeline
 
-The middleware system becomes the foundation of PressSentinel.
+The middleware system becomes the foundation of NiyiGuard.
 
 Example:
 
@@ -630,7 +630,7 @@ Potential keywords:
 
 # 15. Long-Term Vision
 
-PressSentinel evolves into:
+NiyiGuard evolves into:
 
 > "The modern security and infrastructure framework for WordPress applications."
 
@@ -704,7 +704,7 @@ The opportunity is:
 - middleware-based protection
 - Laravel-inspired APIs
 
-If executed correctly, PressSentinel can become:
+If executed correctly, NiyiGuard can become:
 
 > "The Laravel-style security framework for WordPress developers."
 

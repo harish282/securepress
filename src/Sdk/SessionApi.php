@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Sdk;
+namespace NiyiGuard\Sdk;
 
-use PressSentinel\Core\Auth\Sessions\SessionRecord;
-use PressSentinel\Core\Auth\Sessions\SessionService;
-use PressSentinel\Core\Container;
+use NiyiGuard\Core\Auth\Sessions\SessionRecord;
+use NiyiGuard\Core\Auth\Sessions\SessionService;
+use NiyiGuard\Core\Container;
 
 /**
  * Public surface for session tracking & revocation.

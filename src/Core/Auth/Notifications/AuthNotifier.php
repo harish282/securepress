@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Notifications;
+namespace NiyiGuard\Core\Auth\Notifications;
 
-use PressSentinel\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\LoggerInterface;
 
 /**
  * Renders and dispatches authentication-related emails.

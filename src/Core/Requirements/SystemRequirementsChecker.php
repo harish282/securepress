@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Requirements;
+namespace NiyiGuard\Core\Requirements;
 
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Logging\LoggerInterface;
 
 final class SystemRequirementsChecker
 {
@@ -40,11 +40,11 @@ final class SystemRequirementsChecker
         $minWp = (string) $this->config->get('requirements.wordpress', '6.4');
 
         if (version_compare(PHP_VERSION, $minPhp, '<')) {
-            $errors[] = sprintf('PressSentinel requires PHP %s or higher.', $minPhp);
+            $errors[] = sprintf('NiyiGuard requires PHP %s or higher.', $minPhp);
         }
 
         if (!isset($wp_version) || version_compare((string) $wp_version, $minWp, '<')) {
-            $errors[] = sprintf('PressSentinel requires WordPress %s or higher.', $minWp);
+            $errors[] = sprintf('NiyiGuard requires WordPress %s or higher.', $minWp);
         }
 
         return $errors;

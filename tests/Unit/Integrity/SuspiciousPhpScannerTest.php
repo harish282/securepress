@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Integrity;
+namespace NiyiGuard\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Integrity\FindingType;
-use PressSentinel\Core\Integrity\Heuristics\EvalBase64Heuristic;
-use PressSentinel\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
-use PressSentinel\Core\Integrity\Scanners\SuspiciousPhpScanner;
+use NiyiGuard\Core\Integrity\FindingType;
+use NiyiGuard\Core\Integrity\Heuristics\EvalBase64Heuristic;
+use NiyiGuard\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
+use NiyiGuard\Core\Integrity\Scanners\SuspiciousPhpScanner;
 
 /**
- * @see \PressSentinel\Core\Integrity\Scanners\SuspiciousPhpScanner
+ * @see \NiyiGuard\Core\Integrity\Scanners\SuspiciousPhpScanner
  */
 final class SuspiciousPhpScannerTest extends TestCase
 {

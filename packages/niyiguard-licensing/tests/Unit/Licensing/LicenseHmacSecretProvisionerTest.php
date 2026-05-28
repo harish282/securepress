@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Core\Licensing;
+namespace NiyiGuard\Tests\Unit\Core\Licensing;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Licensing\LicenseHmacSecretProvisioner;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * @see \PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner
+ * @see \NiyiGuard\Core\Licensing\LicenseHmacSecretProvisioner
  */
 final class LicenseHmacSecretProvisionerTest extends TestCase
 {

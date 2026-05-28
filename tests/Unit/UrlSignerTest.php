@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit;
+namespace NiyiGuard\Tests\Unit;
 
 use Closure;
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Url\ArraySecretProvider;
-use PressSentinel\Core\Url\SignedUrlException;
-use PressSentinel\Core\Url\UrlSigner;
+use NiyiGuard\Core\Url\ArraySecretProvider;
+use NiyiGuard\Core\Url\SignedUrlException;
+use NiyiGuard\Core\Url\UrlSigner;
 
 final class UrlSignerTest extends TestCase
 {

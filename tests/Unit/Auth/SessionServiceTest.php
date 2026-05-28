@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Auth;
+namespace NiyiGuard\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\Sessions\ArraySessionRepository;
-use PressSentinel\Core\Auth\Sessions\NullSessionDestroyer;
-use PressSentinel\Core\Auth\Sessions\SessionFingerprinter;
-use PressSentinel\Core\Auth\Sessions\SessionService;
-use PressSentinel\Core\Logging\NullLogger;
+use NiyiGuard\Core\Auth\Sessions\ArraySessionRepository;
+use NiyiGuard\Core\Auth\Sessions\NullSessionDestroyer;
+use NiyiGuard\Core\Auth\Sessions\SessionFingerprinter;
+use NiyiGuard\Core\Auth\Sessions\SessionService;
+use NiyiGuard\Core\Logging\NullLogger;
 
 final class SessionServiceTest extends TestCase
 {
@@ -18,7 +18,7 @@ final class SessionServiceTest extends TestCase
         $repo = new ArraySessionRepository();
         $service = new SessionService($repo, new SessionFingerprinter(), new NullLogger(), new NullSessionDestroyer());
 
-        $record = $service->track(42, '203.0.113.10', 'PressSentinelTest/1', null, 1_700_000_000);
+        $record = $service->track(42, '203.0.113.10', 'NiyiGuardTest/1', null, 1_700_000_000);
 
         self::assertNotNull($record->id);
         self::assertSame(42, $record->userId);

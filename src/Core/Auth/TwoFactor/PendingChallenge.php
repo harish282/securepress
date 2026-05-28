@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\TwoFactor;
+namespace NiyiGuard\Core\Auth\TwoFactor;
 
 /**
  * The "halfway-through-login" record stored after password verification but before 2FA.
  *
  * The lifecycle:
  *  1. WP's `authenticate` filter validates the password and returns a `WP_User`.
- *  2. PressSentinel's filter at priority 30 sees the user, notices 2FA is enabled, mints
+ *  2. NiyiGuard's filter at priority 30 sees the user, notices 2FA is enabled, mints
  *     a fresh challenge with a random token, and stores it under {@see ChallengeStoreInterface}.
  *  3. The token is appended to the redirect URL so the user lands on `wp-login.php?action=sp_2fa&token=…`.
  *  4. The 2FA challenge controller looks up the challenge, verifies the submitted code,

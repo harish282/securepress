@@ -1,4 +1,4 @@
-=== PressSentinel ===
+=== NiyiGuard ===
 Contributors: harish282
 Tags: security, two-factor, audit, login, woocommerce
 Requires at least: 6.4
@@ -12,11 +12,11 @@ Self-hosted WordPress security: 2FA, lockouts, audit log, integrity, headers, ra
 
 == Description ==
 
-PressSentinel hardens WordPress at the **application layer**: login abuse, accountability, file integrity, browser security headers, optional rate limits, and WooCommerce-specific threats. It **complements** your host firewall, CDN, or WAF — it does not replace them.
+NiyiGuard hardens WordPress at the **application layer**: login abuse, accountability, file integrity, browser security headers, optional rate limits, and WooCommerce-specific threats. It **complements** your host firewall, CDN, or WAF — it does not replace them.
 
-= Why install PressSentinel? =
+= Why install NiyiGuard? =
 
-* **Self-hosted** — security data stays on your server; no PressSentinel account and no usage telemetry to the author.
+* **Self-hosted** — security data stays on your server; no NiyiGuard account and no usage telemetry to the author.
 * **One dashboard** — enable or disable modules (authentication, audit log, integrity, headers, rate limits, WooCommerce protection).
 * **For store owners** — reduce fake checkouts, cart and coupon abuse, registration spam, and Store API abuse when WooCommerce is active.
 * **For developers** — protect custom `admin-post` handlers, forms, and REST routes with the **Security SDK** (CSRF, rate limits, signed URLs, route guards).
@@ -24,13 +24,13 @@ PressSentinel hardens WordPress at the **application layer**: login abuse, accou
 
 = What makes it different? =
 
-Many security plugins offer two-factor auth, lockouts, headers, or malware scanning. PressSentinel does not claim to be the only plugin with those features. It stands out in three ways:
+Many security plugins offer two-factor auth, lockouts, headers, or malware scanning. NiyiGuard does not claim to be the only plugin with those features. It stands out in three ways:
 
 1. **Developer SDK** — middleware-style helpers for **your** code paths, not only wp-admin toggles.
 2. **WooCommerce abuse pipelines** — checkout, cart, registration, and Store API protection in the same package as audit logging and login hardening.
 3. **Privacy-first** — no license server and no analytics to the author (see Privacy section below).
 
-Longer positioning notes and reusable marketing copy: `docs/WHY_PRESSSENTINEL.md`.
+Longer positioning notes and reusable marketing copy: `docs/WHY_NIYIGUARD.md`.
 
 = Features included (0.1.0) =
 
@@ -43,11 +43,11 @@ Longer positioning notes and reusable marketing copy: `docs/WHY_PRESSSENTINEL.md
 * **CSRF middleware and SDK** — nonce verification for custom routes, forms, and REST handlers you register.
 * **Signed URLs** — time-limited HMAC links for downloads, invites, and sensitive actions.
 * **Login URL disguise** — optional custom login path instead of `wp-login.php` (off by default; test on staging first).
-* **Safe mode** — emergency bypass via `PRESS_SENTINEL_SAFE_MODE` in `wp-config.php` without changing saved settings.
+* **Safe mode** — emergency bypass via `NIYIGUARD_SAFE_MODE` in `wp-config.php` without changing saved settings.
 * **Health diagnostics** — hooks, database tables, and module state on an admin screen.
 * **MU loader helper** — optional must-use loader for earlier bootstrap in the request lifecycle.
 
-The **Press Sentinel → Dashboard** includes optional links to leave a WordPress.org review or support development (Ko-fi). Neither is required.
+The **NiyiGuard → Dashboard** includes optional links to leave a WordPress.org review or support development (Ko-fi). Neither is required.
 
 = Developer APIs =
 
@@ -61,23 +61,23 @@ The `Security` facade provides route guards, CSRF fields, rate limiters, signed 
 
 == Installation ==
 
-1. Upload the `presssentinel` folder to `/wp-content/plugins/` (or install from the WordPress.org plugin directory when listed).
-2. Activate **PressSentinel** on the **Plugins** screen.
-3. Open **Press Sentinel** in the admin menu and review dashboard feature toggles.
-4. (Recommended) Install the optional MU loader from **Press Sentinel → Dashboard** or follow `docs/MU_LOADER_INSTALL.md`.
+1. Upload the `niyiguard` folder to `/wp-content/plugins/` (or install from the WordPress.org plugin directory when listed).
+2. Activate **NiyiGuard** on the **Plugins** screen.
+3. Open **NiyiGuard** in the admin menu and review dashboard feature toggles.
+4. (Recommended) Install the optional MU loader from **NiyiGuard → Dashboard** or follow `docs/MU_LOADER_INSTALL.md`.
 5. Configure Authentication, Security Headers, Rate Limiting, File Integrity, WooCommerce Protection, and Audit Log before enabling strict rules on production.
 
 == Frequently Asked Questions ==
 
-= Does PressSentinel replace Cloudflare or my host firewall? =
+= Does NiyiGuard replace Cloudflare or my host firewall? =
 
-No. PressSentinel is an in-application security layer. Use it together with edge and host protections.
+No. NiyiGuard is an in-application security layer. Use it together with edge and host protections.
 
-= How is PressSentinel different from Wordfence, Solid Security, or similar plugins? =
+= How is NiyiGuard different from Wordfence, Solid Security, or similar plugins? =
 
-Those are mature products and often include cloud scanning or firewall services. PressSentinel focuses on **modular, self-hosted** controls, a **Security SDK** for custom routes, and **WooCommerce abuse pipelines** in one free package. Choose PressSentinel for application-layer hardening without a PressSentinel cloud account. Choose an all-in-one cloud firewall/scanner if that is your primary need.
+Those are mature products and often include cloud scanning or firewall services. NiyiGuard focuses on **modular, self-hosted** controls, a **Security SDK** for custom routes, and **WooCommerce abuse pipelines** in one free package. Choose NiyiGuard for application-layer hardening without a NiyiGuard cloud account. Choose an all-in-one cloud firewall/scanner if that is your primary need.
 
-= Who should install PressSentinel? =
+= Who should install NiyiGuard? =
 
 **Good fit:** WooCommerce sites with checkout or spam issues; agencies with custom plugins; teams wanting audit, integrity, and login protection on-server; developers protecting custom forms and REST endpoints.
 
@@ -93,11 +93,11 @@ Yes. All security modules in 0.1.0 are included without a license key or time li
 
 = How can I support development? =
 
-Use **Support development** on **Press Sentinel → Dashboard** (optional Ko-fi tip) or leave a review on WordPress.org.
+Use **Support development** on **NiyiGuard → Dashboard** (optional Ko-fi tip) or leave a review on WordPress.org.
 
 = I am locked out after enabling login disguise or lockout. What should I do? =
 
-Add `define( 'PRESS_SENTINEL_SAFE_MODE', true );` to `wp-config.php` (before WordPress loads plugins) or set `recovery.safe_mode` to `true` in `config/plugin.php`. Disable safe mode after you regain access.
+Add `define( 'NIYIGUARD_SAFE_MODE', true );` to `wp-config.php` (before WordPress loads plugins) or set `recovery.safe_mode` to `true` in `config/plugin.php`. Disable safe mode after you regain access.
 
 = Does it work with WooCommerce? =
 
@@ -123,7 +123,7 @@ On your server: custom tables for audit logs, sessions, and integrity data; Word
 
 = 0.1.0 =
 * Initial public release — all features free (no license or evaluation period).
-* Positioning and documentation: `docs/WHY_PRESSSENTINEL.md`, updated directory readme.
+* Positioning and documentation: `docs/WHY_NIYIGUARD.md`, updated directory readme.
 * Security SDK: middleware pipeline, CSRF protection, signed URLs, route guards.
 * Authentication hardening: lockout, TOTP/email 2FA, sessions, new-device alerts.
 * Security headers module with per-header controls.
@@ -141,7 +141,7 @@ Initial release. Test authentication, URL disguise, and rate limits on staging b
 
 == Privacy ==
 
-PressSentinel processes security-related data on your WordPress server (IP addresses, user agents, user IDs, audit events, session metadata, and similar fields when features are enabled). It does not sell personal data or include advertising trackers.
+NiyiGuard processes security-related data on your WordPress server (IP addresses, user agents, user IDs, audit events, session metadata, and similar fields when features are enabled). It does not sell personal data or include advertising trackers.
 
 **Third-party service**
 
@@ -153,6 +153,6 @@ Optional security emails (two-factor codes, suspicious-login alerts) use WordPre
 
 **Optional donations**
 
-If you use the dashboard Ko-fi link, payment and any data you provide are handled by Ko-fi under their terms, not by PressSentinel.
+If you use the dashboard Ko-fi link, payment and any data you provide are handled by Ko-fi under their terms, not by NiyiGuard.
 
 Full details: `docs/PRIVACY.md` in the plugin folder, and the Privacy section below.

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Sdk\Exceptions;
+namespace NiyiGuard\Sdk\Exceptions;
 
 use RuntimeException;
-use PressSentinel\Core\RateLimit\RateLimitResult;
+use NiyiGuard\Core\RateLimit\RateLimitResult;
 
 /**
- * Thrown by {@see \PressSentinel\Facades\Security::throttle()} when the limit has been
+ * Thrown by {@see \NiyiGuard\Facades\Security::throttle()} when the limit has been
  * exceeded for the supplied key.
  *
  * The full {@see RateLimitResult} is preserved on the exception so error handlers can

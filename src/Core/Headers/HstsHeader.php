@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Headers;
+namespace NiyiGuard\Core\Headers;
 
 /**
  * HTTP Strict Transport Security.

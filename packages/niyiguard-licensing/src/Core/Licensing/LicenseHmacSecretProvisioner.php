@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Licensing;
+namespace NiyiGuard\Core\Licensing;
 
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Persists a per-install HMAC secret in the WordPress options table so offline
  * license keys work without wp-config edits or hosting environment variables.
  *
  * The secret is created on first {@see ensure()} (plugin activation and each
- * boot before {@see \PressSentinel\Core\Config\Config} resolves). Your issuance tooling
- * must sign keys with the same material shown on PressSentinel → License.
+ * boot before {@see \NiyiGuard\Core\Config\Config} resolves). Your issuance tooling
+ * must sign keys with the same material shown on NiyiGuard → License.
  */
 final class LicenseHmacSecretProvisioner
 {
-    public const OPTION_NAME = 'presssentinel_license_hmac_secret';
+    public const OPTION_NAME = 'niyiguard_license_hmac_secret';
 
     private const MIN_LENGTH = 24;
 

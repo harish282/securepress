@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Auth;
+namespace NiyiGuard\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Admin\AuthHardeningSettingsPage;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\View\View;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Admin\AuthHardeningSettingsPage;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\View\View;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
  * Smoke coverage for the admin settings page — verifies the field-render closures
  * produce HTML referencing the canonical option name, and that the registered slug /
  * option-group constants stay aligned with what the WordPress Settings API expects.
  *
- * @see \PressSentinel\Admin\AuthHardeningSettingsPage
+ * @see \NiyiGuard\Admin\AuthHardeningSettingsPage
  */
 final class AuthHardeningSettingsPageTest extends TestCase
 {
@@ -47,7 +47,7 @@ final class AuthHardeningSettingsPageTest extends TestCase
 
         $issuer = $this->capture(static fn () => $page->renderTwoFactorIssuer());
         self::assertStringContainsString(AuthHardeningOptions::OPTION_NAME . '[two_factor][issuer]', $issuer);
-        self::assertStringContainsString('value="PressSentinel"', $issuer);
+        self::assertStringContainsString('value="NiyiGuard"', $issuer);
 
         $rule = $this->capture(static fn () => $page->renderSuspicionNewDevice());
         self::assertStringContainsString(AuthHardeningOptions::OPTION_NAME . '[suspicion][rules][new_device]', $rule);
@@ -74,16 +74,16 @@ final class AuthHardeningSettingsPageTest extends TestCase
         // Settings API requires page slug and option group to be plain strings — guard
         // against accidental rename by pinning them here. If you intentionally rename
         // them, update this assertion in the same commit.
-        self::assertSame('presssentinel-authentication', AuthHardeningSettingsPage::PAGE_SLUG);
-        self::assertSame('presssentinel_auth_hardening_group', AuthHardeningSettingsPage::OPTION_GROUP);
-        self::assertSame('presssentinel_auth_hardening', AuthHardeningOptions::OPTION_NAME);
+        self::assertSame('niyiguard-authentication', AuthHardeningSettingsPage::PAGE_SLUG);
+        self::assertSame('niyiguard_auth_hardening_group', AuthHardeningSettingsPage::OPTION_GROUP);
+        self::assertSame('niyiguard_auth_hardening', AuthHardeningOptions::OPTION_NAME);
     }
 
     private function page(): AuthHardeningSettingsPage
     {
         return new AuthHardeningSettingsPage(
             new AuthHardeningOptions(new Config()),
-            new View(PRESS_SENTINEL_VIEWS_PATH),
+            new View(NIYIGUARD_VIEWS_PATH),
         );
     }
 

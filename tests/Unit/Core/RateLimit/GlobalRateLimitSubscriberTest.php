@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Core\RateLimit;
+namespace NiyiGuard\Tests\Unit\Core\RateLimit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\RateLimit\ArrayStore;
-use PressSentinel\Core\RateLimit\GlobalRateLimitSubscriber;
-use PressSentinel\Core\RateLimit\RateLimiter;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\Support\RequestContext;
-use PressSentinel\Middleware\RateLimitMiddleware;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\RateLimit\ArrayStore;
+use NiyiGuard\Core\RateLimit\GlobalRateLimitSubscriber;
+use NiyiGuard\Core\RateLimit\RateLimiter;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\Support\RequestContext;
+use NiyiGuard\Middleware\RateLimitMiddleware;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * @see \PressSentinel\Core\RateLimit\GlobalRateLimitSubscriber
+ * @see \NiyiGuard\Core\RateLimit\GlobalRateLimitSubscriber
  */
 final class GlobalRateLimitSubscriberTest extends TestCase
 {
@@ -66,7 +66,7 @@ final class GlobalRateLimitSubscriberTest extends TestCase
         self::assertNull($subscriber->onRestPreDispatch(null, null, null));
         $err = $subscriber->onRestPreDispatch(null, null, null);
         self::assertInstanceOf(\WP_Error::class, $err);
-        self::assertSame('presssentinel_rate_limit', $err->code);
+        self::assertSame('niyiguard_rate_limit', $err->code);
         self::assertSame(429, $err->data['status'] ?? null);
     }
 

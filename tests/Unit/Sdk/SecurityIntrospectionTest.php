@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Sdk;
+namespace NiyiGuard\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Container;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Http\RouteGuardRegistry;
-use PressSentinel\Core\Middleware\MiddlewareRegistry;
-use PressSentinel\Core\Middleware\MiddlewareStack;
-use PressSentinel\Facades\Security;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Container;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Http\RouteGuardRegistry;
+use NiyiGuard\Core\Middleware\MiddlewareRegistry;
+use NiyiGuard\Core\Middleware\MiddlewareStack;
+use NiyiGuard\Facades\Security;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * @see \PressSentinel\Facades\Security::version
- * @see \PressSentinel\Facades\Security::isFeatureEnabled
+ * @see \NiyiGuard\Facades\Security::version
+ * @see \NiyiGuard\Facades\Security::isFeatureEnabled
  */
 final class SecurityIntrospectionTest extends TestCase
 {

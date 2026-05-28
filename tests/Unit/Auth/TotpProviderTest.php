@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Auth;
+namespace NiyiGuard\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\TwoFactor\Base32;
-use PressSentinel\Core\Auth\TwoFactor\TotpProvider;
+use NiyiGuard\Core\Auth\TwoFactor\Base32;
+use NiyiGuard\Core\Auth\TwoFactor\TotpProvider;
 
 final class TotpProviderTest extends TestCase
 {
@@ -66,11 +66,11 @@ final class TotpProviderTest extends TestCase
     public function test_provisioning_uri_includes_required_parameters(): void
     {
         $totp = new TotpProvider();
-        $uri = $totp->provisioningUri('PressSentinel', 'alice@example.com', 'JBSWY3DPEHPK3PXP');
+        $uri = $totp->provisioningUri('NiyiGuard', 'alice@example.com', 'JBSWY3DPEHPK3PXP');
 
-        self::assertStringStartsWith('otpauth://totp/PressSentinel:alice%40example.com?', $uri);
+        self::assertStringStartsWith('otpauth://totp/NiyiGuard:alice%40example.com?', $uri);
         self::assertStringContainsString('secret=JBSWY3DPEHPK3PXP', $uri);
-        self::assertStringContainsString('issuer=PressSentinel', $uri);
+        self::assertStringContainsString('issuer=NiyiGuard', $uri);
         self::assertStringContainsString('algorithm=SHA1', $uri);
         self::assertStringContainsString('digits=6', $uri);
         self::assertStringContainsString('period=30', $uri);

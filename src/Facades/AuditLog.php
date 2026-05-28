@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Facades;
+namespace NiyiGuard\Facades;
 
 use LogicException;
-use PressSentinel\Core\Audit\AuditEvent;
-use PressSentinel\Core\Audit\AuditEventCategory;
-use PressSentinel\Core\Audit\AuditEventLevel;
-use PressSentinel\Core\Audit\AuditEventBuilder;
-use PressSentinel\Core\Audit\AuditLoggerInterface;
-use PressSentinel\Core\Container;
+use NiyiGuard\Core\Audit\AuditEvent;
+use NiyiGuard\Core\Audit\AuditEventCategory;
+use NiyiGuard\Core\Audit\AuditEventLevel;
+use NiyiGuard\Core\Audit\AuditEventBuilder;
+use NiyiGuard\Core\Audit\AuditLoggerInterface;
+use NiyiGuard\Core\Container;
 
 /**
  * Laravel-style facade for recording audit events.
@@ -127,7 +127,7 @@ final class AuditLog
     private static function logger(): AuditLoggerInterface
     {
         if (self::$container === null) {
-            throw new LogicException('PressSentinel AuditLog has not been bootstrapped. Call AuditLog::bootstrap() from the plugin.');
+            throw new LogicException('NiyiGuard AuditLog has not been bootstrapped. Call AuditLog::bootstrap() from the plugin.');
         }
 
         return self::$container->get(AuditLoggerInterface::class);

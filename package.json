@@ -1,7 +1,7 @@
 {
-  "name": "press-sentinel",
+  "name": "niyiguard",
   "private": true,
-  "description": "PressSentinel WordPress security plugin — Cypress staging E2E",
+  "description": "NiyiGuard WordPress security plugin — Cypress staging E2E",
   "scripts": {
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",

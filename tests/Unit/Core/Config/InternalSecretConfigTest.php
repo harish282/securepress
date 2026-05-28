@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Core\Config;
+namespace NiyiGuard\Tests\Unit\Core\Config;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class InternalSecretConfigTest extends TestCase
 {
@@ -25,7 +25,7 @@ final class InternalSecretConfigTest extends TestCase
     public function test_filter_can_override_internal_secret(): void
     {
         \add_filter(
-            'presssentinel_internal_secret',
+            'niyiguard_internal_secret',
             static fn (): string => 'filter-secret-32bytes-min-length-ok!'
         );
 

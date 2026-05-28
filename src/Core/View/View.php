@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\View;
+namespace NiyiGuard\Core\View;
 
 use RuntimeException;
 

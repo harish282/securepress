@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Auth;
+namespace NiyiGuard\Auth;
 
 // phpcs:disable WordPress.Security.NonceVerification -- wp-login.php challenge; sanitized read-only args via WpHelper.
-use PressSentinel\Core\Auth\TwoFactor\PendingChallenge;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorMethod;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\Auth\TwoFactor\PendingChallenge;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorMethod;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorService;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
  * Handles the `wp-login.php?action=sp_2fa` route — both the GET (form) and POST (verify).
@@ -26,6 +26,9 @@ use PressSentinel\Core\View\View;
  */
 final class TwoFactorChallengeController
 {
+    private const FORM_NONCE_FIELD = 'sp_2fa_nonce';
+    private const FORM_NONCE_ACTION = 'niyiguard_2fa_challenge';
+
     public function __construct(
         private readonly TwoFactorService $twoFactor,
         private readonly View $view,
@@ -68,6 +71,12 @@ final class TwoFactorChallengeController
 
     private function processSubmission(PendingChallenge $challenge): void
     {
+        if (WpHelper::verifyNonce($this->stringFromRequest(self::FORM_NONCE_FIELD, 'POST'), self::FORM_NONCE_ACTION) <= 0) {
+            $this->renderForm($challenge, 'Your request expired. Please try again.');
+
+            return;
+        }
+
         $code = trim($this->stringFromRequest('sp_2fa_code', 'POST'));
         $useRecovery = $this->stringFromRequest('sp_2fa_recovery', 'POST') === '1';
 
@@ -124,6 +133,12 @@ final class TwoFactorChallengeController
 
     private function resendOtp(PendingChallenge $challenge): void
     {
+        if (WpHelper::verifyNonce($this->stringFromRequest(self::FORM_NONCE_FIELD, 'GET'), self::FORM_NONCE_ACTION) <= 0) {
+            $this->renderForm($challenge, 'Your request expired. Please try again.');
+
+            return;
+        }
+
         if ($challenge->method !== TwoFactorMethod::EMAIL_OTP) {
             $this->renderForm($challenge);
 
@@ -148,6 +163,11 @@ final class TwoFactorChallengeController
     private function renderForm(PendingChallenge $challenge, ?string $error = null, ?string $info = null): void
     {
         $loginUrl = WpHelper::loginUrl();
+        $formNonce = WpHelper::createNonce(self::FORM_NONCE_ACTION);
+        $resendUrl = $loginUrl . (str_contains($loginUrl, '?') ? '&' : '?')
+            . 'action=sp_2fa&token=' . rawurlencode($challenge->token)
+            . '&resend=1'
+            . '&' . self::FORM_NONCE_FIELD . '=' . rawurlencode($formNonce);
 
         $context = [
             'token' => $challenge->token,
@@ -159,8 +179,13 @@ final class TwoFactorChallengeController
             'login_url' => $loginUrl,
             'error' => $error,
             'info' => $info,
+            'form_nonce' => $formNonce,
+            'nonce_field' => self::FORM_NONCE_FIELD,
+            'resend_url' => $resendUrl,
             'submit_action' => $loginUrl . (str_contains($loginUrl, '?') ? '&' : '?') . 'action=sp_2fa',
         ];
+
+        $this->enqueueStyles();
 
         if (\function_exists('login_header')) {
             \call_user_func('login_header', 'Two-factor authentication');
@@ -198,5 +223,18 @@ final class TwoFactorChallengeController
             'POST' => WpHelper::getPostString($key),
             default => WpHelper::getRequestString($key),
         };
+    }
+
+    private function enqueueStyles(): void
+    {
+        if (!\function_exists('wp_enqueue_style')) {
+            return;
+        }
+        if (!\function_exists('plugins_url')) {
+            return;
+        }
+
+        $url = (string) \call_user_func('plugins_url', 'resources/assets/css/two-factor-challenge.css', NIYIGUARD_FILE);
+        \call_user_func('wp_enqueue_style', 'niyiguard-2fa-challenge', $url, [], '0.1.0');
     }
 }

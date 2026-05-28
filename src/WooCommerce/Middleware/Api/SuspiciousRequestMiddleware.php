@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Middleware\Api;
+namespace NiyiGuard\WooCommerce\Middleware\Api;
 
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Signal;
-use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Signal;
+use NiyiGuard\WooCommerce\Middleware\WcMiddlewareInterface;
 
 /**
  * Cheap pre-filter that emits suspicion signals (and occasionally short-circuits)

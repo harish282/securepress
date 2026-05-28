@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Detection;
+namespace NiyiGuard\WooCommerce\Detection;
 
 /**
  * A single piece of evidence that contributed to (or could contribute to) a fraud score.
  *
  * Signals are the language middleware uses to talk to the scorer: "I observed
  * `disposable_email`, weight 30, because the domain `mailinator.com` is on the
- * disposable list". The {@see \PressSentinel\WooCommerce\Services\FraudScoreService}
+ * disposable list". The {@see \NiyiGuard\WooCommerce\Services\FraudScoreService}
  * aggregates them into a single score and explains the decision back to the operator.
  *
  * Weights are signed integers, not 0..1 floats — keeps comparisons exact, JSON

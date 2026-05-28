@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\WooCommerce\Services;
+namespace NiyiGuard\Tests\Unit\WooCommerce\Services;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
+use NiyiGuard\WooCommerce\Services\DisposableEmailRegistry;
 
 /**
- * @see \PressSentinel\WooCommerce\Services\DisposableEmailRegistry
+ * @see \NiyiGuard\WooCommerce\Services\DisposableEmailRegistry
  */
 final class DisposableEmailRegistryTest extends TestCase
 {

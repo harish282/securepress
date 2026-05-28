@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity;
+namespace NiyiGuard\Core\Integrity;
 
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Core\Support\WpHelper;
 use Throwable;
 
 /**
  * Schedules and dispatches the recurring integrity scan via WP-Cron.
  *
- * Mirrors the {@see \PressSentinel\Core\Audit\AuditLogPruner} pattern (cron hook +
+ * Mirrors the {@see \NiyiGuard\Core\Audit\AuditLogPruner} pattern (cron hook +
  * `scheduleIfMissing`). On every tick we delegate to {@see IntegrityService::scan()},
  * then dispatch the result to the optional notifier so operators can be e-mailed when
  * critical findings appear.
@@ -24,7 +24,7 @@ use Throwable;
  */
 final class IntegrityScheduler
 {
-    public const HOOK = 'presssentinel_integrity_scan';
+    public const HOOK = 'niyiguard_integrity_scan';
 
     public function __construct(
         private readonly IntegrityService $service,

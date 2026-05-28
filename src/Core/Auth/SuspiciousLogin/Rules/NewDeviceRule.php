@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\SuspiciousLogin\Rules;
+namespace NiyiGuard\Core\Auth\SuspiciousLogin\Rules;
 
-use PressSentinel\Core\Auth\Sessions\SessionRepositoryInterface;
-use PressSentinel\Core\Auth\SuspiciousLogin\LoginContext;
+use NiyiGuard\Core\Auth\Sessions\SessionRepositoryInterface;
+use NiyiGuard\Core\Auth\SuspiciousLogin\LoginContext;
 
 /**
  * Fires when no past session for this user matches the current device fingerprint.

@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Core\Recovery;
+namespace NiyiGuard\Tests\Unit\Core\Recovery;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\Lockout\ArrayLockoutStore;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\RateLimit\ArrayStore;
-use PressSentinel\Core\RateLimit\RateLimiter;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\Recovery\SafeMode;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\Middleware\RateLimitMiddleware;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Auth\Lockout\ArrayLockoutStore;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutPolicy;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutService;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\RateLimit\ArrayStore;
+use NiyiGuard\Core\RateLimit\RateLimiter;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\Recovery\SafeMode;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\Middleware\RateLimitMiddleware;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class SafeModeRecoveryTest extends TestCase
 {
@@ -23,16 +23,16 @@ final class SafeModeRecoveryTest extends TestCase
     {
         WpStubState::reset();
         if (\function_exists('remove_all_filters')) {
-            \remove_all_filters('presssentinel_safe_mode');
-            \remove_all_filters('presssentinel_safe_mode_bypasses');
+            \remove_all_filters('niyiguard_safe_mode');
+            \remove_all_filters('niyiguard_safe_mode_bypasses');
         }
     }
 
     protected function tearDown(): void
     {
         if (\function_exists('remove_all_filters')) {
-            \remove_all_filters('presssentinel_safe_mode');
-            \remove_all_filters('presssentinel_safe_mode_bypasses');
+            \remove_all_filters('niyiguard_safe_mode');
+            \remove_all_filters('niyiguard_safe_mode_bypasses');
         }
         WpStubState::reset();
     }
@@ -42,7 +42,7 @@ final class SafeModeRecoveryTest extends TestCase
         if (!\function_exists('add_filter')) {
             self::markTestSkipped('WordPress filter API not available.');
         }
-        \add_filter('presssentinel_safe_mode', static fn (): bool => true);
+        \add_filter('niyiguard_safe_mode', static fn (): bool => true);
     }
 
     public function test_lockout_service_never_locks_in_safe_mode(): void

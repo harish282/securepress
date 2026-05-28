@@ -1,0 +1,7 @@
+.sp-2fa-card { padding: 0 12px; }
+.sp-2fa-card h1 { font-size: 18px; margin: 0 0 12px; }
+.sp-2fa-meta { color: #555; margin: 0 0 16px; font-size: 13px; }
+.sp-2fa-input { font-size: 22px; letter-spacing: 8px; text-align: center; padding: 10px; width: 100%; box-sizing: border-box; }
+.sp-2fa-actions { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; font-size: 13px; }
+.sp-2fa-error { color: #b32d2e; padding: 8px 12px; background: #fdecea; border-left: 4px solid #b32d2e; margin-bottom: 12px; }
+.sp-2fa-info { color: #1f5582; padding: 8px 12px; background: #e6f3ff; border-left: 4px solid #1f5582; margin-bottom: 12px; }

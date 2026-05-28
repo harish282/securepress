@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Admin;
+namespace NiyiGuard\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Admin\FeatureRegistry;
-use PressSentinel\Admin\MuLoaderDownloadController;
-use PressSentinel\Admin\MuLoaderStatus;
-use PressSentinel\Admin\PressSentinelMenuPage;
-use PressSentinel\Core\Audit\ArrayAuditLogRepository;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Integrity\ArrayFindingRepository;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\Core\View\View;
-use PressSentinel\Tests\Stubs\WpStubState;
-use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
+use NiyiGuard\Admin\FeatureRegistry;
+use NiyiGuard\Admin\MuLoaderDownloadController;
+use NiyiGuard\Admin\MuLoaderStatus;
+use NiyiGuard\Admin\NiyiGuardMenuPage;
+use NiyiGuard\Core\Audit\ArrayAuditLogRepository;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Integrity\ArrayFindingRepository;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\Core\View\View;
+use NiyiGuard\Tests\Stubs\WpStubState;
+use NiyiGuard\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
  * Verifies the dashboard renders the "MU loader not installed" callout when
@@ -71,7 +71,7 @@ final class DashboardMuLoaderCalloutTest extends TestCase
 
         // Setup steps name the expected destination directory + filename so
         // admins know exactly where to drop the extracted file.
-        self::assertStringContainsString('00-press-sentinel-loader.php', $html);
+        self::assertStringContainsString('00-niyiguard-loader.php', $html);
         self::assertStringContainsString('mu-plugins', $html);
     }
 
@@ -92,14 +92,14 @@ final class DashboardMuLoaderCalloutTest extends TestCase
 
         self::assertStringContainsString('Save feature toggles', $html);
         self::assertStringContainsString(
-            'name="action" value="' . PressSentinelMenuPage::NONCE_ACTION . '"',
+            'name="action" value="' . NiyiGuardMenuPage::NONCE_ACTION . '"',
             $html
         );
         self::assertStringContainsString('name="_wpnonce"', $html);
-        self::assertStringContainsString('value="nonce_' . PressSentinelMenuPage::NONCE_ACTION . '"', $html);
+        self::assertStringContainsString('value="nonce_' . NiyiGuardMenuPage::NONCE_ACTION . '"', $html);
     }
 
-    private function captureRender(PressSentinelMenuPage $page): string
+    private function captureRender(NiyiGuardMenuPage $page): string
     {
         \ob_start();
         $page->render();
@@ -109,22 +109,22 @@ final class DashboardMuLoaderCalloutTest extends TestCase
     }
 
     /**
-     * Builds a PressSentinelMenuPage with real dependencies. We need a real
+     * Builds a NiyiGuardMenuPage with real dependencies. We need a real
      * View to render the template (the whole point of the test is the
      * template's output), and real Options/Registry instances so render()
      * doesn't blow up reaching for their methods.
      */
-    private function makePage(bool $isInstalled): PressSentinelMenuPage
+    private function makePage(bool $isInstalled): NiyiGuardMenuPage
     {
         $config = new Config();
 
         $muDir = $this->makeFixtureDir();
-        $template = $muDir . '/00-press-sentinel-loader.php';
+        $template = $muDir . '/00-niyiguard-loader.php';
         \file_put_contents($template, "<?php // test fixture\n");
 
         $muPluginsDir = $this->makeFixtureDir();
         if ($isInstalled) {
-            \file_put_contents($muPluginsDir . '/00-press-sentinel-loader.php', "<?php // installed\n");
+            \file_put_contents($muPluginsDir . '/00-niyiguard-loader.php', "<?php // installed\n");
         }
 
         $status = new MuLoaderStatus($template, $muPluginsDir);
@@ -141,7 +141,7 @@ final class DashboardMuLoaderCalloutTest extends TestCase
 
         $viewsDir = \dirname(__DIR__, 3) . '/resources/views';
 
-        return new PressSentinelMenuPage(
+        return new NiyiGuardMenuPage(
             $config,
             new AuthHardeningOptions($config),
             new SecurityHeadersOptions($config),
@@ -156,7 +156,7 @@ final class DashboardMuLoaderCalloutTest extends TestCase
 
     private function makeFixtureDir(): string
     {
-        $dir = \sys_get_temp_dir() . '/presssentinel-dash-mu-' . \uniqid('', true);
+        $dir = \sys_get_temp_dir() . '/niyiguard-dash-mu-' . \uniqid('', true);
         \mkdir($dir, 0700, true);
         $this->tempDirs[] = $dir;
 

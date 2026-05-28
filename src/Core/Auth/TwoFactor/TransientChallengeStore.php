@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\TwoFactor;
+namespace NiyiGuard\Core\Auth\TwoFactor;
 
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Production challenge store backed by WordPress transients.
@@ -14,12 +14,12 @@ use PressSentinel\Core\Support\WpHelper;
  *    sites they don't even hit the database.
  *  - The TTL of the transient is derived from the challenge's own `expires_at` so
  *    leftover state evaporates exactly when the challenge becomes invalid.
- *  - Token lookups are O(1) and the keyspace (`presssentinel_2fa_*`) is namespaced enough
+ *  - Token lookups are O(1) and the keyspace (`niyiguard_2fa_*`) is namespaced enough
  *    to avoid collisions with audit-pruner and rate-limiter buckets.
  */
 final class TransientChallengeStore implements ChallengeStoreInterface
 {
-    public const KEY_PREFIX = 'presssentinel_2fa_';
+    public const KEY_PREFIX = 'niyiguard_2fa_';
 
     public function put(PendingChallenge $challenge): void
     {

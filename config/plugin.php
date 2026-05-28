@@ -8,20 +8,20 @@ if (! defined('ABSPATH')) {
 
 return [
     'app' => [
-        'name' => 'PressSentinel',
+        'name' => 'NiyiGuard',
         'env' => 'production',
         'debug' => false,
     ],
     /**
-     * Review and donation prompts on the PressSentinel dashboard.
+     * Review and donation prompts on the NiyiGuard dashboard.
      *
      * `review_url` — WordPress.org (or other) review link. Leave empty to hide the button.
      * `donation_url` — Ko-fi (or other) tip page. Leave empty to hide the donate button.
      *
-     * Filter: `presssentinel_support` — adjust `review_url`, `donation_url`, `donation_label`.
+     * Filter: `niyiguard_support` — adjust `review_url`, `donation_url`, `donation_label`.
      */
     'support' => [
-        'review_url' => 'https://wordpress.org/support/plugin/press-sentinel/reviews/#new-post',
+        'review_url' => 'https://wordpress.org/support/plugin/niyiguard/reviews/#new-post',
         'donation_url' => 'https://ko-fi.com/harish282gmailcom',
         'donation_label' => 'Support on Ko-fi',
     ],
@@ -32,12 +32,12 @@ return [
     'logging' => [
         'channel' => 'file',
         'level' => 'info',
-        'file' => 'presssentinel.log',
+        'file' => 'niyiguard.log',
     ],
     /**
      * Disguise default `wp-login.php` behind a custom URL slug. Master
      * `enabled` is mirrored on the dashboard; slug is configured on
-     * PressSentinel → URL disguise. Off by default — enabling without saving
+     * NiyiGuard → URL disguise. Off by default — enabling without saving
      * permalinks / slug can lock admins out.
      */
     'url_disguise' => [
@@ -47,7 +47,7 @@ return [
         'block_default_wp_login' => true,
     ],
     'rate_limit' => [
-        // Master switch. Mirrored on the PressSentinel dashboard's feature
+        // Master switch. Mirrored on the NiyiGuard dashboard's feature
         // toggle list and the dedicated Rate Limiting settings page.
         // Default off: enable after tuning — global HTTP enforcement skips wp-admin.
         'enabled' => false,
@@ -65,7 +65,7 @@ return [
      * Emergency recovery when login disguise, lockouts, or rate limits block access.
      * Prefer wp-config.php (loaded first):
      *
-     *     define('PRESS_SENTINEL_SAFE_MODE', true);
+     *     define('NIYIGUARD_SAFE_MODE', true);
      *
      * Or set `safe_mode` to true here, reload once, sign in, then turn it off again.
      */
@@ -76,7 +76,7 @@ return [
         'enabled' => true,
         'retention_days' => 90,
         'auto_prune_enabled' => true,
-        // Events below this PSR-3 level are not inserted into wp_presssentinel_audit_logs.
+        // Events below this PSR-3 level are not inserted into wp_niyiguard_audit_logs.
         'min_storage_level' => 'notice',
         'mirror_to_file_logger' => false,
         'listeners' => [
@@ -106,8 +106,8 @@ return [
 
         'two_factor' => [
             // The HMAC issuer string baked into provisioning URIs — shows up in the
-            // user's authenticator app (e.g., "PressSentinel: alice@example.com").
-            'issuer' => 'PressSentinel',
+            // user's authenticator app (e.g., "NiyiGuard: alice@example.com").
+            'issuer' => 'NiyiGuard',
             // How long a pending 2FA challenge stays valid after the user submits
             // their password but before they enter the code.
             'challenge_ttl_seconds' => 600,
@@ -145,7 +145,7 @@ return [
     ],
     'security' => [
         // Salt for WooCommerce abuse counters and behaviour clocks (not licensing).
-        // Override in wp-config.php: define('PRESS_SENTINEL_INTERNAL_SECRET', '…');
+        // Override in wp-config.php: define('NIYIGUARD_INTERNAL_SECRET', '…');
         'internal_secret' => 'change-me-in-production',
     ],
 
@@ -166,7 +166,7 @@ return [
             // when the admin explicitly wants instant rejection.
             'min_seconds_to_submit' => 0,
             'timing_action' => 'report',
-            'honeypot_field_name' => 'presssentinel_hp',
+            'honeypot_field_name' => 'niyiguard_hp',
             'bot' => [
                 // Extra User-Agent substrings to flag as scanners. The middleware
                 // already ships with sqlmap/nikto/wpscan/curl/wget/etc.
@@ -194,7 +194,7 @@ return [
             // Hard-deny disposable email domains on registration.
             'deny_disposable_emails' => true,
             // HoneypotMiddleware: hidden field name + min seconds to submit.
-            'honeypot_field_name' => 'presssentinel_hp',
+            'honeypot_field_name' => 'niyiguard_hp',
             'min_seconds_to_submit' => 0,
         ],
 
@@ -254,7 +254,7 @@ return [
     ],
     'security_headers' => [
         // Master switch for the entire feature. When false, no header is emitted
-        // regardless of the per-header `enabled` flags. Lets the PressSentinel
+        // regardless of the per-header `enabled` flags. Lets the NiyiGuard
         // dashboard turn the whole module off in one click without zeroing the
         // per-header config (which an admin may want to keep for later).
         'enabled' => true,

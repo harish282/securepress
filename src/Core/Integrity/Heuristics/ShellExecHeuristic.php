@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity\Heuristics;
+namespace NiyiGuard\Core\Integrity\Heuristics;
 
-use PressSentinel\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingSeverity;
 
 /**
  * Flags use of OS command-execution functions with dynamic (variable) arguments.

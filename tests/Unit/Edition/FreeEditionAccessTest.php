@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Edition;
+namespace NiyiGuard\Tests\Unit\Edition;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Edition\EditionStatus;
-use PressSentinel\Core\Edition\FreeEditionAccess;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Edition\EditionStatus;
+use NiyiGuard\Core\Edition\FreeEditionAccess;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class FreeEditionAccessTest extends TestCase
 {

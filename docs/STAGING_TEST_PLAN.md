@@ -1,4 +1,4 @@
-# PressSentinel — Staging test plan
+# NiyiGuard — Staging test plan
 
 Use this checklist on a **staging** site before production. Work through sections in order the first time; later releases can re-run only what changed.
 
@@ -27,36 +27,36 @@ Use this checklist on a **staging** site before production. Work through section
 ```bash
 # From the plugin dev repo
 bash scripts/build-release-zip.sh dev
-# Copies to wp-content/plugins/presssentinel on this machine's WP tree
+# Copies to wp-content/plugins/niyiguard on this machine's WP tree
 ```
 
 Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in **Plugins**.
 
 **After activation**
 
-1. Open **Press Sentinel → Dashboard** (`admin.php?page=presssentinel`).
+1. Open **NiyiGuard → Dashboard** (`admin.php?page=niyiguard`).
 2. Confirm no PHP errors or “requirements” admin notice.
 3. (Recommended) Download and install the **MU loader** from the dashboard callout, then reload the dashboard — callout should disappear when detected.
-4. Open **Press Sentinel → Health** (`admin.php?page=presssentinel-health`) and note any failed rows before deep testing.
+4. Open **NiyiGuard → Health** (`admin.php?page=niyiguard-health`) and note any failed rows before deep testing.
 
 **Useful paths**
 
 | Screen | Admin URL slug |
 | --- | --- |
-| Dashboard | `page=presssentinel` |
-| Authentication | `page=presssentinel-authentication` |
-| Security Headers | `page=presssentinel-security-headers` |
-| Rate limiting | `page=presssentinel-rate-limit` |
-| URL disguise | `page=presssentinel-url-disguise` |
-| File integrity | `page=presssentinel-file-integrity` |
-| Audit log | `page=presssentinel-audit-logs` |
-| Audit settings | `page=presssentinel-audit-settings` |
-| WooCommerce (Pro) | `page=presssentinel-woocommerce` |
-| License | `page=presssentinel-license` |
+| Dashboard | `page=niyiguard` |
+| Authentication | `page=niyiguard-authentication` |
+| Security Headers | `page=niyiguard-security-headers` |
+| Rate limiting | `page=niyiguard-rate-limit` |
+| URL disguise | `page=niyiguard-url-disguise` |
+| File integrity | `page=niyiguard-file-integrity` |
+| Audit log | `page=niyiguard-audit-logs` |
+| Audit settings | `page=niyiguard-audit-settings` |
+| WooCommerce (Pro) | `page=niyiguard-woocommerce` |
+| License | `page=niyiguard-license` |
 | Account Security (users) | Top-level **Account Security** menu (when auth hardening is on) |
 
 **Log file (optional)**  
-`wp-content/plugins/presssentinel/storage/logs/presssentinel.log` (if file logging is enabled in config).
+`wp-content/plugins/niyiguard/storage/logs/niyiguard.log` (if file logging is enabled in config).
 
 ---
 
@@ -64,7 +64,7 @@ Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in 
 
 - [ ] Plugin activates without fatal errors.
 - [ ] Dashboard loads; feature toggles reflect saved state.
-- [ ] Health diagnostics: custom tables exist (`presssentinel_audit_logs`, sessions, integrity tables when modules have run).
+- [ ] Health diagnostics: custom tables exist (`niyiguard_audit_logs`, sessions, integrity tables when modules have run).
 - [ ] Run PHPUnit locally on the release commit: `vendor/bin/phpunit` (509 tests should pass).
 - [ ] Plugin Check report is clean on the same build you deployed.
 
@@ -81,7 +81,7 @@ Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in 
 
 **Steps**
 
-1. Go to **Press Sentinel → Dashboard**.
+1. Go to **NiyiGuard → Dashboard**.
 2. Note status cards (Authentication, Headers, Integrity, Audit, License).
 3. Turn **one** module off (e.g. Security Headers), save, reload — card should show off.
 4. Turn it back on and save.
@@ -99,7 +99,7 @@ Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in 
 
 1. Enable **Audit log** on the dashboard if off.
 2. **Plugins →** deactivate then activate any inactive plugin (or switch a harmless plugin).
-3. Open **Press Sentinel → Audit log**.
+3. Open **NiyiGuard → Audit log**.
 4. Filter by category **plugin** (if available) and find the activation/deactivation event.
 5. Open **Audit settings** — set retention (e.g. 90 days), save.
 6. Use **Run prune now** (confirm dialog) — only old rows beyond retention should be removed.
@@ -119,7 +119,7 @@ Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in 
 
 **Steps**
 
-1. **Press Sentinel → Authentication** — confirm lockout enabled (defaults: 5 attempts / 15 min window / 15 min lock).
+1. **NiyiGuard → Authentication** — confirm lockout enabled (defaults: 5 attempts / 15 min window / 15 min lock).
 2. Log out. Attempt login with a **fake password** for test user `staging_lockout_test` (create if needed) until locked out.
 3. Try again immediately — should be blocked (message or delay).
 4. Check **Audit log** for failed-login / lockout-related auth events.
@@ -181,7 +181,7 @@ Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in 
 **Steps**
 
 1. Enable **Security headers** on dashboard.
-2. **Press Sentinel → Security Headers** — enable **one** header first (e.g. `X-Frame-Options: SAMEORIGIN`), save.
+2. **NiyiGuard → Security Headers** — enable **one** header first (e.g. `X-Frame-Options: SAMEORIGIN`), save.
 3. Visit the **front-end home page** in a browser → DevTools → **Network** → response headers: confirm header present.
 4. Enable **HSTS** only if staging uses HTTPS everywhere (avoid on mixed HTTP staging).
 5. Enable **CSP** with a **report-only or loose policy** first; tighten only after checking console violations.
@@ -198,7 +198,7 @@ Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in 
 
 **Steps**
 
-1. **Press Sentinel → Rate limiting** — set a **low** limit for testing (e.g. **10 requests / 60 seconds**), enable module, save.
+1. **NiyiGuard → Rate limiting** — set a **low** limit for testing (e.g. **10 requests / 60 seconds**), enable module, save.
 2. **REST:** run 15 quick requests (browser console, `curl`, or REST client):
 
    ```bash
@@ -223,7 +223,7 @@ Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in 
 **Steps**
 
 1. Enable **File integrity** on dashboard.
-2. **Press Sentinel → File integrity** — run **baseline** / **scan** for **plugins** scope (smallest useful scope).
+2. **NiyiGuard → File integrity** — run **baseline** / **scan** for **plugins** scope (smallest useful scope).
 3. Wait for completion — review findings table (expect zero or known items on clean staging).
 4. Optional negative test: add a harmless marker file under a test plugin directory (staging only), rescan — expect **added/changed** finding; remove file and rescan.
 
@@ -241,7 +241,7 @@ Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in 
 
 **Steps**
 
-1. **Press Sentinel → URL disguise** — choose a unique slug (e.g. `secure-login-staging-xyz`), save.
+1. **NiyiGuard → URL disguise** — choose a unique slug (e.g. `secure-login-staging-xyz`), save.
 2. Flush permalinks: **Settings → Permalinks → Save** (no change needed).
 3. Log out. Visit `https://YOUR-SITE/secure-login-staging-xyz/` — login form should load.
 4. Visit `https://YOUR-SITE/wp-login.php` — should 404 or redirect per settings.
@@ -262,13 +262,13 @@ Or upload the zip from `bash scripts/build-release-zip.sh prod` and activate in 
 
 **Steps**
 
-1. Confirm **Press Sentinel → License** shows Pro/evaluation active.
+1. Confirm **NiyiGuard → License** shows Pro/evaluation active.
 2. Enable **WooCommerce Protection** on dashboard.
-3. **Press Sentinel → WooCommerce** — review defaults; leave checkout pipeline on.
+3. **NiyiGuard → WooCommerce** — review defaults; leave checkout pipeline on.
 4. **Registration abuse:** submit customer registration with disposable-style email if you have a test domain blocked in config — expect block or logged decision.
 5. **Cart velocity:** rapid add-to-cart from same session/IP — watch for throttle or audit entries.
 6. **Checkout:** place a **normal** test order — should succeed.
-7. **Checkout bot signals:** submit checkout with honeypot field filled (browser devtools → set hidden `presssentinel_hp` or configured name) — expect block or high fraud score in logs/audit.
+7. **Checkout bot signals:** submit checkout with honeypot field filled (browser devtools → set hidden `niyiguard_hp` or configured name) — expect block or high fraud score in logs/audit.
 8. Check **Audit log** for WooCommerce-related events.
 
 **Pass criteria**
@@ -288,7 +288,7 @@ Prove you can regain access if something locks you out.
 1. Add to `wp-config.php` **above** “That’s all, stop editing!”:
 
    ```php
-   define( 'PRESS_SENTINEL_SAFE_MODE', true );
+   define( 'NIYIGUARD_SAFE_MODE', true );
    ```
 
 2. Load wp-admin and disguised login — lockout, disguise, and global rate limit should be **bypassed**.
@@ -308,7 +308,7 @@ Prove you can regain access if something locks you out.
 
 **Steps**
 
-1. **Press Sentinel → License** — note evaluation/trial status.
+1. **NiyiGuard → License** — note evaluation/trial status.
 2. If testing key validation: paste a valid test key format your issuer provides; save.
 3. Confirm WooCommerce menu/features match license state.
 
@@ -355,7 +355,7 @@ For sites using custom routes, verify SDK wiring from [USAGE.md](USAGE.md):
 
 | Symptom | Action |
 | --- | --- |
-| Locked out of login | `define( 'PRESS_SENTINEL_SAFE_MODE', true );` in `wp-config.php` |
+| Locked out of login | `define( 'NIYIGUARD_SAFE_MODE', true );` in `wp-config.php` |
 | 429 on REST/AJAX | Disable rate limit or raise limit; exclude test IPs if you add custom logic later |
 | Headers break site | Disable CSP or loosen policy; disable HSTS on non-HTTPS staging |
 | No audit events | Check dashboard toggle + **Audit settings** listeners + `min_storage_level` |

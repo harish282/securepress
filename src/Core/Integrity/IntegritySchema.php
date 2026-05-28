@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity;
+namespace NiyiGuard\Core\Integrity;
 
 /**
  * DDL + idempotent migration for the two integrity-monitoring tables.
  *
  * Two tables instead of one because their access patterns are completely different:
  *
- *  - `wp_presssentinel_integrity_baselines` is a wide, write-heavy table: every scan
+ *  - `wp_niyiguard_integrity_baselines` is a wide, write-heavy table: every scan
  *    re-writes the entire baseline rows for one scope. Indexed by `(scope, path)` so
  *    diff lookups are O(log n).
- *  - `wp_presssentinel_integrity_findings` is append-mostly and read by the admin UI.
+ *  - `wp_niyiguard_integrity_findings` is append-mostly and read by the admin UI.
  *    Indexed by `(severity, created_at)` for the default "highest severity, newest
  *    first" listing.
  *
@@ -22,10 +22,10 @@ namespace PressSentinel\Core\Integrity;
 // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Schema DDL via dbDelta; DROP uses internal table names only.
 final class IntegritySchema
 {
-    public const BASELINE_TABLE = 'presssentinel_integrity_baselines';
-    public const FINDING_TABLE = 'presssentinel_integrity_findings';
+    public const BASELINE_TABLE = 'niyiguard_integrity_baselines';
+    public const FINDING_TABLE = 'niyiguard_integrity_findings';
 
-    public const VERSION_OPTION = 'presssentinel_integrity_db_version';
+    public const VERSION_OPTION = 'niyiguard_integrity_db_version';
     public const VERSION = 1;
 
     public function baselineTable(): string

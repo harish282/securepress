@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Storage;
+namespace NiyiGuard\WooCommerce\Storage;
 
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Production abuse counter store, backed by WordPress transients.

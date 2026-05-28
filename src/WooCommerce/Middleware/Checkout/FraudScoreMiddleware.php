@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Middleware\Checkout;
+namespace NiyiGuard\WooCommerce\Middleware\Checkout;
 
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
-use PressSentinel\WooCommerce\Services\FraudScoreService;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Middleware\WcMiddlewareInterface;
+use NiyiGuard\WooCommerce\Services\FraudScoreService;
 
 /**
  * Pipeline tail: turn the accumulated signal score into a final {@see Decision}.

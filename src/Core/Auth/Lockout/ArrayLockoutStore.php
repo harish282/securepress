@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Lockout;
+namespace NiyiGuard\Core\Auth\Lockout;
 
 /**
  * In-memory {@see LockoutStoreInterface} for tests.

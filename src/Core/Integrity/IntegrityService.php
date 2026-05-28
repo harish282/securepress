@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity;
+namespace NiyiGuard\Core\Integrity;
 
-use PressSentinel\Core\Integrity\Scanners\ScannerInterface;
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Logging\NullLogger;
+use NiyiGuard\Core\Integrity\Scanners\ScannerInterface;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\NullLogger;
 
 /**
  * The application-level orchestrator for file-integrity scanning.

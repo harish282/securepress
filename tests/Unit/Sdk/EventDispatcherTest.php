@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Sdk;
+namespace NiyiGuard\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Sdk\Events\EventDispatcher;
+use NiyiGuard\Sdk\Events\EventDispatcher;
 
 /**
- * @see \PressSentinel\Sdk\Events\EventDispatcher
+ * @see \NiyiGuard\Sdk\Events\EventDispatcher
  */
 final class EventDispatcherTest extends TestCase
 {

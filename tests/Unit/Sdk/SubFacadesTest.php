@@ -2,45 +2,45 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Sdk;
+namespace NiyiGuard\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Audit\ArrayAuditLogRepository;
-use PressSentinel\Core\Audit\AuditLogger;
-use PressSentinel\Core\Audit\AuditLoggerInterface;
-use PressSentinel\Core\Auth\Lockout\ArrayLockoutStore;
-use PressSentinel\Core\Auth\Lockout\LockoutStoreInterface;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
-use PressSentinel\Core\Auth\Notifications\ArrayMailer;
-use PressSentinel\Core\Auth\Notifications\AuthNotifier;
-use PressSentinel\Core\Auth\Sessions\ArraySessionRepository;
-use PressSentinel\Core\Auth\Sessions\SessionFingerprinter;
-use PressSentinel\Core\Auth\Sessions\SessionRepositoryInterface;
-use PressSentinel\Core\Auth\Sessions\SessionService;
-use PressSentinel\Core\Auth\TwoFactor\ArrayChallengeStore;
-use PressSentinel\Core\Auth\TwoFactor\ArrayTwoFactorRepository;
-use PressSentinel\Core\Auth\TwoFactor\ChallengeStoreInterface;
-use PressSentinel\Core\Auth\TwoFactor\EmailOtpProvider;
-use PressSentinel\Core\Auth\TwoFactor\RecoveryCodeService;
-use PressSentinel\Core\Auth\TwoFactor\TotpProvider;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorUserRepositoryInterface;
-use PressSentinel\Core\Container;
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Facades\Security;
-use PressSentinel\Sdk\AuditApi;
-use PressSentinel\Sdk\LockoutApi;
-use PressSentinel\Sdk\SessionApi;
-use PressSentinel\Sdk\TwoFactorApi;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Audit\ArrayAuditLogRepository;
+use NiyiGuard\Core\Audit\AuditLogger;
+use NiyiGuard\Core\Audit\AuditLoggerInterface;
+use NiyiGuard\Core\Auth\Lockout\ArrayLockoutStore;
+use NiyiGuard\Core\Auth\Lockout\LockoutStoreInterface;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutPolicy;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutService;
+use NiyiGuard\Core\Auth\Notifications\ArrayMailer;
+use NiyiGuard\Core\Auth\Notifications\AuthNotifier;
+use NiyiGuard\Core\Auth\Sessions\ArraySessionRepository;
+use NiyiGuard\Core\Auth\Sessions\SessionFingerprinter;
+use NiyiGuard\Core\Auth\Sessions\SessionRepositoryInterface;
+use NiyiGuard\Core\Auth\Sessions\SessionService;
+use NiyiGuard\Core\Auth\TwoFactor\ArrayChallengeStore;
+use NiyiGuard\Core\Auth\TwoFactor\ArrayTwoFactorRepository;
+use NiyiGuard\Core\Auth\TwoFactor\ChallengeStoreInterface;
+use NiyiGuard\Core\Auth\TwoFactor\EmailOtpProvider;
+use NiyiGuard\Core\Auth\TwoFactor\RecoveryCodeService;
+use NiyiGuard\Core\Auth\TwoFactor\TotpProvider;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorService;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorUserRepositoryInterface;
+use NiyiGuard\Core\Container;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Facades\Security;
+use NiyiGuard\Sdk\AuditApi;
+use NiyiGuard\Sdk\LockoutApi;
+use NiyiGuard\Sdk\SessionApi;
+use NiyiGuard\Sdk\TwoFactorApi;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * @see \PressSentinel\Sdk\TwoFactorApi
- * @see \PressSentinel\Sdk\SessionApi
- * @see \PressSentinel\Sdk\LockoutApi
- * @see \PressSentinel\Sdk\AuditApi
+ * @see \NiyiGuard\Sdk\TwoFactorApi
+ * @see \NiyiGuard\Sdk\SessionApi
+ * @see \NiyiGuard\Sdk\LockoutApi
+ * @see \NiyiGuard\Sdk\AuditApi
  */
 final class SubFacadesTest extends TestCase
 {
@@ -132,9 +132,9 @@ final class SubFacadesTest extends TestCase
         self::assertNotNull($event);
 
         /** @var ArrayAuditLogRepository $repo */
-        $repo = $container->get(\PressSentinel\Core\Audit\AuditLogRepositoryInterface::class);
+        $repo = $container->get(\NiyiGuard\Core\Audit\AuditLogRepositoryInterface::class);
         self::assertSame(1, $repo->count());
-        $page = $repo->paginate(new \PressSentinel\Core\Audit\AuditLogQuery());
+        $page = $repo->paginate(new \NiyiGuard\Core\Audit\AuditLogQuery());
         self::assertSame('user.login.success', $page->items[0]->action);
     }
 
@@ -150,9 +150,9 @@ final class SubFacadesTest extends TestCase
             ->record();
 
         /** @var ArrayAuditLogRepository $repo */
-        $repo = $container->get(\PressSentinel\Core\Audit\AuditLogRepositoryInterface::class);
+        $repo = $container->get(\NiyiGuard\Core\Audit\AuditLogRepositoryInterface::class);
         self::assertSame(1, $repo->count());
-        $page = $repo->paginate(new \PressSentinel\Core\Audit\AuditLogQuery());
+        $page = $repo->paginate(new \NiyiGuard\Core\Audit\AuditLogQuery());
         $first = $page->items[0];
         self::assertSame('order.refunded', $first->action);
         self::assertSame('woocommerce', $first->category);
@@ -207,13 +207,13 @@ final class SubFacadesTest extends TestCase
 
         // Audit.
         $container->singleton(
-            \PressSentinel\Core\Audit\AuditLogRepositoryInterface::class,
-            static fn (): \PressSentinel\Core\Audit\AuditLogRepositoryInterface => new ArrayAuditLogRepository()
+            \NiyiGuard\Core\Audit\AuditLogRepositoryInterface::class,
+            static fn (): \NiyiGuard\Core\Audit\AuditLogRepositoryInterface => new ArrayAuditLogRepository()
         );
         $container->singleton(
             AuditLoggerInterface::class,
             static fn (Container $c): AuditLoggerInterface => new AuditLogger(
-                $c->get(\PressSentinel\Core\Audit\AuditLogRepositoryInterface::class),
+                $c->get(\NiyiGuard\Core\Audit\AuditLogRepositoryInterface::class),
                 new NullLogger(),
                 true,
                 false

@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Audit\AuditEventLevel;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\Audit\AuditEventLevel;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
- * PressSentinel → Audit log settings: retention, automatic pruning, and minimum DB level.
+ * NiyiGuard → Audit log settings: retention, automatic pruning, and minimum DB level.
  */
 final class AuditLogSettingsPage
 {
-    public const PAGE_SLUG = 'presssentinel-audit-settings';
+    public const PAGE_SLUG = 'niyiguard-audit-settings';
 
-    public const OPTION_GROUP = 'presssentinel_audit_log_group';
+    public const OPTION_GROUP = 'niyiguard_audit_log_group';
 
-    public const SECTION = 'presssentinel_section_audit_log';
+    public const SECTION = 'niyiguard_section_audit_log';
 
     public function __construct(
         private readonly AuditLogOptions $options,
@@ -35,8 +35,8 @@ final class AuditLogSettingsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel Audit Log Settings',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard Audit Log Settings',
             'Audit log settings',
             'manage_options',
             self::PAGE_SLUG,
@@ -134,7 +134,7 @@ final class AuditLogSettingsPage
             );
         }
         echo '</select>';
-        echo '<p class="description">Events below this severity are not written to <code>wp_presssentinel_audit_logs</code> '
+        echo '<p class="description">Events below this severity are not written to <code>wp_niyiguard_audit_logs</code> '
             . '(recommended: <code>notice</code> or higher for production). They can still be mirrored to the file log below.</p>';
     }
 
@@ -143,7 +143,7 @@ final class AuditLogSettingsPage
         $checked = $this->options->mirrorToFileLogger() ? ' checked' : '';
         $name = AuditLogOptions::OPTION_NAME . '[mirror_to_file_logger]';
         printf(
-            '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Also write stored (and sub-threshold) events to <code>storage/logs/presssentinel.log</code></label>',
+            '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Also write stored (and sub-threshold) events to <code>wp-content/uploads/niyiguard/logs/niyiguard.log</code></label>',
             esc_attr($name),
             esc_attr($checked)
         );

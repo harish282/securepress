@@ -8,8 +8,8 @@ if (! defined('ABSPATH')) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
 
 
-use PressSentinel\Admin\PressSentinelMenuPage;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Admin\NiyiGuardMenuPage;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * @var string $pageSlug
@@ -22,7 +22,7 @@ use PressSentinel\Core\Support\WpHelper;
  */
 ?>
 <div class="wrap">
-    <h1>PressSentinel audit log settings</h1>
+    <h1>NiyiGuard audit log settings</h1>
     <p>Manage database growth for the security audit trail before large deployments.</p>
 
     <?php if (!$masterEnabled): ?>
@@ -32,9 +32,9 @@ use PressSentinel\Core\Support\WpHelper;
                 Events are not recorded until you enable the feature on the
                 <a href="<?php echo esc_attr(
                     \function_exists('admin_url')
-                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . PressSentinelMenuPage::PARENT_SLUG)
+                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . NiyiGuardMenuPage::PARENT_SLUG)
                         : '#'
-                ) ?>">PressSentinel dashboard</a>.
+                ) ?>">NiyiGuard dashboard</a>.
                 Retention and level settings below still apply once logging is turned back on.
             </p>
         </div>

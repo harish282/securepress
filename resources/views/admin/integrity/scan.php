@@ -8,10 +8,10 @@ if (! defined('ABSPATH')) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
 
 
-use PressSentinel\Admin\FileIntegrityPage;
-use PressSentinel\Core\Integrity\Finding;
-use PressSentinel\Core\Integrity\FindingSeverity;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Admin\FileIntegrityPage;
+use NiyiGuard\Core\Integrity\Finding;
+use NiyiGuard\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * @var list<Finding>          $findings
@@ -50,7 +50,7 @@ foreach ($open as $finding) {
 
 ?>
 <div class="wrap">
-    <h1>PressSentinel &mdash; File integrity</h1>
+    <h1>NiyiGuard &mdash; File integrity</h1>
 
     <?php if (is_string($status) && $status !== '') : ?>
         <div class="notice notice-info is-dismissible">
@@ -101,19 +101,19 @@ foreach ($open as $finding) {
     <h2 style="margin-top: 2em;">Actions</h2>
     <p>
         <form method="post" action="<?php echo esc_url($adminUrl); ?>" style="display:inline-block; margin-right: 8px;">
-            <input type="hidden" name="action" value="presssentinel_integrity_rescan" />
+            <input type="hidden" name="action" value="niyiguard_integrity_rescan" />
             <?php WpHelper::adminNonceField(FileIntegrityPage::NONCE_ACTION); ?>
             <button type="submit" class="button button-primary">Run scan now</button>
         </form>
 
         <form method="post" action="<?php echo esc_url($adminUrl); ?>" style="display:inline-block; margin-right: 8px;">
-            <input type="hidden" name="action" value="presssentinel_integrity_clear" />
+            <input type="hidden" name="action" value="niyiguard_integrity_clear" />
             <?php WpHelper::adminNonceField(FileIntegrityPage::NONCE_ACTION); ?>
             <button type="submit" class="button" onclick="return confirm('Permanently delete every finding?');">Clear all findings</button>
         </form>
 
         <form method="post" action="<?php echo esc_url($adminUrl); ?>" style="display:inline-block;">
-            <input type="hidden" name="action" value="presssentinel_integrity_reset_baseline" />
+            <input type="hidden" name="action" value="niyiguard_integrity_reset_baseline" />
             <input type="hidden" name="scope" value="" />
             <?php WpHelper::adminNonceField(FileIntegrityPage::NONCE_ACTION); ?>
             <button type="submit" class="button" onclick="return confirm('Reset every baseline? The next scan will rebuild them.');">Reset all baselines</button>
@@ -163,13 +163,13 @@ foreach ($open as $finding) {
                         <td><?php echo esc_html(gmdate('Y-m-d H:i:s', $finding->createdAt)); ?> UTC</td>
                         <td>
                             <form method="post" action="<?php echo esc_url($adminUrl); ?>" style="display:inline-block;">
-                                <input type="hidden" name="action" value="presssentinel_integrity_review" />
+                                <input type="hidden" name="action" value="niyiguard_integrity_review" />
                                 <input type="hidden" name="id" value="<?php echo (int) ($finding->id ?? 0); ?>" />
                                 <?php WpHelper::adminNonceField(FileIntegrityPage::NONCE_ACTION); ?>
                                 <button type="submit" class="button button-small">Mark reviewed</button>
                             </form>
                             <form method="post" action="<?php echo esc_url($adminUrl); ?>" style="display:inline-block;">
-                                <input type="hidden" name="action" value="presssentinel_integrity_delete" />
+                                <input type="hidden" name="action" value="niyiguard_integrity_delete" />
                                 <input type="hidden" name="id" value="<?php echo (int) ($finding->id ?? 0); ?>" />
                                 <?php WpHelper::adminNonceField(FileIntegrityPage::NONCE_ACTION); ?>
                                 <button type="submit" class="button button-small">Delete</button>

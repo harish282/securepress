@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Middleware\Checkout;
+namespace NiyiGuard\WooCommerce\Middleware\Checkout;
 
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Signal;
-use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
-use PressSentinel\WooCommerce\Services\CartFingerprinter;
-use PressSentinel\WooCommerce\Storage\AbuseCounterStoreInterface;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Signal;
+use NiyiGuard\WooCommerce\Middleware\WcMiddlewareInterface;
+use NiyiGuard\WooCommerce\Services\CartFingerprinter;
+use NiyiGuard\WooCommerce\Storage\AbuseCounterStoreInterface;
 
 /**
  * Detects the "same cart submitted 5 times" abuse pattern.

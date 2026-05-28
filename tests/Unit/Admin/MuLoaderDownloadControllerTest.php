@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Admin;
+namespace NiyiGuard\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Admin\MuLoaderDownloadController;
-use PressSentinel\Admin\MuLoaderStatus;
-use PressSentinel\Tests\Stubs\WpDieException;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Admin\MuLoaderDownloadController;
+use NiyiGuard\Admin\MuLoaderStatus;
+use NiyiGuard\Tests\Stubs\WpDieException;
+use NiyiGuard\Tests\Stubs\WpStubState;
 use ZipArchive;
 
 /**
@@ -35,17 +35,17 @@ final class MuLoaderDownloadControllerTest extends TestCase
     protected function setUp(): void
     {
         WpStubState::reset();
-        if (!\defined('PRESS_SENTINEL_TESTING')) {
-            \define('PRESS_SENTINEL_TESTING', true);
+        if (!\defined('NIYIGUARD_TESTING')) {
+            \define('NIYIGUARD_TESTING', true);
         }
 
-        $dir = \sys_get_temp_dir() . '/presssentinel-mu-controller-' . \uniqid('', true);
+        $dir = \sys_get_temp_dir() . '/niyiguard-mu-controller-' . \uniqid('', true);
         \mkdir($dir, 0700, true);
         $this->tempDirs[] = $dir;
-        $this->templatePath = $dir . '/00-press-sentinel-loader.php';
+        $this->templatePath = $dir . '/00-niyiguard-loader.php';
         \file_put_contents(
             $this->templatePath,
-            "<?php\n// PressSentinel MU loader (test fixture)\nrequire_once __DIR__ . '/press-sentinel.php';\n"
+            "<?php\n// NiyiGuard MU loader (test fixture)\nrequire_once __DIR__ . '/niyiguard.php';\n"
         );
     }
 
@@ -72,7 +72,7 @@ final class MuLoaderDownloadControllerTest extends TestCase
 
         self::assertTrue(
             WpStubState::hasAction('admin_post_' . MuLoaderDownloadController::ACTION),
-            'controller must register admin_post_presssentinel_mu_loader_download'
+            'controller must register admin_post_niyiguard_mu_loader_download'
         );
     }
 
@@ -111,7 +111,7 @@ final class MuLoaderDownloadControllerTest extends TestCase
 
         self::assertSame('zip', $payload['format']);
         self::assertSame('application/zip', $payload['contentType']);
-        self::assertSame('presssentinel-mu-loader.zip', $payload['filename']);
+        self::assertSame('niyiguard-mu-loader.zip', $payload['filename']);
         self::assertNotSame('', $payload['body']);
 
         // Round-trip the zip back through ZipArchive to confirm the
@@ -124,14 +124,14 @@ final class MuLoaderDownloadControllerTest extends TestCase
         try {
             self::assertSame(2, $zip->numFiles, 'expected loader + INSTALL.txt');
 
-            $loader = $zip->getFromName('00-press-sentinel-loader.php');
+            $loader = $zip->getFromName('00-niyiguard-loader.php');
             self::assertIsString($loader);
-            self::assertStringContainsString('PressSentinel MU loader', $loader);
+            self::assertStringContainsString('NiyiGuard MU loader', $loader);
 
             $readme = $zip->getFromName('INSTALL.txt');
             self::assertIsString($readme);
             self::assertStringContainsString('wp-content/mu-plugins', $readme);
-            self::assertStringContainsString('00-press-sentinel-loader.php', $readme);
+            self::assertStringContainsString('00-niyiguard-loader.php', $readme);
         } finally {
             $zip->close();
         }
@@ -144,7 +144,7 @@ final class MuLoaderDownloadControllerTest extends TestCase
         WpStubState::registerNonce(MuLoaderDownloadController::ACTION, 'tk');
         $_POST['_wpnonce'] = $_REQUEST['_wpnonce'] = 'tk';
 
-        // The PRESS_SENTINEL_TESTING short-circuit means handle() returns
+        // The NIYIGUARD_TESTING short-circuit means handle() returns
         // cleanly without sending headers or calling exit. If it didn't,
         // we'd never reach the assertion line.
         $controller->handle();
@@ -154,7 +154,7 @@ final class MuLoaderDownloadControllerTest extends TestCase
 
     private function makeController(): MuLoaderDownloadController
     {
-        $status = new MuLoaderStatus($this->templatePath, \sys_get_temp_dir(), '00-press-sentinel-loader.php');
+        $status = new MuLoaderStatus($this->templatePath, \sys_get_temp_dir(), '00-niyiguard-loader.php');
 
         return new MuLoaderDownloadController($status);
     }

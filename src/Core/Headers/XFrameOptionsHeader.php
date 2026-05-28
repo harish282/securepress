@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Headers;
+namespace NiyiGuard\Core\Headers;
 
 /**
  * Clickjacking protection via `X-Frame-Options`.
@@ -11,7 +11,7 @@ namespace PressSentinel\Core\Headers;
  * `ALLOW-FROM` is deprecated and intentionally not supported here — use a CSP
  * `frame-ancestors` directive instead.
  *
- * PressSentinel defaults to `SAMEORIGIN` because some WordPress core flows (preview pages,
+ * NiyiGuard defaults to `SAMEORIGIN` because some WordPress core flows (preview pages,
  * the customizer) embed admin URLs in iframes from the same origin.
  */
 final class XFrameOptionsHeader implements HeaderInterface

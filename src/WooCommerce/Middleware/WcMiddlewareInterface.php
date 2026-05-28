@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Middleware;
+namespace NiyiGuard\WooCommerce\Middleware;
 
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Decision;
 
 /**
  * Middleware contract for the WooCommerce pipelines.
  *
- * Distinct from the HTTP-level {@see \PressSentinel\Core\Middleware\MiddlewareInterface}
+ * Distinct from the HTTP-level {@see \NiyiGuard\Core\Middleware\MiddlewareInterface}
  * because the payload here is a typed {@see DetectionContext} rather than a generic
  * associative array, and the return shape is a typed {@see Decision} rather than a
  * mutated context.

@@ -2,30 +2,30 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Sdk;
+namespace NiyiGuard\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Container;
-use PressSentinel\Core\Http\RouteGuardRegistry;
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Core\Middleware\MiddlewareInterface;
-use PressSentinel\Core\Middleware\MiddlewarePipeline;
-use PressSentinel\Core\RateLimit\ArrayStore;
-use PressSentinel\Core\RateLimit\RateLimitStoreInterface;
-use PressSentinel\Core\RateLimit\RateLimiter;
-use PressSentinel\Core\Url\ArrayNonceStore;
-use PressSentinel\Core\Url\ArraySecretProvider;
-use PressSentinel\Core\Url\NonceStoreInterface;
-use PressSentinel\Core\Url\UrlSigner;
-use PressSentinel\Facades\Security;
-use PressSentinel\Sdk\Exceptions\RouteGuardException;
-use PressSentinel\Sdk\Routing\RouteBuilder;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Container;
+use NiyiGuard\Core\Http\RouteGuardRegistry;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Core\Middleware\MiddlewareInterface;
+use NiyiGuard\Core\Middleware\MiddlewarePipeline;
+use NiyiGuard\Core\RateLimit\ArrayStore;
+use NiyiGuard\Core\RateLimit\RateLimitStoreInterface;
+use NiyiGuard\Core\RateLimit\RateLimiter;
+use NiyiGuard\Core\Url\ArrayNonceStore;
+use NiyiGuard\Core\Url\ArraySecretProvider;
+use NiyiGuard\Core\Url\NonceStoreInterface;
+use NiyiGuard\Core\Url\UrlSigner;
+use NiyiGuard\Facades\Security;
+use NiyiGuard\Sdk\Exceptions\RouteGuardException;
+use NiyiGuard\Sdk\Routing\RouteBuilder;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * @see \PressSentinel\Sdk\Routing\RouteBuilder
- * @see \PressSentinel\Facades\Security::route
+ * @see \NiyiGuard\Sdk\Routing\RouteBuilder
+ * @see \NiyiGuard\Facades\Security::route
  */
 final class RouteBuilderTest extends TestCase
 {

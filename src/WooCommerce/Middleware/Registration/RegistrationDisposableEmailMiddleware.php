@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Middleware\Registration;
+namespace NiyiGuard\WooCommerce\Middleware\Registration;
 
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Signal;
-use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
-use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Signal;
+use NiyiGuard\WooCommerce\Middleware\WcMiddlewareInterface;
+use NiyiGuard\WooCommerce\Services\DisposableEmailRegistry;
 
 /**
  * Registration-side disposable-email check.
@@ -19,7 +19,7 @@ use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
  * email is, in practice, gaming the trial / coupon system.
  *
  * `$denyOnMatch = false` makes the middleware additive (just emit a signal) for
- * sites that prefer to let the {@see \PressSentinel\WooCommerce\Services\FraudScoreService}
+ * sites that prefer to let the {@see \NiyiGuard\WooCommerce\Services\FraudScoreService}
  * make the call.
  */
 final class RegistrationDisposableEmailMiddleware implements WcMiddlewareInterface

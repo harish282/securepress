@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Http;
+namespace NiyiGuard\Core\Http;
 
 /**
  * Collects URI patterns guarded by middleware or future route protection.

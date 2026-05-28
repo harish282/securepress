@@ -2,9 +2,9 @@
  * STAGING_TEST_PLAN.md — §6 Security headers
  */
 describe('Security headers', () => {
-  const master = 'presssentinel_security_headers[enabled]'
-  const xfoEnabled = 'presssentinel_security_headers[x_frame_options][enabled]'
-  const xfoValue = 'presssentinel_security_headers[x_frame_options][value]'
+  const master = 'niyiguard_security_headers[enabled]'
+  const xfoEnabled = 'niyiguard_security_headers[x_frame_options][enabled]'
+  const xfoValue = 'niyiguard_security_headers[x_frame_options][value]'
 
   beforeEach(() => {
     cy.wpLogin()
@@ -13,7 +13,7 @@ describe('Security headers', () => {
 
   after(() => {
     cy.wpLogin()
-    cy.visitPressSentinel('presssentinel-security-headers')
+    cy.visitNiyiGuard('niyiguard-security-headers')
     cy.get(`input[type="checkbox"][name="${master}"]`).then(($el) => {
       if ($el.prop('checked')) {
         cy.uncheckWpSetting(master)
@@ -23,7 +23,7 @@ describe('Security headers', () => {
   })
 
   it('enables X-Frame-Options on the front end', () => {
-    cy.visitPressSentinel('presssentinel-security-headers')
+    cy.visitNiyiGuard('niyiguard-security-headers')
     cy.checkWpSetting(master)
     cy.checkWpSetting(xfoEnabled)
     cy.get(`select[name="${xfoValue}"]`).select('SAMEORIGIN')
@@ -36,7 +36,7 @@ describe('Security headers', () => {
   })
 
   it('stops emitting headers when master switch is off', () => {
-    cy.visitPressSentinel('presssentinel-security-headers')
+    cy.visitNiyiGuard('niyiguard-security-headers')
     cy.uncheckWpSetting(master)
     cy.saveWpOptionsForm()
 

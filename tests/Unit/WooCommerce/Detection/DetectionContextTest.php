@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\WooCommerce\Detection;
+namespace NiyiGuard\Tests\Unit\WooCommerce\Detection;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Signal;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Signal;
 
 /**
- * @see \PressSentinel\WooCommerce\Detection\DetectionContext
- * @see \PressSentinel\WooCommerce\Detection\Decision
+ * @see \NiyiGuard\WooCommerce\Detection\DetectionContext
+ * @see \NiyiGuard\WooCommerce\Detection\Decision
  */
 final class DetectionContextTest extends TestCase
 {

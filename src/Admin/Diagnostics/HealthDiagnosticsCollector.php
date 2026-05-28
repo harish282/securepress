@@ -2,29 +2,29 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin\Diagnostics;
+namespace NiyiGuard\Admin\Diagnostics;
 
-use PressSentinel\Admin\FeatureDescriptor;
-use PressSentinel\Admin\FeatureRegistry;
-use PressSentinel\Admin\MuLoaderStatus;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Audit\AuditLogPruner;
-use PressSentinel\Core\Audit\AuditLogSchema;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Auth\Sessions\SessionPruner;
-use PressSentinel\Core\Auth\Sessions\SessionSchema;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\SecurityHeadersDispatcher;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\Integrity\IntegrityScheduler;
-use PressSentinel\Core\Integrity\IntegritySchema;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\Recovery\SafeMode;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
-use PressSentinel\WooCommerce\WooCommerceModule;
+use NiyiGuard\Admin\FeatureDescriptor;
+use NiyiGuard\Admin\FeatureRegistry;
+use NiyiGuard\Admin\MuLoaderStatus;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Audit\AuditLogPruner;
+use NiyiGuard\Core\Audit\AuditLogSchema;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Auth\Sessions\SessionPruner;
+use NiyiGuard\Core\Auth\Sessions\SessionSchema;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\SecurityHeadersDispatcher;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\Integrity\IntegrityScheduler;
+use NiyiGuard\Core\Integrity\IntegritySchema;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\Recovery\SafeMode;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\WooCommerce\Admin\WooCommerceProtectionOptions;
+use NiyiGuard\WooCommerce\WooCommerceModule;
 
 /**
  * Read-only snapshot of plugin health for the admin diagnostics screen.
@@ -32,7 +32,7 @@ use PressSentinel\WooCommerce\WooCommerceModule;
 // phpcs:disable WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Diagnostics probes; table names from schema helpers only.
 final class HealthDiagnosticsCollector
 {
-    private const TRANSIENT_PROBE_PREFIX = 'presssentinel_health_probe_';
+    private const TRANSIENT_PROBE_PREFIX = 'niyiguard_health_probe_';
 
     public function __construct(
         private readonly FeatureRegistry $features,
@@ -227,7 +227,7 @@ final class HealthDiagnosticsCollector
                 'hook' => 'login_form_sp_2fa',
                 'kind' => 'action',
                 'expected' => $authEnabled,
-                'note' => 'PressSentinel-specific login form action.',
+                'note' => 'NiyiGuard-specific login form action.',
             ],
             [
                 'label' => 'Auth hardening (lockout pre-check)',
@@ -241,7 +241,7 @@ final class HealthDiagnosticsCollector
                 'hook' => SessionPruner::CRON_HOOK,
                 'kind' => 'action',
                 'expected' => $sessionsOn,
-                'note' => 'Daily cron for presssentinel_sessions rows.',
+                'note' => 'Daily cron for niyiguard_sessions rows.',
             ],
             [
                 'label' => 'File integrity scan',

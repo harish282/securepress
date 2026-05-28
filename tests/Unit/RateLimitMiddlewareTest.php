@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit;
+namespace NiyiGuard\Tests\Unit;
 
 use Closure;
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\RateLimit\ArrayStore;
-use PressSentinel\Core\RateLimit\RateLimiter;
-use PressSentinel\Middleware\RateLimitMiddleware;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\RateLimit\ArrayStore;
+use NiyiGuard\Core\RateLimit\RateLimiter;
+use NiyiGuard\Middleware\RateLimitMiddleware;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class RateLimitMiddlewareTest extends TestCase
 {

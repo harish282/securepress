@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit;
+namespace NiyiGuard\Tests\Unit;
 
 use Closure;
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Url\ArrayNonceStore;
-use PressSentinel\Core\Url\ArraySecretProvider;
-use PressSentinel\Core\Url\UrlSigner;
-use PressSentinel\Middleware\SignedUrlMiddleware;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Url\ArrayNonceStore;
+use NiyiGuard\Core\Url\ArraySecretProvider;
+use NiyiGuard\Core\Url\UrlSigner;
+use NiyiGuard\Middleware\SignedUrlMiddleware;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class SignedUrlMiddlewareTest extends TestCase
 {

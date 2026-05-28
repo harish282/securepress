@@ -6,9 +6,9 @@ if (! defined('ABSPATH')) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
 
 /**
- * @var \PressSentinel\Core\Auth\TwoFactor\TwoFactorState $state
+ * @var \NiyiGuard\Core\Auth\TwoFactor\TwoFactorState $state
  * @var string $method_label
- * @var list<\PressSentinel\Core\Auth\Sessions\SessionRecord> $sessions
+ * @var list<\NiyiGuard\Core\Auth\Sessions\SessionRecord> $sessions
  * @var ?list<string> $recovery_codes
  * @var ?array{secret:string, provisioning_uri:string} $enrolment
  * @var ?array{type:string,message:string} $flash
@@ -19,7 +19,7 @@ if (! defined('ABSPATH')) {
  * @var ?int $current_session_id
  */
 
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 $flashType = $flash['type'] ?? '';
 $flashClass = match ($flashType) {

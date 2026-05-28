@@ -1,6 +1,6 @@
 👋 harish282 - Let’s improve your plugin!
 
-Thank you for submitting your plugin, "PressSentinel".
+Thank you for submitting your plugin, "NiyiGuard".
 
 Our volunteer reviewers, tools, and/or AI aids identified issues in your plugin that require your attention.
 
@@ -52,12 +52,12 @@ Plugin names and slugs can be original and unique, even if they don’t describe
 Plugin names and slugs must be distinguishable from those of other plugins to avoid confusion.
 Plugin names and slugs must respect others' trademarks and project names. If your plugin includes a trademark or project name that you do not own, you must clearly mention it in a way that denotes that there is no affiliation.
 
-This plugin display name(s) is/are "PressSentinel" and the slug is "presssentinel" . The AI has detected ✨ "PressSentinel" as potential trademark(s).
+This plugin display name(s) is/are "NiyiGuard" and the slug is "niyiguard" . The AI has detected ✨ "NiyiGuard" as potential trademark(s).
 
 We asked a trained AI about common issues with plugin names and it thinks there might be a problem.
  ✨ The display name appears to use “Press” as a WordPress-style trademark reference inside a coined name, which is not allowed. Aside from that, the name is distinctive and does not appear clearly too close to the listed existing plugins.
 For example, for your plugin:
-An alternative name may be: ✨ Harish Security Sentinel
+An alternative name may be: ✨ NiyiGuard
 An alternative slug may be: ✨ harish-security-sentinel
 
 ℹ️ These suggestions were made by the AI. Bear in mind that a skilled human, either you or a volunteer from the Plugin Review Team, may spot issues with the new suggested name.
@@ -109,7 +109,7 @@ Go back to step 1 and check again, just in case.
 
 ⚖️ Avoid Trademark / Project Names Confusion
 
-Identify trademarks and project names mentioned in your plugin name "PressSentinel"and the slug "presssentinel" . The AI has detected ✨ "PressSentinel" as potential trademark(s).
+Identify trademarks and project names mentioned in your plugin name "NiyiGuard"and the slug "niyiguard" . The AI has detected ✨ "NiyiGuard" as potential trademark(s).
 
 To avoid potential misuse:
 If a trademark or project name is used at the beginning of your plugin name/slug and you are not the owner, it could imply false affiliation.
@@ -248,7 +248,7 @@ We've detected some other details that you may want to check.
 
 From your plugin:
 
-Plugin URI: https://github.com/harish282/presssentinel - press-sentinel.php - This URL replies us with a 404 HTTP code, meaning that it does not exists or it is not a public URL.
+Plugin URI: https://github.com/harish282/niyiguard - niyiguard.php - This URL replies us with a 404 HTTP code, meaning that it does not exists or it is not a public URL.
 
 ## Saving data in the plugin folder and/or asking users to edit/write to plugin.
 
@@ -271,9 +271,9 @@ https://developer.wordpress.org/reference/functions/wp_upload_dir/
 
 Example(s) from your plugin:
 src/Core/Logging/FileLogger.php:248 file_put_contents($index, '');
-# ✨ Creates an empty index.html in the logger directory under wp-content/plugins/presssentinel/storage/logs by default, and plugin directories must not be used for writable storage even if empty index files are otherwise acceptable
-src/Core/Logging/FileLogger.php:238 file_put_contents($htaccess, "# PressSentinel log directory — not web-accessible.\n" . "<IfModule mod_authz_core.c>\n  Require all denied\n</IfModule>\n" . "<IfModule !mod_authz_core.c>\n  Order allow,deny\n  Deny from all\n</IfModule>\n");
-# ✨ Writes a .htaccess file into the logger directory under wp-content/plugins/presssentinel/storage/logs by default, and storing writable data/protection files inside the plugin folder is not allowed
+# ✨ Creates an empty index.html in the logger directory under wp-content/plugins/niyiguard/storage/logs by default, and plugin directories must not be used for writable storage even if empty index files are otherwise acceptable
+src/Core/Logging/FileLogger.php:238 file_put_contents($htaccess, "# NiyiGuard log directory — not web-accessible.\n" . "<IfModule mod_authz_core.c>\n  Require all denied\n</IfModule>\n" . "<IfModule !mod_authz_core.c>\n  Order allow,deny\n  Deny from all\n</IfModule>\n");
+# ✨ Writes a .htaccess file into the logger directory under wp-content/plugins/niyiguard/storage/logs by default, and storing writable data/protection files inside the plugin folder is not allowed
 
 
 

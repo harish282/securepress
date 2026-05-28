@@ -10,7 +10,7 @@ describe('License', () => {
     const hasLicense = Boolean(Cypress.env('hasLicense'))
 
     cy.request({
-      url: '/wp-admin/admin.php?page=presssentinel-license',
+      url: '/wp-admin/admin.php?page=niyiguard-license',
       failOnStatusCode: false,
     }).then((res) => {
       if (res.status === 403 || res.status === 404) {

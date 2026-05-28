@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
 use Closure;
 
 /**
- * Immutable descriptor for one toggleable PressSentinel feature.
+ * Immutable descriptor for one toggleable NiyiGuard feature.
  *
  * Closures are used for `isEnabled` / `setEnabled` instead of an interface so
  * the FeatureRegistry can wire up existing Options classes (which were not

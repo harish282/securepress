@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Audit;
+namespace NiyiGuard\Tests\Unit\Audit;
 
 use LogicException;
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Audit\ArrayAuditLogRepository;
-use PressSentinel\Core\Audit\AuditLogger;
-use PressSentinel\Core\Audit\AuditLoggerInterface;
-use PressSentinel\Core\Audit\AuditLogQuery;
-use PressSentinel\Core\Container;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Facades\AuditLog;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Audit\ArrayAuditLogRepository;
+use NiyiGuard\Core\Audit\AuditLogger;
+use NiyiGuard\Core\Audit\AuditLoggerInterface;
+use NiyiGuard\Core\Audit\AuditLogQuery;
+use NiyiGuard\Core\Container;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Facades\AuditLog;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class AuditLogFacadeTest extends TestCase
 {

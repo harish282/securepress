@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\WooCommerce\Middleware;
+namespace NiyiGuard\Tests\Unit\WooCommerce\Middleware;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Tests\Stubs\WpStubState;
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
-use PressSentinel\WooCommerce\Services\BehaviorClock;
+use NiyiGuard\Tests\Stubs\WpStubState;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
+use NiyiGuard\WooCommerce\Services\BehaviorClock;
 
 /**
- * @see \PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware
+ * @see \NiyiGuard\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware
  */
 final class BotCheckoutMiddlewareTest extends TestCase
 {
@@ -25,7 +25,7 @@ final class BotCheckoutMiddlewareTest extends TestCase
     {
         $mw = new BotCheckoutMiddleware(
             new BehaviorClock('secret'),
-            honeypotField: 'presssentinel_hp',
+            honeypotField: 'niyiguard_hp',
             minSecondsToSubmit: 0, // disable timing check for this test
         );
 
@@ -37,8 +37,8 @@ final class BotCheckoutMiddlewareTest extends TestCase
 
     public function test_filled_honeypot_short_circuits_deny(): void
     {
-        $mw = new BotCheckoutMiddleware(new BehaviorClock('secret'), 'presssentinel_hp');
-        $context = $this->ctx()->withData('presssentinel_hp', 'i-am-a-bot');
+        $mw = new BotCheckoutMiddleware(new BehaviorClock('secret'), 'niyiguard_hp');
+        $context = $this->ctx()->withData('niyiguard_hp', 'i-am-a-bot');
 
         $decision = $mw->handle($context, fn () => self::fail('Pipeline should not continue after honeypot deny.'));
 
@@ -210,7 +210,7 @@ final class BotCheckoutMiddlewareTest extends TestCase
         // the deny reason. This guards against a future refactor accidentally
         // re-ordering the checks.
         $mw = new BotCheckoutMiddleware(new BehaviorClock('secret'));
-        $context = $this->ctx('sqlmap')->withData('presssentinel_hp', 'spam');
+        $context = $this->ctx('sqlmap')->withData('niyiguard_hp', 'spam');
 
         $decision = $mw->handle($context, fn () => self::fail('Should not call next.'));
 

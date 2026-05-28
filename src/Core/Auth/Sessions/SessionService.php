@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Sessions;
+namespace NiyiGuard\Core\Auth\Sessions;
 
-use PressSentinel\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\LoggerInterface;
 
 /**
  * High-level orchestration for session tracking and revocation.

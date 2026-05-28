@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Storage;
+namespace NiyiGuard\WooCommerce\Storage;
 
 /**
  * Cheap per-(key, window) counter used by every velocity / abuse middleware.
  *
  * Why a dedicated abstraction instead of reusing the generic
- * {@see \PressSentinel\Core\RateLimit\RateLimiter}:
+ * {@see \NiyiGuard\Core\RateLimit\RateLimiter}:
  *  - the rate limiter is built around a fixed-window "hits / limit / retry_after"
  *    return; the WooCommerce middleware needs the raw count *and* the ability to
  *    snapshot a fingerprint between hits (e.g., "same cart hash N times in a row");

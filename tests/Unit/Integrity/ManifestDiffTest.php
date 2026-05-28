@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Integrity;
+namespace NiyiGuard\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Integrity\Manifest;
-use PressSentinel\Core\Integrity\ManifestDiff;
-use PressSentinel\Core\Integrity\ManifestEntry;
+use NiyiGuard\Core\Integrity\Manifest;
+use NiyiGuard\Core\Integrity\ManifestDiff;
+use NiyiGuard\Core\Integrity\ManifestEntry;
 
 /**
- * @see \PressSentinel\Core\Integrity\ManifestDiff
+ * @see \NiyiGuard\Core\Integrity\ManifestDiff
  */
 final class ManifestDiffTest extends TestCase
 {
