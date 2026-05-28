@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\WooCommerce\Pipelines;
+namespace NiyiGuard\Tests\Unit\WooCommerce\Pipelines;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Middleware\Cart\CartVelocityMiddleware;
-use PressSentinel\WooCommerce\Middleware\Cart\CouponAbuseMiddleware;
-use PressSentinel\WooCommerce\Pipelines\CartPipeline;
-use PressSentinel\WooCommerce\Storage\ArrayAbuseCounterStore;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Middleware\Cart\CartVelocityMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Cart\CouponAbuseMiddleware;
+use NiyiGuard\WooCommerce\Pipelines\CartPipeline;
+use NiyiGuard\WooCommerce\Storage\ArrayAbuseCounterStore;
 
 /**
- * @see \PressSentinel\WooCommerce\Pipelines\CartPipeline
- * @see \PressSentinel\WooCommerce\Middleware\Cart\CartVelocityMiddleware
- * @see \PressSentinel\WooCommerce\Middleware\Cart\CouponAbuseMiddleware
+ * @see \NiyiGuard\WooCommerce\Pipelines\CartPipeline
+ * @see \NiyiGuard\WooCommerce\Middleware\Cart\CartVelocityMiddleware
+ * @see \NiyiGuard\WooCommerce\Middleware\Cart\CouponAbuseMiddleware
  */
 final class CartPipelineTest extends TestCase
 {

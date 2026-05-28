@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit;
+namespace NiyiGuard\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Headers\CspHeader;
-use PressSentinel\Core\Headers\HeaderRegistry;
-use PressSentinel\Core\Headers\HstsHeader;
-use PressSentinel\Core\Headers\PermissionsPolicyHeader;
-use PressSentinel\Core\Headers\ReferrerPolicyHeader;
-use PressSentinel\Core\Headers\XContentTypeOptionsHeader;
-use PressSentinel\Core\Headers\XFrameOptionsHeader;
+use NiyiGuard\Core\Headers\CspHeader;
+use NiyiGuard\Core\Headers\HeaderRegistry;
+use NiyiGuard\Core\Headers\HstsHeader;
+use NiyiGuard\Core\Headers\PermissionsPolicyHeader;
+use NiyiGuard\Core\Headers\ReferrerPolicyHeader;
+use NiyiGuard\Core\Headers\XContentTypeOptionsHeader;
+use NiyiGuard\Core\Headers\XFrameOptionsHeader;
 
 final class SecurityHeadersTest extends TestCase
 {

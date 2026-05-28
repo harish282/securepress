@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Stubs;
+namespace NiyiGuard\Tests\Stubs;
 
 use RuntimeException;
 

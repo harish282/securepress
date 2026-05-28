@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\TwoFactor;
+namespace NiyiGuard\Core\Auth\TwoFactor;
 
 /**
  * Generates, hashes, and verifies single-use recovery codes.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Sessions;
+namespace NiyiGuard\Core\Auth\Sessions;
 
 /**
  * One row in the session log — represents a single (user, device, timeframe) entry.
@@ -12,7 +12,7 @@ namespace PressSentinel\Core\Auth\Sessions;
  * created_at, label) and (b) we want to expose revocation independent of WP's lifecycle.
  *
  * The `revokedAt` field is optional. When set, the session is considered logged-out from
- * PressSentinel's perspective; the matching entry in WP's session_tokens is also expunged
+ * NiyiGuard's perspective; the matching entry in WP's session_tokens is also expunged
  * by {@see SessionService::revoke()} so the user is forced back to the login screen.
  */
 final class SessionRecord

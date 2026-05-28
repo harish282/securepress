@@ -1,4 +1,4 @@
-/** @typedef {'presssentinel' | 'presssentinel-health' | 'presssentinel-authentication' | 'presssentinel-security-headers' | 'presssentinel-rate-limit' | 'presssentinel-url-disguise' | 'presssentinel-file-integrity' | 'presssentinel-audit-logs' | 'presssentinel-audit-settings' | 'presssentinel-license' | 'presssentinel-woocommerce'} PressSentinelPage */
+/** @typedef {'niyiguard' | 'niyiguard-health' | 'niyiguard-authentication' | 'niyiguard-security-headers' | 'niyiguard-rate-limit' | 'niyiguard-url-disguise' | 'niyiguard-file-integrity' | 'niyiguard-audit-logs' | 'niyiguard-audit-settings' | 'niyiguard-license' | 'niyiguard-woocommerce'} NiyiGuardPage */
 
 /**
  * WordPress admin login (cached session per user).
@@ -10,7 +10,7 @@ Cypress.Commands.add('wpLogin', () => {
   cy.session(
     ['wp-admin', user],
     () => {
-      cy.visit('/wp-login.php')
+      cy.visit('wp-login.php')
       cy.get('#user_login').clear().type(user)
       cy.get('#user_pass').clear().type(pass, { log: false })
       cy.get('#wp-submit').click()
@@ -21,10 +21,10 @@ Cypress.Commands.add('wpLogin', () => {
 })
 
 /**
- * @param {PressSentinelPage} page
+ * @param {NiyiGuardPage} page
  */
-Cypress.Commands.add('visitPressSentinel', (page = 'presssentinel', options = {}) => {
-  cy.visit(`/wp-admin/admin.php?page=${page}`, options)
+Cypress.Commands.add('visitNiyiGuard', (page = 'niyiguard', options = {}) => {
+  cy.visit(`wp-admin/admin.php?page=${page}`, options)
 })
 
 /** WordPress Settings API checkboxes are preceded by a hidden `value="0"` input. */
@@ -42,8 +42,8 @@ Cypress.Commands.add('uncheckWpSetting', (fieldName) => {
  * @param {boolean} enable
  */
 Cypress.Commands.add('setDashboardFeature', (featureKey, enable) => {
-  cy.visitPressSentinel('presssentinel')
-  cy.get(`#presssentinel_feature_${featureKey}`).then(($el) => {
+  cy.visitNiyiGuard('niyiguard')
+  cy.get(`#niyiguard_feature_${featureKey}`).then(($el) => {
     const checked = $el.prop('checked')
     if (checked !== enable) {
       cy.wrap($el).click({ force: true })
@@ -61,7 +61,7 @@ Cypress.Commands.add('setDashboardFeature', (featureKey, enable) => {
  * and drops query args before Cypress reads `location`, so assert on the POST redirect.
  */
 Cypress.Commands.add('saveWpOptionsForm', () => {
-  cy.intercept('POST', '**/wp-admin/options.php').as('presssentinelSaveOptions')
+  cy.intercept('POST', '**/wp-admin/options.php').as('niyiguardSaveOptions')
 
   cy.get('form[action*="options.php"]', { timeout: 15000 })
     .should('have.length', 1)
@@ -69,7 +69,7 @@ Cypress.Commands.add('saveWpOptionsForm', () => {
       cy.get('input#submit[type="submit"]').click()
     })
 
-  cy.wait('@presssentinelSaveOptions', { timeout: 20000 }).then(({ response }) => {
+  cy.wait('@niyiguardSaveOptions', { timeout: 20000 }).then(({ response }) => {
     const status = response?.statusCode ?? 0
     expect(status, 'options.php response status').to.be.oneOf([200, 302, 303])
 

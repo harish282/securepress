@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Admin;
+namespace NiyiGuard\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use PressSentinel\Admin\FeatureRegistry;
-use PressSentinel\Admin\PressSentinelMenuPage;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\Tests\Stubs\WpDieException;
-use PressSentinel\Tests\Stubs\WpStubState;
-use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
+use NiyiGuard\Admin\FeatureRegistry;
+use NiyiGuard\Admin\NiyiGuardMenuPage;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\Tests\Stubs\WpDieException;
+use NiyiGuard\Tests\Stubs\WpStubState;
+use NiyiGuard\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
  * End-to-end coverage for the dashboard's feature-toggle save handler.
@@ -33,7 +33,7 @@ use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
  * handler only touches `FeatureRegistry`, so we don't need to spin up the
  * full DI graph (license, dashboard tile data, audit repo, etc.).
  */
-final class PressSentinelMenuPageTest extends TestCase
+final class NiyiGuardMenuPageTest extends TestCase
 {
     protected function setUp(): void
     {
@@ -49,7 +49,7 @@ final class PressSentinelMenuPageTest extends TestCase
     }
 
     /**
-     * WordPress's `wp_verify_nonce()` (and PressSentinel's wrapper) reads from
+     * WordPress's `wp_verify_nonce()` (and NiyiGuard's wrapper) reads from
      * $_REQUEST. PHP only auto-populates $_REQUEST on real HTTP boots, so
      * tests have to set both $_POST AND $_REQUEST to model the same nonce
      * arriving via a real form submission.
@@ -67,7 +67,7 @@ final class PressSentinelMenuPageTest extends TestCase
 
         // Grant cap + nonce so the guards pass.
         WpStubState::$currentUserCapabilities = ['manage_options' => true];
-        $this->presentNonce(PressSentinelMenuPage::NONCE_ACTION, 'tk');
+        $this->presentNonce(NiyiGuardMenuPage::NONCE_ACTION, 'tk');
 
         // Form payload: turn audit_log off, leave everything else checked.
         $_POST['features'] = [
@@ -89,8 +89,8 @@ final class PressSentinelMenuPageTest extends TestCase
         // Redirect to the dashboard with the saved-count status flag.
         self::assertCount(1, WpStubState::$redirects);
         $url = WpStubState::$redirects[0];
-        self::assertStringContainsString('page=' . PressSentinelMenuPage::DASHBOARD_SLUG, $url);
-        self::assertStringContainsString(PressSentinelMenuPage::STATUS_QUERY_KEY . '=saved%3A2', $url);
+        self::assertStringContainsString('page=' . NiyiGuardMenuPage::DASHBOARD_SLUG, $url);
+        self::assertStringContainsString(NiyiGuardMenuPage::STATUS_QUERY_KEY . '=saved%3A2', $url);
 
         $rate = WpStubState::$options[RateLimitOptions::OPTION_NAME] ?? null;
         self::assertIsArray($rate);
@@ -101,7 +101,7 @@ final class PressSentinelMenuPageTest extends TestCase
     {
         $page = $this->makePage();
         WpStubState::$currentUserCapabilities = ['manage_options' => true];
-        $this->presentNonce(PressSentinelMenuPage::NONCE_ACTION, 'tk');
+        $this->presentNonce(NiyiGuardMenuPage::NONCE_ACTION, 'tk');
         // Every master switch at its default config state (URL disguise defaults off).
         $_POST['features'] = [
             'auth_hardening' => '1',
@@ -121,7 +121,7 @@ final class PressSentinelMenuPageTest extends TestCase
     {
         $page = $this->makePage();
         // No capability granted.
-        $this->presentNonce(PressSentinelMenuPage::NONCE_ACTION, 'tk');
+        $this->presentNonce(NiyiGuardMenuPage::NONCE_ACTION, 'tk');
         $_POST['features'] = ['audit_log' => '0'];
 
         try {
@@ -156,7 +156,7 @@ final class PressSentinelMenuPageTest extends TestCase
     {
         $page = $this->makePage();
         WpStubState::$currentUserCapabilities = ['manage_options' => true];
-        $this->presentNonce(PressSentinelMenuPage::NONCE_ACTION, 'tk');
+        $this->presentNonce(NiyiGuardMenuPage::NONCE_ACTION, 'tk');
         $_POST['features'] = [
             'audit_log' => '1',
             'totally_made_up_feature' => '1',
@@ -171,12 +171,12 @@ final class PressSentinelMenuPageTest extends TestCase
     }
 
     /**
-     * Builds a PressSentinelMenuPage with a real FeatureRegistry but a dummy
+     * Builds a NiyiGuardMenuPage with a real FeatureRegistry but a dummy
      * license manager. The handler doesn't touch any of the dashboard-render
      * dependencies, so we only need to inject what `handleSaveFeatures()` and
      * `redirect()` actually reach for.
      */
-    private function makePage(): PressSentinelMenuPage
+    private function makePage(): NiyiGuardMenuPage
     {
         $config = new Config();
         $registry = new FeatureRegistry(
@@ -189,10 +189,10 @@ final class PressSentinelMenuPageTest extends TestCase
             new UrlDisguiseOptions($config),
         );
 
-        $page = (new ReflectionClass(PressSentinelMenuPage::class))->newInstanceWithoutConstructor();
+        $page = (new ReflectionClass(NiyiGuardMenuPage::class))->newInstanceWithoutConstructor();
         // The page's `register()` and dashboard render paths read other
         // properties, but `handleSaveFeatures()` only reads the registry.
-        $featuresProp = (new ReflectionClass(PressSentinelMenuPage::class))->getProperty('features');
+        $featuresProp = (new ReflectionClass(NiyiGuardMenuPage::class))->getProperty('features');
         $featuresProp->setValue($page, $registry);
 
         return $page;

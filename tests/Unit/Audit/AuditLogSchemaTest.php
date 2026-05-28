@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Audit;
+namespace NiyiGuard\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Audit\AuditLogSchema;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Audit\AuditLogSchema;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class AuditLogSchemaTest extends TestCase
 {
@@ -35,7 +35,7 @@ final class AuditLogSchemaTest extends TestCase
 
         $schema = new AuditLogSchema();
 
-        self::assertSame('foo_presssentinel_audit_logs', $schema->tableName());
+        self::assertSame('foo_niyiguard_audit_logs', $schema->tableName());
     }
 
     public function test_table_name_falls_back_when_wpdb_unavailable(): void
@@ -44,7 +44,7 @@ final class AuditLogSchemaTest extends TestCase
 
         $schema = new AuditLogSchema();
 
-        self::assertSame('wp_presssentinel_audit_logs', $schema->tableName());
+        self::assertSame('wp_niyiguard_audit_logs', $schema->tableName());
     }
 
     public function test_create_table_sql_contains_required_columns_and_indexes(): void
@@ -69,7 +69,7 @@ final class AuditLogSchemaTest extends TestCase
         self::assertStringContainsString('KEY level_idx', $sql);
 
         // Uses CREATE TABLE syntax dbDelta requires (no IF NOT EXISTS, two spaces in PRIMARY KEY)
-        self::assertStringContainsString('CREATE TABLE wp_presssentinel_audit_logs (', $sql);
+        self::assertStringContainsString('CREATE TABLE wp_niyiguard_audit_logs (', $sql);
         self::assertStringNotContainsString('IF NOT EXISTS', $sql);
     }
 

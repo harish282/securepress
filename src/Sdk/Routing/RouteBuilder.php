@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Sdk\Routing;
+namespace NiyiGuard\Sdk\Routing;
 
 use Closure;
-use PressSentinel\Core\Container;
-use PressSentinel\Core\Http\RouteGuardRegistry;
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Middleware\MiddlewareInterface;
-use PressSentinel\Core\Middleware\MiddlewarePipeline;
-use PressSentinel\Core\RateLimit\RateLimiter;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\Url\NonceStoreInterface;
-use PressSentinel\Core\Url\UrlSigner;
-use PressSentinel\Middleware\CsrfProtectionMiddleware;
-use PressSentinel\Middleware\RateLimitMiddleware;
-use PressSentinel\Middleware\SignedUrlMiddleware;
-use PressSentinel\Sdk\Exceptions\RouteGuardException;
+use NiyiGuard\Core\Container;
+use NiyiGuard\Core\Http\RouteGuardRegistry;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Middleware\MiddlewareInterface;
+use NiyiGuard\Core\Middleware\MiddlewarePipeline;
+use NiyiGuard\Core\RateLimit\RateLimiter;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\Url\NonceStoreInterface;
+use NiyiGuard\Core\Url\UrlSigner;
+use NiyiGuard\Middleware\CsrfProtectionMiddleware;
+use NiyiGuard\Middleware\RateLimitMiddleware;
+use NiyiGuard\Middleware\SignedUrlMiddleware;
+use NiyiGuard\Sdk\Exceptions\RouteGuardException;
 
 /**
  * Fluent builder for declarative, route-scoped security guards.

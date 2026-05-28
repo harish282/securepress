@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Middleware;
+namespace NiyiGuard\Middleware;
 
-use PressSentinel\Core\Headers\HeaderRegistryFactory;
-use PressSentinel\Core\Middleware\MiddlewareInterface;
+use NiyiGuard\Core\Headers\HeaderRegistryFactory;
+use NiyiGuard\Core\Middleware\MiddlewareInterface;
 
 /**
  * Adds configured security headers to the pipeline's response payload.
@@ -13,7 +13,7 @@ use PressSentinel\Core\Middleware\MiddlewareInterface;
  * Use this middleware when an HTTP/kernel layer is going to emit headers from
  * `$context['response']['headers']`. For unconditionally applying headers to *every*
  * WordPress response — including those that don't go through the pipeline — use
- * {@see \PressSentinel\Core\Headers\SecurityHeadersDispatcher} instead. Most installs want
+ * {@see \NiyiGuard\Core\Headers\SecurityHeadersDispatcher} instead. Most installs want
  * the dispatcher; the middleware is here for advanced flows that need different headers
  * per route.
  *

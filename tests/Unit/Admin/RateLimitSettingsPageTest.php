@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Admin;
+namespace NiyiGuard\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Admin\RateLimitSettingsPage;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\View\View;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Admin\RateLimitSettingsPage;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\View\View;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
  * Confirms the Rate Limiting settings page registers the right

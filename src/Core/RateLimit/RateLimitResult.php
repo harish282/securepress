@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\RateLimit;
+namespace NiyiGuard\Core\RateLimit;
 
 /**
  * Outcome of a single rate-limit check.

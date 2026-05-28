@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity;
+namespace NiyiGuard\Core\Integrity;
 
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Resolves the effective integrity-monitoring configuration for the current request.
  *
  * Defaults come from `config/plugin.php` (`integrity.*`); the admin Settings page
  * persists overrides into the `wp_option` named by {@see self::OPTION_NAME}. Behaviour
- * mirrors {@see \PressSentinel\Core\Auth\AuthHardeningOptions} and
- * {@see \PressSentinel\Core\Headers\SecurityHeadersOptions} so the admin UI glue stays
+ * mirrors {@see \NiyiGuard\Core\Auth\AuthHardeningOptions} and
+ * {@see \NiyiGuard\Core\Headers\SecurityHeadersOptions} so the admin UI glue stays
  * identical across features.
  *
  * Schema (single autoloaded option):
@@ -38,7 +38,7 @@ use PressSentinel\Core\Support\WpHelper;
  */
 final class IntegrityOptions
 {
-    public const OPTION_NAME = 'presssentinel_integrity';
+    public const OPTION_NAME = 'niyiguard_integrity';
 
     public function __construct(private readonly Config $config)
     {
@@ -69,7 +69,7 @@ final class IntegrityOptions
     /**
      * Flips just the master `enabled` flag, preserving every other integrity
      * setting (cron, scope toggles, notifications). Used by the centralized
-     * PressSentinel dashboard.
+     * NiyiGuard dashboard.
      */
     public function setEnabled(bool $enabled): void
     {

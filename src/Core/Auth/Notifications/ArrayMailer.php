@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Notifications;
+namespace NiyiGuard\Core\Auth\Notifications;
 
 /**
  * In-memory mailer for tests. Records every `send()` call as an associative array so

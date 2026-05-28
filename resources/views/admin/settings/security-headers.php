@@ -8,7 +8,7 @@ if (! defined('ABSPATH')) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
 
 
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * @var string $pageSlug
@@ -17,8 +17,8 @@ use PressSentinel\Core\Support\WpHelper;
  */
 ?>
 <div class="wrap">
-    <h1>PressSentinel Security Headers</h1>
-    <p>Toggle the headers you want PressSentinel to emit on every WordPress response. Defaults are conservative — review carefully before enabling HSTS or CSP.</p>
+    <h1>NiyiGuard Security Headers</h1>
+    <p>Toggle the headers you want NiyiGuard to emit on every WordPress response. Defaults are conservative — review carefully before enabling HSTS or CSP.</p>
 
     <?php if (!$masterEnabled): ?>
         <div class="notice notice-warning">
@@ -27,9 +27,9 @@ use PressSentinel\Core\Support\WpHelper;
                 The master switch below (also available on the
                 <a href="<?php echo esc_attr(
                     \function_exists('admin_url')
-                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . \PressSentinel\Admin\PressSentinelMenuPage::PARENT_SLUG)
+                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . \NiyiGuard\Admin\NiyiGuardMenuPage::PARENT_SLUG)
                         : '#'
-                ) ?>">PressSentinel dashboard</a>)
+                ) ?>">NiyiGuard dashboard</a>)
                 is disabled, so none of the headers configured here will be emitted on responses. Re-enable it and click <em>Save Changes</em> to resume.
             </p>
         </div>

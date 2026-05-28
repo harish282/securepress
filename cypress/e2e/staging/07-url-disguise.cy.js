@@ -20,17 +20,17 @@ describe('URL disguise', () => {
     }
     cy.wpLogin()
     cy.setDashboardFeature('url_disguise', false)
-    cy.visitPressSentinel('presssentinel-url-disguise')
-    cy.uncheckWpSetting('presssentinel_url_disguise[enabled]')
+    cy.visitNiyiGuard('niyiguard-url-disguise')
+    cy.uncheckWpSetting('niyiguard_url_disguise[enabled]')
     cy.saveWpOptionsForm()
   })
 
   it('serves login at custom slug and blocks default when configured', () => {
     cy.setDashboardFeature('url_disguise', true)
-    cy.visitPressSentinel('presssentinel-url-disguise')
-    cy.checkWpSetting('presssentinel_url_disguise[enabled]')
-    cy.get('input[name="presssentinel_url_disguise[login_slug]"]').clear().type(slug)
-    cy.checkWpSetting('presssentinel_url_disguise[block_default_wp_login]')
+    cy.visitNiyiGuard('niyiguard-url-disguise')
+    cy.checkWpSetting('niyiguard_url_disguise[enabled]')
+    cy.get('input[name="niyiguard_url_disguise[login_slug]"]').clear().type(slug)
+    cy.checkWpSetting('niyiguard_url_disguise[block_default_wp_login]')
     cy.saveWpOptionsForm()
 
     cy.visit('/wp-admin/options-permalink.php')

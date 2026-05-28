@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\WooCommerce\Pipelines;
+namespace NiyiGuard\Tests\Unit\WooCommerce\Pipelines;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\FraudScoreMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware;
-use PressSentinel\WooCommerce\Pipelines\CheckoutPipeline;
-use PressSentinel\WooCommerce\Services\BehaviorClock;
-use PressSentinel\WooCommerce\Services\CartFingerprinter;
-use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
-use PressSentinel\WooCommerce\Services\FraudScoreService;
-use PressSentinel\WooCommerce\Storage\ArrayAbuseCounterStore;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\FraudScoreMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware;
+use NiyiGuard\WooCommerce\Pipelines\CheckoutPipeline;
+use NiyiGuard\WooCommerce\Services\BehaviorClock;
+use NiyiGuard\WooCommerce\Services\CartFingerprinter;
+use NiyiGuard\WooCommerce\Services\DisposableEmailRegistry;
+use NiyiGuard\WooCommerce\Services\FraudScoreService;
+use NiyiGuard\WooCommerce\Storage\ArrayAbuseCounterStore;
 
 /**
- * @see \PressSentinel\WooCommerce\Pipelines\CheckoutPipeline
- * @see \PressSentinel\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware
- * @see \PressSentinel\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware
- * @see \PressSentinel\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware
- * @see \PressSentinel\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware
- * @see \PressSentinel\WooCommerce\Middleware\Checkout\FraudScoreMiddleware
+ * @see \NiyiGuard\WooCommerce\Pipelines\CheckoutPipeline
+ * @see \NiyiGuard\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware
+ * @see \NiyiGuard\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware
+ * @see \NiyiGuard\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware
+ * @see \NiyiGuard\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware
+ * @see \NiyiGuard\WooCommerce\Middleware\Checkout\FraudScoreMiddleware
  */
 final class CheckoutPipelineTest extends TestCase
 {

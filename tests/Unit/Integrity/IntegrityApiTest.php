@@ -2,28 +2,28 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Integrity;
+namespace NiyiGuard\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Container;
-use PressSentinel\Core\Integrity\ArrayFindingRepository;
-use PressSentinel\Core\Integrity\ArrayManifestRepository;
-use PressSentinel\Core\Integrity\Finding;
-use PressSentinel\Core\Integrity\FindingRepositoryInterface;
-use PressSentinel\Core\Integrity\FindingSeverity;
-use PressSentinel\Core\Integrity\FindingType;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\Integrity\IntegrityService;
-use PressSentinel\Core\Integrity\ManifestRepositoryInterface;
-use PressSentinel\Core\Integrity\Scanners\ScannerInterface;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Facades\Security;
-use PressSentinel\Sdk\IntegrityApi;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Container;
+use NiyiGuard\Core\Integrity\ArrayFindingRepository;
+use NiyiGuard\Core\Integrity\ArrayManifestRepository;
+use NiyiGuard\Core\Integrity\Finding;
+use NiyiGuard\Core\Integrity\FindingRepositoryInterface;
+use NiyiGuard\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingType;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\Integrity\IntegrityService;
+use NiyiGuard\Core\Integrity\ManifestRepositoryInterface;
+use NiyiGuard\Core\Integrity\Scanners\ScannerInterface;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Facades\Security;
+use NiyiGuard\Sdk\IntegrityApi;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * @see \PressSentinel\Sdk\IntegrityApi
- * @see \PressSentinel\Facades\Security::integrity()
+ * @see \NiyiGuard\Sdk\IntegrityApi
+ * @see \NiyiGuard\Facades\Security::integrity()
  */
 final class IntegrityApiTest extends TestCase
 {
@@ -87,8 +87,8 @@ final class IntegrityApiTest extends TestCase
 
         /** @var ManifestRepositoryInterface $manifests */
         $manifests = $container->get(ManifestRepositoryInterface::class);
-        $manifests->save(\PressSentinel\Core\Integrity\Manifest::empty('plugins', '/x'));
-        $manifests->save(\PressSentinel\Core\Integrity\Manifest::empty('themes', '/y'));
+        $manifests->save(\NiyiGuard\Core\Integrity\Manifest::empty('plugins', '/x'));
+        $manifests->save(\NiyiGuard\Core\Integrity\Manifest::empty('themes', '/y'));
 
         Security::integrity()->resetBaseline('plugins');
         self::assertNull($manifests->load('plugins'));

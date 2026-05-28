@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Sdk;
+namespace NiyiGuard\Sdk;
 
-use PressSentinel\Core\Container;
-use PressSentinel\Core\Integrity\Finding;
-use PressSentinel\Core\Integrity\FindingRepositoryInterface;
-use PressSentinel\Core\Integrity\IntegrityScanResult;
-use PressSentinel\Core\Integrity\IntegrityScheduler;
-use PressSentinel\Core\Integrity\IntegrityService;
-use PressSentinel\Core\Integrity\ManifestRepositoryInterface;
+use NiyiGuard\Core\Container;
+use NiyiGuard\Core\Integrity\Finding;
+use NiyiGuard\Core\Integrity\FindingRepositoryInterface;
+use NiyiGuard\Core\Integrity\IntegrityScanResult;
+use NiyiGuard\Core\Integrity\IntegrityScheduler;
+use NiyiGuard\Core\Integrity\IntegrityService;
+use NiyiGuard\Core\Integrity\ManifestRepositoryInterface;
 
 /**
  * Public surface for the file-integrity subsystem.

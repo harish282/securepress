@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Integrity;
+namespace NiyiGuard\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Integrity\FindingSeverity;
-use PressSentinel\Core\Integrity\Heuristics\EvalBase64Heuristic;
-use PressSentinel\Core\Integrity\Heuristics\ObfuscatedCallableHeuristic;
-use PressSentinel\Core\Integrity\Heuristics\PregReplaceEvalHeuristic;
-use PressSentinel\Core\Integrity\Heuristics\ShellExecHeuristic;
-use PressSentinel\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
+use NiyiGuard\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\Heuristics\EvalBase64Heuristic;
+use NiyiGuard\Core\Integrity\Heuristics\ObfuscatedCallableHeuristic;
+use NiyiGuard\Core\Integrity\Heuristics\PregReplaceEvalHeuristic;
+use NiyiGuard\Core\Integrity\Heuristics\ShellExecHeuristic;
+use NiyiGuard\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
 
 /**
- * @see \PressSentinel\Core\Integrity\Heuristics\AbstractRegexHeuristic
+ * @see \NiyiGuard\Core\Integrity\Heuristics\AbstractRegexHeuristic
  */
 final class HeuristicsTest extends TestCase
 {

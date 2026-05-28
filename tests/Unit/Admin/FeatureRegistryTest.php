@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Admin;
+namespace NiyiGuard\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Admin\FeatureRegistry;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Tests\Stubs\WpStubState;
-use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
+use NiyiGuard\Admin\FeatureRegistry;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Tests\Stubs\WpStubState;
+use NiyiGuard\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
- * @see \PressSentinel\Admin\FeatureRegistry
+ * @see \NiyiGuard\Admin\FeatureRegistry
  *
  * The FeatureRegistry is the dashboard's source of truth. These tests pin
  * down the three guarantees the dashboard relies on:

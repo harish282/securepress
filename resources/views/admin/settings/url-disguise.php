@@ -8,8 +8,8 @@ if (! defined('ABSPATH')) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
 
 
-use PressSentinel\Admin\PressSentinelMenuPage;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Admin\NiyiGuardMenuPage;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * @var string $pageSlug
@@ -20,7 +20,7 @@ use PressSentinel\Core\Support\WpHelper;
  */
 ?>
 <div class="wrap">
-    <h1>PressSentinel URL disguise</h1>
+    <h1>NiyiGuard URL disguise</h1>
     <p>Replace the predictable <code>wp-login.php</code> URL with your own path. The admin area continues to use <code>/wp-admin/</code>.</p>
 
     <?php if ($masterEnabled && !$isActive): ?>
@@ -40,9 +40,9 @@ use PressSentinel\Core\Support\WpHelper;
                 You can edit the slug below, but rewrites and redirects stay disabled until you enable URL disguise here or on the
                 <a href="<?php echo esc_attr(
                     \function_exists('admin_url')
-                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . PressSentinelMenuPage::PARENT_SLUG)
+                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . NiyiGuardMenuPage::PARENT_SLUG)
                         : '#'
-                ) ?>">PressSentinel dashboard</a>.
+                ) ?>">NiyiGuard dashboard</a>.
             </p>
         </div>
     <?php endif; ?>
@@ -73,7 +73,7 @@ use PressSentinel\Core\Support\WpHelper;
     <hr>
     <p class="description">
         Bookmark your custom login URL before blocking <code>wp-login.php</code> (blocked requests return 404, not a redirect).
-        If you lock yourself out, add <code>define('PRESS_SENTINEL_SAFE_MODE', true);</code> to <code>wp-config.php</code> (before plugins load) or set <code>recovery.safe_mode</code> to <code>true</code> in <code>config/plugin.php</code>, reload once, sign in at <code>wp-login.php</code>, then turn safe mode off.
-        You can also disable the plugin from the filesystem or clear the <code>presssentinel_url_disguise</code> option in the database.
+        If you lock yourself out, add <code>define('NIYIGUARD_SAFE_MODE', true);</code> to <code>wp-config.php</code> (before plugins load) or set <code>recovery.safe_mode</code> to <code>true</code> in <code>config/plugin.php</code>, reload once, sign in at <code>wp-login.php</code>, then turn safe mode off.
+        You can also disable the plugin from the filesystem or clear the <code>niyiguard_url_disguise</code> option in the database.
     </p>
 </div>

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Support;
+namespace NiyiGuard\Core\Support;
 
 // phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- Sanitized superglobal accessors; mutating callers verify nonces first.
 final class WpHelper
@@ -84,7 +84,7 @@ final class WpHelper
             return 0;
         }
 
-        $result = \call_user_func('wp_verify_nonce', $nonce, $action);
+        $result = \call_user_func('wp_verify_nonce', self::sanitizeTextField(self::unslash($nonce)), $action);
 
         if ($result === false || $result === 0 || $result === '0') {
             return 0;
@@ -143,7 +143,7 @@ final class WpHelper
     }
 
     /**
-     * Normalized {@see $_SERVER} value (unslashed); empty strings become null.
+     * Normalized {@see $_SERVER} value (unslashed + sanitized); empty strings become null.
      */
     public static function getServerString(string $key): ?string
     {
@@ -154,6 +154,7 @@ final class WpHelper
         // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Unslashed and validated by caller.
         $raw = $_SERVER[$key];
         $value = is_string($raw) ? self::unslash($raw) : (string) $raw;
+        $value = self::sanitizeTextField($value);
 
         return $value === '' ? null : $value;
     }
@@ -268,7 +269,7 @@ final class WpHelper
      *
      * Used by the integrity-monitoring checksum provider. Routed through the helper
      * (rather than calling `wp_remote_get` directly) so tests can stub the network call
-     * via {@see \PressSentinel\Tests\Stubs\WpStubState}.
+     * via {@see \NiyiGuard\Tests\Stubs\WpStubState}.
      */
     public static function remoteGet(string $url, int $timeoutSeconds = 10): ?string
     {
@@ -573,8 +574,8 @@ final class WpHelper
      * `$parentSlug` must already have been registered via {@see addMenuPage()} (or be
      * a core WP slug like `tools.php`). Passing the same value for `$parentSlug` and
      * `$menuSlug` is the standard way to override the auto-created first submenu's
-     * label — used by {@see \PressSentinel\Admin\PressSentinelMenuPage} to rename the
-     * landing item from "Secure Press" to "Dashboard".
+     * label — used by {@see \NiyiGuard\Admin\NiyiGuardMenuPage} to rename the
+     * landing item from the auto-generated first submenu label to "Dashboard".
      */
     public static function addSubmenuPage(
         string $parentSlug,
@@ -616,19 +617,18 @@ final class WpHelper
     /**
      * Reads a form nonce from POST first (admin-post / options.php), then REQUEST.
      *
-     * Nonces are not passed through {@see sanitizeTextField()} — WordPress core
-     * only unslashes them before {@see wp_verify_nonce()}.
+     * Nonces are unslashed + sanitized before verification.
      */
     public static function getNonceFromRequest(string $field = '_wpnonce'): string
     {
         if (isset($_POST[$field]) && is_string($_POST[$field])) {
             // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Unslashed below.
-            return self::unslash($_POST[$field]);
+            return self::sanitizeTextField(self::unslash($_POST[$field]));
         }
 
         if (isset($_REQUEST[$field]) && is_string($_REQUEST[$field])) {
             // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Unslashed below.
-            return self::unslash($_REQUEST[$field]);
+            return self::sanitizeTextField(self::unslash($_REQUEST[$field]));
         }
 
         return '';
@@ -848,7 +848,7 @@ final class WpHelper
     }
 
     /**
-     * Fires a WordPress action with the given arguments. Used by PressSentinel to
+     * Fires a WordPress action with the given arguments. Used by NiyiGuard to
      * synthesise `wp_login` after a 2FA-verified login so other listeners (the audit
      * logger, third-party plugins) see the same hook they would on a vanilla flow.
      */

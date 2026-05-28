@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Audit;
+namespace NiyiGuard\Core\Audit;
 
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Resolves the effective audit-log configuration for the current request.
@@ -24,7 +24,7 @@ use PressSentinel\Core\Support\WpHelper;
  */
 final class AuditLogOptions
 {
-    public const OPTION_NAME = 'presssentinel_audit_log';
+    public const OPTION_NAME = 'niyiguard_audit_log';
 
     public const RETENTION_MIN = 0;
 

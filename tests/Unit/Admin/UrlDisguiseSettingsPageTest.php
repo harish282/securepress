@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Admin;
+namespace NiyiGuard\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Admin\UrlDisguiseSettingsPage;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\Core\View\View;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Admin\UrlDisguiseSettingsPage;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\Core\View\View;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class UrlDisguiseSettingsPageTest extends TestCase
 {

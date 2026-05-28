@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Admin;
+namespace NiyiGuard\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Admin\AuditLogSettingsPage;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\View\View;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Admin\AuditLogSettingsPage;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\View\View;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class AuditLogSettingsPageTest extends TestCase
 {

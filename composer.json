@@ -1,5 +1,5 @@
 {
-    "name": "presssentinel/press-sentinel",
+    "name": "niyiguard/niyiguard",
     "description": "Laravel-inspired security infrastructure for WordPress",
     "license": "GPL-2.0-or-later",
     "type": "wordpress-plugin",
@@ -11,12 +11,12 @@
     },
     "autoload": {
         "psr-4": {
-            "PressSentinel\\": "src/"
+            "NiyiGuard\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "PressSentinel\\Tests\\": "tests/"
+            "NiyiGuard\\Tests\\": "tests/"
         }
     },
     "config": {

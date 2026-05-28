@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Headers;
+namespace NiyiGuard\Core\Headers;
 
 /**
  * Contract for a configurable HTTP security header.

@@ -8,7 +8,7 @@ if (! defined('ABSPATH')) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
 
 
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * @var array{
@@ -78,7 +78,7 @@ $protectionLabel = static function (string $state): string {
         <div class="notice notice-warning" style="margin:12px 0;">
             <p><strong>Safe mode is active.</strong>
                 Emergency bypasses: <?php echo esc_html(implode(', ', $report['safe_mode']['bypasses'])); ?>.
-                Remove <code>PRESS_SENTINEL_SAFE_MODE</code> from wp-config or set <code>recovery.safe_mode</code> to <code>false</code> in <code>config/plugin.php</code> when recovery is complete.</p>
+                Remove <code>NIYIGUARD_SAFE_MODE</code> from wp-config or set <code>recovery.safe_mode</code> to <code>false</code> in <code>config/plugin.php</code> when recovery is complete.</p>
         </div>
     <?php endif; ?>
 

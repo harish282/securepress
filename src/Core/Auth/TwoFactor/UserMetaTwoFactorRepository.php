@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\TwoFactor;
+namespace NiyiGuard\Core\Auth\TwoFactor;
 
 /**
  * Default repository — persists 2FA state in WordPress user_meta.
@@ -20,7 +20,7 @@ namespace PressSentinel\Core\Auth\TwoFactor;
  */
 final class UserMetaTwoFactorRepository implements TwoFactorUserRepositoryInterface
 {
-    public const META_KEY = '_presssentinel_2fa_state';
+    public const META_KEY = '_niyiguard_2fa_state';
 
     public function find(int $userId): TwoFactorState
     {

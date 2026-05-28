@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core;
+namespace NiyiGuard\Core;
 
 use Closure;
 use RuntimeException;

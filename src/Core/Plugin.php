@@ -2,149 +2,149 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core;
+namespace NiyiGuard\Core;
 
-use PressSentinel\Admin\AuditLogPage;
-use PressSentinel\Admin\AuditLogSettingsPage;
-use PressSentinel\Admin\AuthHardeningSettingsPage;
-use PressSentinel\Admin\Diagnostics\HealthDiagnosticsCollector;
-use PressSentinel\Admin\FeatureRegistry;
-use PressSentinel\Admin\FileIntegrityPage;
-use PressSentinel\Admin\HealthDiagnosticsPage;
-use PressSentinel\Admin\MuLoaderDownloadController;
-use PressSentinel\Admin\MuLoaderStatus;
-use PressSentinel\Admin\RateLimitSettingsPage;
-use PressSentinel\Admin\PressSentinelMenuPage;
-use PressSentinel\Admin\UrlDisguiseSettingsPage;
-use PressSentinel\Admin\SecurityHeadersSettingsPage;
-use PressSentinel\Admin\UserSecurityProfilePage;
-use PressSentinel\Auth\AuthenticationHardeningKernel;
-use PressSentinel\Auth\TwoFactorChallengeController;
-use PressSentinel\Core\Audit\AuditLogger;
-use PressSentinel\Core\Audit\AuditLoggerInterface;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Audit\AuditLogPruner;
-use PressSentinel\Core\Audit\AuditLogRepositoryInterface;
-use PressSentinel\Core\Audit\AuditLogSchema;
-use PressSentinel\Core\Audit\Listeners\AuthListener;
-use PressSentinel\Core\Audit\Listeners\FileEditorListener;
-use PressSentinel\Core\Audit\Listeners\ListenerInterface;
-use PressSentinel\Core\Audit\Listeners\OptionsListener;
-use PressSentinel\Core\Audit\Listeners\PluginListener;
-use PressSentinel\Core\Audit\Listeners\UserRoleListener;
-use PressSentinel\Core\Audit\Listeners\WooCommerceListener;
-use PressSentinel\Core\Audit\WpdbAuditLogRepository;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Auth\Lockout\LockoutStoreInterface;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
-use PressSentinel\Core\Auth\Lockout\TransientLockoutStore;
-use PressSentinel\Core\Auth\Notifications\AuthNotifier;
-use PressSentinel\Core\Auth\Notifications\MailerInterface;
-use PressSentinel\Core\Auth\Notifications\WpMailer;
-use PressSentinel\Core\Auth\Sessions\WpSessionDestroyer;
-use PressSentinel\Core\Auth\Sessions\SessionDestroyerInterface;
-use PressSentinel\Core\Auth\Sessions\SessionFingerprinter;
-use PressSentinel\Core\Auth\Sessions\SessionPruner;
-use PressSentinel\Core\Auth\Sessions\SessionRepositoryInterface;
-use PressSentinel\Core\Auth\Sessions\SessionSchema;
-use PressSentinel\Core\Auth\Sessions\SessionService;
-use PressSentinel\Core\Auth\Sessions\WpdbSessionRepository;
-use PressSentinel\Core\Auth\SuspiciousLogin\Rules\NewDeviceRule;
-use PressSentinel\Core\Auth\SuspiciousLogin\SuspicionDetector;
-use PressSentinel\Core\Auth\TwoFactor\ChallengeStoreInterface;
-use PressSentinel\Core\Auth\TwoFactor\EmailOtpProvider;
-use PressSentinel\Core\Auth\TwoFactor\RecoveryCodeService;
-use PressSentinel\Core\Auth\TwoFactor\TotpProvider;
-use PressSentinel\Core\Auth\TwoFactor\TransientChallengeStore;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorUserRepositoryInterface;
-use PressSentinel\Core\Auth\TwoFactor\UserMetaTwoFactorRepository;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\HeaderRegistryFactory;
-use PressSentinel\Core\Headers\SecurityHeadersDispatcher;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Edition\EditionAccess;
-use PressSentinel\Core\Edition\FreeEditionAccess;
-use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
-use PressSentinel\WooCommerce\Admin\WooCommerceProtectionPage;
-use PressSentinel\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
-use PressSentinel\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware;
-use PressSentinel\WooCommerce\Middleware\Cart\CartVelocityMiddleware;
-use PressSentinel\WooCommerce\Middleware\Cart\CouponAbuseMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware as CheckoutDisposableEmailMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\FraudScoreMiddleware;
-use PressSentinel\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware;
-use PressSentinel\WooCommerce\Middleware\Registration\HoneypotMiddleware;
-use PressSentinel\WooCommerce\Middleware\Registration\RegistrationDisposableEmailMiddleware;
-use PressSentinel\WooCommerce\Middleware\Registration\RegistrationRateLimitMiddleware;
-use PressSentinel\WooCommerce\Pipelines\ApiPipeline;
-use PressSentinel\WooCommerce\Pipelines\CartPipeline;
-use PressSentinel\WooCommerce\Pipelines\CheckoutPipeline;
-use PressSentinel\WooCommerce\Pipelines\RegistrationPipeline;
-use PressSentinel\WooCommerce\Services\BehaviorClock;
-use PressSentinel\WooCommerce\Services\CartFingerprinter;
-use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
-use PressSentinel\WooCommerce\Services\FraudScoreService;
-use PressSentinel\WooCommerce\Storage\AbuseCounterStoreInterface;
-use PressSentinel\WooCommerce\Storage\TransientAbuseCounterStore;
-use PressSentinel\WooCommerce\WooCommerceModule;
-use PressSentinel\Core\Integrity\Checksums\ChecksumProviderInterface;
-use PressSentinel\Core\Integrity\Checksums\WpOrgChecksumProvider;
-use PressSentinel\Core\Integrity\FindingRepositoryInterface;
-use PressSentinel\Core\Integrity\Heuristics\EvalBase64Heuristic;
-use PressSentinel\Core\Integrity\Heuristics\HeuristicInterface;
-use PressSentinel\Core\Integrity\Heuristics\ObfuscatedCallableHeuristic;
-use PressSentinel\Core\Integrity\Heuristics\PregReplaceEvalHeuristic;
-use PressSentinel\Core\Integrity\Heuristics\ShellExecHeuristic;
-use PressSentinel\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\Integrity\IntegrityScheduler;
-use PressSentinel\Core\Integrity\IntegritySchema;
-use PressSentinel\Core\Integrity\IntegrityService;
-use PressSentinel\Core\Integrity\ManifestBuilder;
-use PressSentinel\Core\Integrity\ManifestRepositoryInterface;
-use PressSentinel\Core\Integrity\Scanners\CoreFilesScanner;
-use PressSentinel\Core\Integrity\Scanners\ManifestDiffScanner;
-use PressSentinel\Core\Integrity\Scanners\SuspiciousPhpScanner;
-use PressSentinel\Core\Integrity\WpdbFindingRepository;
-use PressSentinel\Core\Integrity\WpdbManifestRepository;
-use PressSentinel\Core\Logging\FileLogger;
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Core\Http\RouteGuardRegistry;
-use PressSentinel\Core\Middleware\MiddlewareManager;
-use PressSentinel\Core\Middleware\MiddlewarePipeline;
-use PressSentinel\Core\Middleware\MiddlewareRegistry;
-use PressSentinel\Core\Middleware\MiddlewareStack;
-use PressSentinel\Core\Recovery\SafeMode;
-use PressSentinel\Core\RateLimit\GlobalRateLimitSubscriber;
-use PressSentinel\Core\RateLimit\RateLimiter;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\RateLimit\RateLimitStoreInterface;
-use PressSentinel\Core\RateLimit\TransientStore;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseModule;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\Core\Url\NonceStoreInterface;
-use PressSentinel\Core\Url\SecretProviderInterface;
-use PressSentinel\Core\Url\TransientNonceStore;
-use PressSentinel\Core\Url\UrlSigner;
-use PressSentinel\Core\Url\WpSaltSecretProvider;
-use PressSentinel\Middleware\CsrfProtectionMiddleware;
-use PressSentinel\Middleware\RateLimitMiddleware;
-use PressSentinel\Middleware\SecurityHeadersMiddleware;
-use PressSentinel\Middleware\SignedUrlMiddleware;
-use PressSentinel\Sdk\Csrf\CsrfTokenManager;
-use PressSentinel\Sdk\Events\EventDispatcher;
-use PressSentinel\Core\Requirements\SystemRequirementsChecker;
-use PressSentinel\Core\Support\RequestContext;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
-use PressSentinel\Facades\AuditLog;
-use PressSentinel\Facades\Security;
+use NiyiGuard\Admin\AuditLogPage;
+use NiyiGuard\Admin\AuditLogSettingsPage;
+use NiyiGuard\Admin\AuthHardeningSettingsPage;
+use NiyiGuard\Admin\Diagnostics\HealthDiagnosticsCollector;
+use NiyiGuard\Admin\FeatureRegistry;
+use NiyiGuard\Admin\FileIntegrityPage;
+use NiyiGuard\Admin\HealthDiagnosticsPage;
+use NiyiGuard\Admin\MuLoaderDownloadController;
+use NiyiGuard\Admin\MuLoaderStatus;
+use NiyiGuard\Admin\RateLimitSettingsPage;
+use NiyiGuard\Admin\NiyiGuardMenuPage;
+use NiyiGuard\Admin\UrlDisguiseSettingsPage;
+use NiyiGuard\Admin\SecurityHeadersSettingsPage;
+use NiyiGuard\Admin\UserSecurityProfilePage;
+use NiyiGuard\Auth\AuthenticationHardeningKernel;
+use NiyiGuard\Auth\TwoFactorChallengeController;
+use NiyiGuard\Core\Audit\AuditLogger;
+use NiyiGuard\Core\Audit\AuditLoggerInterface;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Audit\AuditLogPruner;
+use NiyiGuard\Core\Audit\AuditLogRepositoryInterface;
+use NiyiGuard\Core\Audit\AuditLogSchema;
+use NiyiGuard\Core\Audit\Listeners\AuthListener;
+use NiyiGuard\Core\Audit\Listeners\FileEditorListener;
+use NiyiGuard\Core\Audit\Listeners\ListenerInterface;
+use NiyiGuard\Core\Audit\Listeners\OptionsListener;
+use NiyiGuard\Core\Audit\Listeners\PluginListener;
+use NiyiGuard\Core\Audit\Listeners\UserRoleListener;
+use NiyiGuard\Core\Audit\Listeners\WooCommerceListener;
+use NiyiGuard\Core\Audit\WpdbAuditLogRepository;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Auth\Lockout\LockoutStoreInterface;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutPolicy;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutService;
+use NiyiGuard\Core\Auth\Lockout\TransientLockoutStore;
+use NiyiGuard\Core\Auth\Notifications\AuthNotifier;
+use NiyiGuard\Core\Auth\Notifications\MailerInterface;
+use NiyiGuard\Core\Auth\Notifications\WpMailer;
+use NiyiGuard\Core\Auth\Sessions\WpSessionDestroyer;
+use NiyiGuard\Core\Auth\Sessions\SessionDestroyerInterface;
+use NiyiGuard\Core\Auth\Sessions\SessionFingerprinter;
+use NiyiGuard\Core\Auth\Sessions\SessionPruner;
+use NiyiGuard\Core\Auth\Sessions\SessionRepositoryInterface;
+use NiyiGuard\Core\Auth\Sessions\SessionSchema;
+use NiyiGuard\Core\Auth\Sessions\SessionService;
+use NiyiGuard\Core\Auth\Sessions\WpdbSessionRepository;
+use NiyiGuard\Core\Auth\SuspiciousLogin\Rules\NewDeviceRule;
+use NiyiGuard\Core\Auth\SuspiciousLogin\SuspicionDetector;
+use NiyiGuard\Core\Auth\TwoFactor\ChallengeStoreInterface;
+use NiyiGuard\Core\Auth\TwoFactor\EmailOtpProvider;
+use NiyiGuard\Core\Auth\TwoFactor\RecoveryCodeService;
+use NiyiGuard\Core\Auth\TwoFactor\TotpProvider;
+use NiyiGuard\Core\Auth\TwoFactor\TransientChallengeStore;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorService;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorUserRepositoryInterface;
+use NiyiGuard\Core\Auth\TwoFactor\UserMetaTwoFactorRepository;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\HeaderRegistryFactory;
+use NiyiGuard\Core\Headers\SecurityHeadersDispatcher;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Edition\EditionAccess;
+use NiyiGuard\Core\Edition\FreeEditionAccess;
+use NiyiGuard\WooCommerce\Admin\WooCommerceProtectionOptions;
+use NiyiGuard\WooCommerce\Admin\WooCommerceProtectionPage;
+use NiyiGuard\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Cart\CartVelocityMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Cart\CouponAbuseMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\CartSimilarityMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\DisposableEmailMiddleware as CheckoutDisposableEmailMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\FraudScoreMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Checkout\VelocityDetectionMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Registration\HoneypotMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Registration\RegistrationDisposableEmailMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Registration\RegistrationRateLimitMiddleware;
+use NiyiGuard\WooCommerce\Pipelines\ApiPipeline;
+use NiyiGuard\WooCommerce\Pipelines\CartPipeline;
+use NiyiGuard\WooCommerce\Pipelines\CheckoutPipeline;
+use NiyiGuard\WooCommerce\Pipelines\RegistrationPipeline;
+use NiyiGuard\WooCommerce\Services\BehaviorClock;
+use NiyiGuard\WooCommerce\Services\CartFingerprinter;
+use NiyiGuard\WooCommerce\Services\DisposableEmailRegistry;
+use NiyiGuard\WooCommerce\Services\FraudScoreService;
+use NiyiGuard\WooCommerce\Storage\AbuseCounterStoreInterface;
+use NiyiGuard\WooCommerce\Storage\TransientAbuseCounterStore;
+use NiyiGuard\WooCommerce\WooCommerceModule;
+use NiyiGuard\Core\Integrity\Checksums\ChecksumProviderInterface;
+use NiyiGuard\Core\Integrity\Checksums\WpOrgChecksumProvider;
+use NiyiGuard\Core\Integrity\FindingRepositoryInterface;
+use NiyiGuard\Core\Integrity\Heuristics\EvalBase64Heuristic;
+use NiyiGuard\Core\Integrity\Heuristics\HeuristicInterface;
+use NiyiGuard\Core\Integrity\Heuristics\ObfuscatedCallableHeuristic;
+use NiyiGuard\Core\Integrity\Heuristics\PregReplaceEvalHeuristic;
+use NiyiGuard\Core\Integrity\Heuristics\ShellExecHeuristic;
+use NiyiGuard\Core\Integrity\Heuristics\WebshellSignatureHeuristic;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\Integrity\IntegrityScheduler;
+use NiyiGuard\Core\Integrity\IntegritySchema;
+use NiyiGuard\Core\Integrity\IntegrityService;
+use NiyiGuard\Core\Integrity\ManifestBuilder;
+use NiyiGuard\Core\Integrity\ManifestRepositoryInterface;
+use NiyiGuard\Core\Integrity\Scanners\CoreFilesScanner;
+use NiyiGuard\Core\Integrity\Scanners\ManifestDiffScanner;
+use NiyiGuard\Core\Integrity\Scanners\SuspiciousPhpScanner;
+use NiyiGuard\Core\Integrity\WpdbFindingRepository;
+use NiyiGuard\Core\Integrity\WpdbManifestRepository;
+use NiyiGuard\Core\Logging\FileLogger;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Core\Http\RouteGuardRegistry;
+use NiyiGuard\Core\Middleware\MiddlewareManager;
+use NiyiGuard\Core\Middleware\MiddlewarePipeline;
+use NiyiGuard\Core\Middleware\MiddlewareRegistry;
+use NiyiGuard\Core\Middleware\MiddlewareStack;
+use NiyiGuard\Core\Recovery\SafeMode;
+use NiyiGuard\Core\RateLimit\GlobalRateLimitSubscriber;
+use NiyiGuard\Core\RateLimit\RateLimiter;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\RateLimit\RateLimitStoreInterface;
+use NiyiGuard\Core\RateLimit\TransientStore;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseModule;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\Core\Url\NonceStoreInterface;
+use NiyiGuard\Core\Url\SecretProviderInterface;
+use NiyiGuard\Core\Url\TransientNonceStore;
+use NiyiGuard\Core\Url\UrlSigner;
+use NiyiGuard\Core\Url\WpSaltSecretProvider;
+use NiyiGuard\Middleware\CsrfProtectionMiddleware;
+use NiyiGuard\Middleware\RateLimitMiddleware;
+use NiyiGuard\Middleware\SecurityHeadersMiddleware;
+use NiyiGuard\Middleware\SignedUrlMiddleware;
+use NiyiGuard\Sdk\Csrf\CsrfTokenManager;
+use NiyiGuard\Sdk\Events\EventDispatcher;
+use NiyiGuard\Core\Requirements\SystemRequirementsChecker;
+use NiyiGuard\Core\Support\RequestContext;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
+use NiyiGuard\Facades\AuditLog;
+use NiyiGuard\Facades\Security;
 
 final class Plugin
 {
@@ -166,10 +166,10 @@ final class Plugin
         }
 
         $logger = $this->container->get(LoggerInterface::class);
-        $logger->info('PressSentinel plugin booted.');
+        $logger->info('NiyiGuard plugin booted.');
         if (SafeMode::isActive()) {
             $logger->warning(
-                'PressSentinel safe mode is active — emergency bypasses: '
+                'NiyiGuard safe mode is active — emergency bypasses: '
                 . implode(', ', SafeMode::activeBypasses())
             );
             WpHelper::addAction('admin_notices', [$this, 'renderSafeModeNotice']);
@@ -295,7 +295,7 @@ final class Plugin
             return;
         }
 
-        echo '<div class="notice notice-warning is-dismissible"><p><strong>PressSentinel logging:</strong> '
+        echo '<div class="notice notice-warning is-dismissible"><p><strong>NiyiGuard logging:</strong> '
             . esc_html($error)
             . '</p></div>';
     }
@@ -316,7 +316,7 @@ final class Plugin
             return;
         }
 
-        $guidePath = PRESS_SENTINEL_PATH . '/docs/MU_LOADER_INSTALL.md';
+        $guidePath = NIYIGUARD_PATH . '/docs/MU_LOADER_INSTALL.md';
 
         $this->container->get(View::class)->render('admin.notices.mu-loader-missing', [
             'templatePath' => $status->templatePath(),
@@ -334,7 +334,7 @@ final class Plugin
     {
         unset($pluginData, $status);
 
-        if ($pluginFile !== WpHelper::pluginBasename(PRESS_SENTINEL_FILE)) {
+        if ($pluginFile !== WpHelper::pluginBasename(NIYIGUARD_FILE)) {
             return $pluginMeta;
         }
 
@@ -350,14 +350,14 @@ final class Plugin
         $this->container->singleton(Config::class, static fn (): Config => new Config());
         $this->container->singleton(
             View::class,
-            static fn (): View => new View(PRESS_SENTINEL_VIEWS_PATH)
+            static fn (): View => new View(NIYIGUARD_VIEWS_PATH)
         );
 
         $this->container->singleton(LoggerInterface::class, function (Container $container): LoggerInterface {
             $config = $container->get(Config::class);
             $channel = (string) $config->get('logging.channel', 'file');
-            $filename = (string) $config->get('logging.file', 'presssentinel.log');
-            $logPath = PRESS_SENTINEL_LOG_PATH . '/' . ltrim($filename, '/');
+            $filename = (string) $config->get('logging.file', 'niyiguard.log');
+            $logPath = NIYIGUARD_LOG_PATH . '/' . ltrim($filename, '/');
 
             return $channel === 'file' ? new FileLogger($logPath) : new NullLogger();
         });
@@ -547,7 +547,7 @@ final class Plugin
         );
         // The audit logger and pruner now resolve their `enabled`/retention
         // values from AuditLogOptions, which overlays a wp_option on top of
-        // config/plugin.php. That makes the PressSentinel dashboard toggle
+        // config/plugin.php. That makes the NiyiGuard dashboard toggle
         // (which writes only that option) effective immediately on the next
         // request without any cache flush or plugin reactivation.
         $this->container->singleton(
@@ -695,7 +695,7 @@ final class Plugin
                     $container->get(RecoveryCodeService::class),
                     $container->get(AuthNotifier::class),
                     $container->get(LoggerInterface::class),
-                    (string) ($opts['two_factor']['issuer'] ?? 'PressSentinel'),
+                    (string) ($opts['two_factor']['issuer'] ?? 'NiyiGuard'),
                     (int) ($opts['two_factor']['challenge_ttl_seconds'] ?? TwoFactorService::CHALLENGE_TTL_SECONDS),
                 );
             }
@@ -965,8 +965,8 @@ final class Plugin
             )
         );
         $this->container->singleton(
-            PressSentinelMenuPage::class,
-            static fn (Container $container): PressSentinelMenuPage => new PressSentinelMenuPage(
+            NiyiGuardMenuPage::class,
+            static fn (Container $container): NiyiGuardMenuPage => new NiyiGuardMenuPage(
                 $container->get(Config::class),
                 $container->get(AuthHardeningOptions::class),
                 $container->get(SecurityHeadersOptions::class),
@@ -1077,7 +1077,7 @@ final class Plugin
                     // touch the disposable-email registry / cart fingerprinter.
                     new BotCheckoutMiddleware(
                         $container->get(BehaviorClock::class),
-                        honeypotField: (string) ($c['honeypot_field_name'] ?? 'presssentinel_hp'),
+                        honeypotField: (string) ($c['honeypot_field_name'] ?? 'niyiguard_hp'),
                         minSecondsToSubmit: (int) ($c['min_seconds_to_submit'] ?? 0),
                         timingAction: (string) ($c['timing_action'] ?? BotCheckoutMiddleware::TIMING_REPORT),
                         extraScannerUas: is_array($bot['extra_scanner_uas'] ?? null) ? $bot['extra_scanner_uas'] : [],
@@ -1229,7 +1229,7 @@ final class Plugin
         // registration must be wired on every bootstrap — not only when
         // is_admin() is true at plugin load (MU loader can boot on front-end
         // requests where is_admin() is still false).
-        $this->container->get(PressSentinelMenuPage::class)->registerPostHandler();
+        $this->container->get(NiyiGuardMenuPage::class)->registerPostHandler();
         $this->container->get(MuLoaderDownloadController::class)->register();
 
         // Admin pages are deferred to `init` — NOT `admin_menu`, NOT
@@ -1269,9 +1269,9 @@ final class Plugin
             $this->container->get(WooCommerceProtectionPage::class)->register();
 
             // Account Security stays as its own top-level menu (separate from
-            // the PressSentinel parent menu above): it's gated by the `read`
+            // the NiyiGuard parent menu above): it's gated by the `read`
             // capability so every logged-in user can manage their own 2FA, while
-            // the PressSentinel parent menu requires `manage_options`.
+            // the NiyiGuard parent menu requires `manage_options`.
             if ($this->container->get(AuthHardeningOptions::class)->isEnabled()) {
                 $this->container->get(UserSecurityProfilePage::class)->register();
             }
@@ -1286,7 +1286,7 @@ final class Plugin
         WpHelper::addFilter('plugin_row_meta', [$this, 'addPluginRowMeta'], 10, 4);
 
         // Top-level menu must register before submenu pages (priority 0).
-        $this->container->get(PressSentinelMenuPage::class)->registerMenu();
+        $this->container->get(NiyiGuardMenuPage::class)->registerMenu();
     }
 
 }

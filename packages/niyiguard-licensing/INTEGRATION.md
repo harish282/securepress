@@ -1,6 +1,6 @@
-# PressSentinel offline licensing (optional add-on)
+# NiyiGuard offline licensing (optional add-on)
 
-This folder is a **standalone copy** of the offline HMAC license system that used to ship inside PressSentinel. The public plugin is now **free and fully unlocked**; keep this package if you want to sell Pro keys on a private build or reuse licensing in another WordPress plugin.
+This folder is a **standalone copy** of the offline HMAC license system that used to ship inside NiyiGuard. The public plugin is now **free and fully unlocked**; keep this package if you want to sell Pro keys on a private build or reuse licensing in another WordPress plugin.
 
 ## What is included
 
@@ -16,10 +16,10 @@ This folder is a **standalone copy** of the offline HMAC license system that use
 From the **repository root**:
 
 ```bash
-bash packages/press-sentinel-licensing/scripts/build-licensing-zip.sh
+bash packages/niyiguard-licensing/scripts/build-licensing-zip.sh
 ```
 
-Output: `build/press-sentinel-licensing-1.0.0.zip`
+Output: `build/niyiguard-licensing-1.0.0.zip`
 
 ## Integrate into another plugin (checklist)
 
@@ -30,7 +30,7 @@ Copy into your plugin (adjust namespace if you fork):
 - `src/Core/Licensing/` → your `src/Core/Licensing/`
 - `src/Admin/LicensePage.php` → your `src/Admin/LicensePage.php`
 
-Ensure your autoloader maps `YourVendor\Core\Licensing\` (or keep `PressSentinel\` and require this tree).
+Ensure your autoloader maps `YourVendor\Core\Licensing\` (or keep `NiyiGuard\` and require this tree).
 
 ### 2. Config
 
@@ -44,12 +44,12 @@ Merge the sample from `config/plugin.licensing.sample.php` into your `config/plu
 On plugin activation, provision the signing secret:
 
 ```php
-\PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner::ensure();
+\NiyiGuard\Core\Licensing\LicenseHmacSecretProvisioner::ensure();
 ```
 
 ### 4. Register services (DI)
 
-Bind at bootstrap (same pattern as PressSentinel 0.1.0):
+Bind at bootstrap (same pattern as NiyiGuard 0.1.0):
 
 ```php
 $container->singleton(
@@ -83,22 +83,22 @@ if (!$licenseManager->isPro()) {
 }
 ```
 
-Or expose `Security::isPro()` / filter `presssentinel.is_pro`.
+Or expose `Security::isPro()` / filter `niyiguard.is_pro`.
 
 ### 6. Generate license keys (CLI sketch)
 
 Keys look like: `SP-pro-<issued>-<expires>-<hmac>` (see `LocalLicenseValidator`).
 
-Sign with the same secret as the site (`presssentinel_license_hmac_secret` option or `PRESS_SENTINEL_LICENSE_SECRET` in `wp-config.php`). Use a small PHP script with `hash_hmac('sha256', $payload, $secret)` — match the validator’s payload format exactly.
+Sign with the same secret as the site (`niyiguard_license_hmac_secret` option or `NIYIGUARD_LICENSE_SECRET` in `wp-config.php`). Use a small PHP script with `hash_hmac('sha256', $payload, $secret)` — match the validator’s payload format exactly.
 
 ### 7. WordPress options / privacy
 
 Document in your privacy policy:
 
-- `presssentinel_pro_license` — stored license key (if you keep the same option names)
-- `presssentinel_license_hmac_secret` — install signing secret
-- `presssentinel_beta_trial_started_at` — only if beta trial is enabled
+- `niyiguard_pro_license` — stored license key (if you keep the same option names)
+- `niyiguard_license_hmac_secret` — install signing secret
+- `niyiguard_beta_trial_started_at` — only if beta trial is enabled
 
-## PressSentinel free edition
+## NiyiGuard free edition
 
-The main plugin uses `PressSentinel\Core\Edition\FreeEditionAccess` instead of `LicenseManager`. To re-enable licensing in a **private** PressSentinel build, replace the `EditionAccess` binding in `Plugin::registerEditionServices()` with an adapter that delegates to `LicenseManager`.
+The main plugin uses `NiyiGuard\Core\Edition\FreeEditionAccess` instead of `LicenseManager`. To re-enable licensing in a **private** NiyiGuard build, replace the `EditionAccess` binding in `Plugin::registerEditionServices()` with an adapter that delegates to `LicenseManager`.

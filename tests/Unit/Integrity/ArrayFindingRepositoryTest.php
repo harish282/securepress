@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Integrity;
+namespace NiyiGuard\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Integrity\ArrayFindingRepository;
-use PressSentinel\Core\Integrity\Finding;
-use PressSentinel\Core\Integrity\FindingSeverity;
-use PressSentinel\Core\Integrity\FindingType;
+use NiyiGuard\Core\Integrity\ArrayFindingRepository;
+use NiyiGuard\Core\Integrity\Finding;
+use NiyiGuard\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingType;
 
 /**
- * @see \PressSentinel\Core\Integrity\ArrayFindingRepository
+ * @see \NiyiGuard\Core\Integrity\ArrayFindingRepository
  */
 final class ArrayFindingRepositoryTest extends TestCase
 {

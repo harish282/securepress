@@ -2,36 +2,36 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\Licensing\LicenseStatus;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Licensing\LicenseHmacSecretProvisioner;
+use NiyiGuard\Core\Licensing\LicenseManager;
+use NiyiGuard\Core\Licensing\LicenseStatus;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
- * Settings → PressSentinel License admin page.
+ * Settings → NiyiGuard License admin page.
  *
  * Three concerns:
  *  - **Show** the current status (active/expired/invalid/none) with a masked key.
  *  - **Submit** a new key (POST, nonce-checked, capability-gated). Persisted in
- *    the WordPress options table (`presssentinel_pro_license`).
+ *    the WordPress options table (`niyiguard_pro_license`).
  *  - **Clear** the key — useful for moving a license to a different site.
  *
  * The page intentionally does NOT contact the vendor server. Validation goes through
- * the injected {@see \PressSentinel\Core\Licensing\LicenseValidatorInterface}, so the
+ * the injected {@see \NiyiGuard\Core\Licensing\LicenseValidatorInterface}, so the
  * default offline-HMAC validator works fully air-gapped. Operators who want online
  * checks bind a different validator in `Plugin.php`.
  *
  * UI is deliberately minimal — no marketing, no upgrade comparison table. Pages
- * across PressSentinel link to this one for license management, and this stays the
+ * across NiyiGuard link to this one for license management, and this stays the
  * single source of truth for that workflow.
  */
 final class LicensePage
 {
-    public const PAGE_SLUG = 'presssentinel-license';
-    public const NONCE_ACTION = 'presssentinel_license';
-    public const STATUS_QUERY_KEY = 'presssentinel_license_status';
+    public const PAGE_SLUG = 'niyiguard-license';
+    public const NONCE_ACTION = 'niyiguard_license';
+    public const STATUS_QUERY_KEY = 'niyiguard_license_status';
 
     public function __construct(private readonly LicenseManager $license)
     {
@@ -40,8 +40,8 @@ final class LicensePage
     public function register(): void
     {
         WpHelper::addAction('admin_menu', [$this, 'addMenu']);
-        WpHelper::addAction('admin_post_presssentinel_license_save', [$this, 'handleSave']);
-        WpHelper::addAction('admin_post_presssentinel_license_clear', [$this, 'handleClear']);
+        WpHelper::addAction('admin_post_niyiguard_license_save', [$this, 'handleSave']);
+        WpHelper::addAction('admin_post_niyiguard_license_clear', [$this, 'handleClear']);
     }
 
     /**
@@ -61,8 +61,8 @@ final class LicensePage
         }
 
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel License',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard License',
             'License',
             'manage_options',
             self::PAGE_SLUG,
@@ -80,7 +80,7 @@ final class LicensePage
         $statusFlag = WpHelper::getQueryString(self::STATUS_QUERY_KEY);
 
         echo '<div class="wrap">';
-        echo '<h1>PressSentinel &mdash; License</h1>';
+        echo '<h1>NiyiGuard &mdash; License</h1>';
 
         if ($statusFlag !== '') {
             echo '<div class="notice notice-info is-dismissible"><p>'
@@ -95,11 +95,11 @@ final class LicensePage
         $isBetaTrial = $status->state === LicenseStatus::STATE_BETA_TRIAL;
         echo '<h2>' . ($isEarly ? 'License key (optional)' : 'Enter your license key') . '</h2>';
         echo '<form method="post" action="' . esc_url($adminUrl) . '">';
-        echo '<input type="hidden" name="action" value="presssentinel_license_save" />';
+        echo '<input type="hidden" name="action" value="niyiguard_license_save" />';
         WpHelper::adminNonceField(self::NONCE_ACTION);
         echo '<table class="form-table" role="presentation"><tbody>';
-        echo '<tr><th scope="row"><label for="presssentinel-license-key">License key</label></th><td>';
-        echo '<input type="text" id="presssentinel-license-key" name="license_key" value="" class="regular-text" autocomplete="off" placeholder="SP-PRO-1714780800-1746316800-………" />';
+        echo '<tr><th scope="row"><label for="niyiguard-license-key">License key</label></th><td>';
+        echo '<input type="text" id="niyiguard-license-key" name="license_key" value="" class="regular-text" autocomplete="off" placeholder="SP-PRO-1714780800-1746316800-………" />';
         $keyHelp = 'Keys are signed offline. Paste a valid key when your organization issues one.';
         if ($isEarly) {
             $keyHelp = 'Commercial licensing is not required at this stage. If you already have a signed preview key, paste it here; a valid key takes over from early access automatically.';
@@ -122,7 +122,7 @@ final class LicensePage
 
         if ($mayClearStoredKey) {
             echo '<form method="post" action="' . esc_url($adminUrl) . '" style="margin-top: 1em;">';
-            echo '<input type="hidden" name="action" value="presssentinel_license_clear" />';
+            echo '<input type="hidden" name="action" value="niyiguard_license_clear" />';
             WpHelper::adminNonceField(self::NONCE_ACTION);
             echo '<button type="submit" class="button" onclick="return confirm(\'Remove the current license?\');">Remove license</button>';
             echo '</form>';
@@ -252,7 +252,7 @@ final class LicensePage
             self::STATUS_QUERY_KEY => $message,
         ]);
         WpHelper::safeRedirect($url);
-        if (!\defined('PRESS_SENTINEL_TESTING')) {
+        if (!\defined('NIYIGUARD_TESTING')) {
             exit; // @codeCoverageIgnore
         }
     }

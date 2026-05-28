@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Integrity;
+namespace NiyiGuard\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Integrity\ArrayFindingRepository;
-use PressSentinel\Core\Integrity\Finding;
-use PressSentinel\Core\Integrity\FindingSeverity;
-use PressSentinel\Core\Integrity\FindingType;
-use PressSentinel\Core\Integrity\IntegrityService;
-use PressSentinel\Core\Integrity\Scanners\ScannerInterface;
+use NiyiGuard\Core\Integrity\ArrayFindingRepository;
+use NiyiGuard\Core\Integrity\Finding;
+use NiyiGuard\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingType;
+use NiyiGuard\Core\Integrity\IntegrityService;
+use NiyiGuard\Core\Integrity\Scanners\ScannerInterface;
 
 /**
- * @see \PressSentinel\Core\Integrity\IntegrityService
+ * @see \NiyiGuard\Core\Integrity\IntegrityService
  */
 final class IntegrityServiceTest extends TestCase
 {

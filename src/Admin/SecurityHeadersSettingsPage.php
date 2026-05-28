@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Headers\CspHeader;
-use PressSentinel\Core\Headers\ReferrerPolicyHeader;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Headers\XFrameOptionsHeader;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\Headers\CspHeader;
+use NiyiGuard\Core\Headers\ReferrerPolicyHeader;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Headers\XFrameOptionsHeader;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
- * Settings → PressSentinel Headers admin page.
+ * Settings → NiyiGuard Headers admin page.
  *
  * Uses the standard WordPress Settings API so we get nonce protection, capability checks,
  * and persistence into `wp_options` for free. Each header is rendered as a section with a
@@ -25,9 +25,9 @@ use PressSentinel\Core\View\View;
  */
 final class SecurityHeadersSettingsPage
 {
-    public const PAGE_SLUG = 'presssentinel-security-headers';
+    public const PAGE_SLUG = 'niyiguard-security-headers';
 
-    public const OPTION_GROUP = 'presssentinel_security_headers_group';
+    public const OPTION_GROUP = 'niyiguard_security_headers_group';
 
     /**
      * Section that hosts the master `enabled` toggle. Comes first on the page
@@ -35,19 +35,19 @@ final class SecurityHeadersSettingsPage
      * variable the dashboard's feature-toggle form writes is also editable
      * here — preventing the two views from desyncing.
      */
-    public const SECTION_MASTER = 'presssentinel_section_master';
+    public const SECTION_MASTER = 'niyiguard_section_master';
 
-    public const SECTION_HSTS = 'presssentinel_section_hsts';
+    public const SECTION_HSTS = 'niyiguard_section_hsts';
 
-    public const SECTION_CSP = 'presssentinel_section_csp';
+    public const SECTION_CSP = 'niyiguard_section_csp';
 
-    public const SECTION_XFO = 'presssentinel_section_xfo';
+    public const SECTION_XFO = 'niyiguard_section_xfo';
 
-    public const SECTION_REFERRER = 'presssentinel_section_referrer';
+    public const SECTION_REFERRER = 'niyiguard_section_referrer';
 
-    public const SECTION_PERMISSIONS = 'presssentinel_section_permissions';
+    public const SECTION_PERMISSIONS = 'niyiguard_section_permissions';
 
-    public const SECTION_XCTO = 'presssentinel_section_xcto';
+    public const SECTION_XCTO = 'niyiguard_section_xcto';
 
     /** @var array<string, array<string, mixed>>|null */
     private ?array $cachedOptions = null;
@@ -67,8 +67,8 @@ final class SecurityHeadersSettingsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel Security Headers',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard Security Headers',
             'Security Headers',
             'manage_options',
             self::PAGE_SLUG,
@@ -172,7 +172,7 @@ final class SecurityHeadersSettingsPage
 
     public function renderMasterSectionIntro(): void
     {
-        echo '<p>Master switch for the entire feature. When off, no header below is emitted regardless of its per-section toggle &mdash; useful when you want to pause everything without losing your per-header configuration. The same toggle is mirrored on the <strong>PressSentinel</strong> dashboard.</p>';
+        echo '<p>Master switch for the entire feature. When off, no header below is emitted regardless of its per-section toggle &mdash; useful when you want to pause everything without losing your per-header configuration. The same toggle is mirrored on the <strong>NiyiGuard</strong> dashboard.</p>';
     }
 
     public function renderMasterEnabled(): void

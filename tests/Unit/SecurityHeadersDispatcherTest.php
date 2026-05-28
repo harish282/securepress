@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit;
+namespace NiyiGuard\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\HeaderRegistryFactory;
-use PressSentinel\Core\Headers\SecurityHeadersDispatcher;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\HeaderRegistryFactory;
+use NiyiGuard\Core\Headers\SecurityHeadersDispatcher;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class SecurityHeadersDispatcherTest extends TestCase
 {

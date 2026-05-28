@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\TwoFactor;
+namespace NiyiGuard\Core\Auth\TwoFactor;
 
 /**
  * In-memory {@see ChallengeStoreInterface} for tests.

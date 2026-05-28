@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Admin\Diagnostics\HealthDiagnosticsCollector;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Admin\Diagnostics\HealthDiagnosticsCollector;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
- * PressSentinel → Health: read-only operational snapshot.
+ * NiyiGuard → Health: read-only operational snapshot.
  */
 final class HealthDiagnosticsPage
 {
-    public const PAGE_SLUG = 'presssentinel-health';
+    public const PAGE_SLUG = 'niyiguard-health';
 
     public function __construct(
         private readonly HealthDiagnosticsCollector $collector,
@@ -29,8 +29,8 @@ final class HealthDiagnosticsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel Health',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard Health',
             'Health',
             'manage_options',
             self::PAGE_SLUG,

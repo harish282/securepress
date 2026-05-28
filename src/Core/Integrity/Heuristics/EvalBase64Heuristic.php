@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity\Heuristics;
+namespace NiyiGuard\Core\Integrity\Heuristics;
 
-use PressSentinel\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingSeverity;
 
 /**
  * The classic webshell signature: `eval(base64_decode(...))` and its common variants.

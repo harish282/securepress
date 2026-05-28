@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Admin;
+namespace NiyiGuard\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Admin\SecurityHeadersSettingsPage;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\View\View;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Admin\SecurityHeadersSettingsPage;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\View\View;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
  * Covers the wiring that keeps the Security Headers settings page in sync

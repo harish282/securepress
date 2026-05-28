@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Audit;
+namespace NiyiGuard\Core\Audit;
 
 /**
  * DDL + idempotent migration for the audit log table.
  *
  * Uses {@see dbDelta()} so the migration can be re-run safely on plugin updates — `dbDelta`
  * compares the requested schema with the current one and emits only the necessary `ALTER`
- * statements. We track our own `presssentinel_db_version` option so we don't even call
+ * statements. We track our own `niyiguard_db_version` option so we don't even call
  * `dbDelta` when the schema is already current (saves a DB round-trip on every boot).
  */
 // phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Schema DDL via dbDelta; DROP uses internal table names only.
 final class AuditLogSchema
 {
-    public const TABLE = 'presssentinel_audit_logs';
+    public const TABLE = 'niyiguard_audit_logs';
 
-    public const VERSION_OPTION = 'presssentinel_audit_log_db_version';
+    public const VERSION_OPTION = 'niyiguard_audit_log_db_version';
 
     /**
      * Bump this when the schema changes; the installer will re-run dbDelta.

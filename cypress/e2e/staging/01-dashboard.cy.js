@@ -6,7 +6,7 @@ describe('Dashboard & feature toggles', () => {
 
   beforeEach(() => {
     cy.wpLogin()
-    cy.visitPressSentinel('presssentinel')
+    cy.visitNiyiGuard('niyiguard')
   })
 
   it('shows status overview cards', () => {
@@ -18,13 +18,13 @@ describe('Dashboard & feature toggles', () => {
   })
 
   it('persists a feature toggle after save and reload', () => {
-    cy.get(`#presssentinel_feature_${feature}`).then(($cb) => {
+    cy.get(`#niyiguard_feature_${feature}`).then(($cb) => {
       const wasOn = $cb.prop('checked')
       const target = !wasOn
 
       cy.setDashboardFeature(feature, target)
       cy.reload()
-      cy.get(`#presssentinel_feature_${feature}`).should(target ? 'be.checked' : 'not.be.checked')
+      cy.get(`#niyiguard_feature_${feature}`).should(target ? 'be.checked' : 'not.be.checked')
 
       cy.setDashboardFeature(feature, wasOn)
     })

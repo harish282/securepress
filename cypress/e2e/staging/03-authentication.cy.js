@@ -8,15 +8,15 @@ describe('Authentication hardening', () => {
   })
 
   it('loads authentication settings with lockout fields', () => {
-    cy.visitPressSentinel('presssentinel-authentication')
-    cy.contains('h1', 'PressSentinel Authentication').should('be.visible')
-    cy.get('input[name="presssentinel_auth_hardening[lockout][enabled]"]').should('exist')
-    cy.get('input[name="presssentinel_auth_hardening[lockout][max_attempts]"]').should('exist')
+    cy.visitNiyiGuard('niyiguard-authentication')
+    cy.contains('h1', 'NiyiGuard Authentication').should('be.visible')
+    cy.get('input[name="niyiguard_auth_hardening[lockout][enabled]"]').should('exist')
+    cy.get('input[name="niyiguard_auth_hardening[lockout][max_attempts]"]').should('exist')
   })
 
   it('saves lockout configuration', () => {
-    cy.visitPressSentinel('presssentinel-authentication')
-    cy.get('input[name="presssentinel_auth_hardening[lockout][max_attempts]"]').clear().type('5')
+    cy.visitNiyiGuard('niyiguard-authentication')
+    cy.get('input[name="niyiguard_auth_hardening[lockout][max_attempts]"]').clear().type('5')
     cy.saveWpOptionsForm()
   })
 

@@ -8,8 +8,8 @@ if (! defined('ABSPATH')) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
 
 
-use PressSentinel\Admin\PressSentinelMenuPage;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Admin\NiyiGuardMenuPage;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * @var string $pageSlug
@@ -18,7 +18,7 @@ use PressSentinel\Core\Support\WpHelper;
  */
 ?>
 <div class="wrap">
-    <h1>PressSentinel Rate Limiting</h1>
+    <h1>NiyiGuard Rate Limiting</h1>
     <p>Cap the request rate per user / IP. Configured here, enforced globally by the rate-limit middleware on every request.</p>
 
     <?php if (!$masterEnabled): ?>
@@ -28,16 +28,16 @@ use PressSentinel\Core\Support\WpHelper;
                 The master switch below (also available on the
                 <a href="<?php echo esc_attr(
                     \function_exists('admin_url')
-                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . PressSentinelMenuPage::PARENT_SLUG)
+                        ? (string) \call_user_func('admin_url', 'admin.php?page=' . NiyiGuardMenuPage::PARENT_SLUG)
                         : '#'
-                ) ?>">PressSentinel dashboard</a>)
+                ) ?>">NiyiGuard dashboard</a>)
                 is disabled, so no global throttling is applied. Per-route SDK limits (<code>Security::rateLimit(...)</code>) are unaffected.
             </p>
         </div>
     <?php endif; ?>
 
     <p class="description">
-        Locked out or throttled? Add <code>define('PRESS_SENTINEL_SAFE_MODE', true);</code> to <code>wp-config.php</code> or set <code>recovery.safe_mode</code> to <code>true</code> in <code>config/plugin.php</code> to bypass global rate limiting and login lockouts until you regain access.
+        Locked out or throttled? Add <code>define('NIYIGUARD_SAFE_MODE', true);</code> to <code>wp-config.php</code> or set <code>recovery.safe_mode</code> to <code>true</code> in <code>config/plugin.php</code> to bypass global rate limiting and login lockouts until you regain access.
     </p>
 
     <form method="post" action="options.php">

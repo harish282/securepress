@@ -6,22 +6,22 @@ describe('Pre-flight', () => {
     cy.wpLogin()
   })
 
-  it('loads Press Sentinel dashboard without fatal errors', () => {
-    cy.visitPressSentinel('presssentinel')
-    cy.contains('h1', 'Press Sentinel').should('be.visible')
+  it('loads NiyiGuard dashboard without fatal errors', () => {
+    cy.visitNiyiGuard('niyiguard')
+    cy.contains('h1', 'NiyiGuard').should('be.visible')
     cy.contains('Feature toggles').should('be.visible')
     cy.get('body').should('not.contain', 'Fatal error')
   })
 
   it('shows health diagnostics with storage tables', () => {
-    cy.visitPressSentinel('presssentinel-health')
+    cy.visitNiyiGuard('niyiguard-health')
     cy.contains('h1', 'Health diagnostics').should('be.visible')
-    cy.contains('table', 'presssentinel_audit_logs').should('exist')
+    cy.contains('table', 'niyiguard_audit_logs').should('exist')
     cy.contains('Active protections').should('be.visible')
   })
 
   it('lists all feature toggles on the dashboard', () => {
-    cy.visitPressSentinel('presssentinel')
+    cy.visitNiyiGuard('niyiguard')
     ;[
       'auth_hardening',
       'security_headers',
@@ -30,7 +30,7 @@ describe('Pre-flight', () => {
       'file_integrity',
       'audit_log',
     ].forEach((key) => {
-      cy.get(`#presssentinel_feature_${key}`).should('exist')
+      cy.get(`#niyiguard_feature_${key}`).should('exist')
     })
   })
 })

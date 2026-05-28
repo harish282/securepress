@@ -8,13 +8,13 @@ describe('File integrity', () => {
   })
 
   it('loads file integrity admin and offers scan', () => {
-    cy.visitPressSentinel('presssentinel-file-integrity')
+    cy.visitNiyiGuard('niyiguard-file-integrity')
     cy.contains('h1', 'File integrity').should('be.visible')
     cy.contains('button', 'Run scan now').should('be.visible')
   })
 
   it('submits a plugins scan without fatal error', () => {
-    cy.visitPressSentinel('presssentinel-file-integrity')
+    cy.visitNiyiGuard('niyiguard-file-integrity')
     cy.window().then((win) => {
       cy.stub(win, 'confirm').returns(true)
     })

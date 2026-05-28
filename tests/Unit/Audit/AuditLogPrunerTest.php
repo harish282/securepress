@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Audit;
+namespace NiyiGuard\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Audit\ArrayAuditLogRepository;
-use PressSentinel\Core\Audit\AuditEvent;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Audit\AuditLogPruner;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Audit\ArrayAuditLogRepository;
+use NiyiGuard\Core\Audit\AuditEvent;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Audit\AuditLogPruner;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class AuditLogPrunerTest extends TestCase
 {

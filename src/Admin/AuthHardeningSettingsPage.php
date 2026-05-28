@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
- * Settings → PressSentinel Authentication admin page.
+ * Settings → NiyiGuard Authentication admin page.
  *
  * Lets a site admin enable / disable the entire authentication-hardening subsystem and
  * its sub-features (login lockout, sessions, suspicion alerts, 2FA challenge TTL,
@@ -30,15 +30,15 @@ use PressSentinel\Core\View\View;
  */
 final class AuthHardeningSettingsPage
 {
-    public const PAGE_SLUG = 'presssentinel-authentication';
-    public const OPTION_GROUP = 'presssentinel_auth_hardening_group';
+    public const PAGE_SLUG = 'niyiguard-authentication';
+    public const OPTION_GROUP = 'niyiguard_auth_hardening_group';
 
-    public const SECTION_MASTER = 'presssentinel_section_auth_master';
-    public const SECTION_LOCKOUT = 'presssentinel_section_auth_lockout';
-    public const SECTION_SESSIONS = 'presssentinel_section_auth_sessions';
-    public const SECTION_SUSPICION = 'presssentinel_section_auth_suspicion';
-    public const SECTION_TWO_FACTOR = 'presssentinel_section_auth_two_factor';
-    public const SECTION_NOTIFICATIONS = 'presssentinel_section_auth_notifications';
+    public const SECTION_MASTER = 'niyiguard_section_auth_master';
+    public const SECTION_LOCKOUT = 'niyiguard_section_auth_lockout';
+    public const SECTION_SESSIONS = 'niyiguard_section_auth_sessions';
+    public const SECTION_SUSPICION = 'niyiguard_section_auth_suspicion';
+    public const SECTION_TWO_FACTOR = 'niyiguard_section_auth_two_factor';
+    public const SECTION_NOTIFICATIONS = 'niyiguard_section_auth_notifications';
 
     /** @var array<string, mixed>|null */
     private ?array $cachedOptions = null;
@@ -58,8 +58,8 @@ final class AuthHardeningSettingsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel Authentication',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard Authentication',
             'Authentication',
             'manage_options',
             self::PAGE_SLUG,
@@ -188,7 +188,7 @@ final class AuthHardeningSettingsPage
 
     public function renderSessionsIntro(): void
     {
-        echo '<p>Records each authenticated session into <code>wp_presssentinel_sessions</code> so users can review and revoke devices from <strong>Account Security</strong>. A daily cron prunes rows older than the configured retention.</p>';
+        echo '<p>Records each authenticated session into <code>wp_niyiguard_sessions</code> so users can review and revoke devices from <strong>Account Security</strong>. A daily cron prunes rows older than the configured retention.</p>';
     }
 
     public function renderSessionsEnabled(): void

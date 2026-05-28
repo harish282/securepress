@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\RateLimit;
+namespace NiyiGuard\Core\RateLimit;
 
-use PressSentinel\Core\Support\RequestContext;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Middleware\RateLimitMiddleware;
+use NiyiGuard\Core\Support\RequestContext;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Middleware\RateLimitMiddleware;
 
 /**
  * Wires {@see RateLimitMiddleware} into WordPress so the dashboard / settings
@@ -69,7 +69,7 @@ final class GlobalRateLimitSubscriber
         $retry = (int) ($out['rate_limit']['retry_after'] ?? 60);
 
         return new \WP_Error(
-            'presssentinel_rate_limit',
+            'niyiguard_rate_limit',
             (string) (($out['response'] ?? [])['message'] ?? 'Too many requests.'),
             ['status' => 429, 'retry_after' => $retry]
         );
@@ -148,7 +148,7 @@ final class GlobalRateLimitSubscriber
             }
         }
 
-        if (\defined('PRESS_SENTINEL_TESTING')) {
+        if (\defined('NIYIGUARD_TESTING')) {
             return;
         }
 

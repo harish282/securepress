@@ -1,11 +1,11 @@
 # Cypress E2E (staging)
 
-Automated checks that mirror [STAGING_TEST_PLAN.md](STAGING_TEST_PLAN.md). Run against a **staging** WordPress site with PressSentinel activated and an administrator account.
+Automated checks that mirror [STAGING_TEST_PLAN.md](STAGING_TEST_PLAN.md). Run against a **staging** WordPress site with NiyiGuard activated and an administrator account.
 
 ## Setup
 
 ```bash
-cd wp-content/plugins-dev/press-sentinel   # this repo
+cd wp-content/plugins-dev/niyiguard   # this repo
 npm install
 cp cypress.env.example.json cypress.env.json
 # Edit cypress.env.json: baseUrl, wpUsername, wpPassword
@@ -54,7 +54,7 @@ npm run cypress:run       # all specs under cypress/e2e/
 Still **manual** on staging (no Cypress spec yet):
 
 - §5.2–5.4 TOTP, sessions, suspicious login
-- §11 Safe mode (`PRESS_SENTINEL_SAFE_MODE` in wp-config)
+- §11 Safe mode (`NIYIGUARD_SAFE_MODE` in wp-config)
 - §13 Developer API smoke
 - §14 Sign-off checklist
 - PHPUnit / Plugin Check (run locally: `vendor/bin/phpunit`)

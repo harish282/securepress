@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Licensing;
+namespace NiyiGuard\Core\Licensing;
 
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * The plugin's single source of truth for "is this install Pro?".
  *
  * Resolution order (first match wins, low priority → high):
  *
- *   1. `wp_option('presssentinel_pro_license')` — the admin-managed key on the Settings → License page.
+ *   1. `wp_option('niyiguard_pro_license')` — the admin-managed key on the Settings → License page.
  *   2. `pro_license.license_key` in config/plugin.php — optional shipped default (usually empty).
- *   3. `PRESS_SENTINEL_PRO_LICENSE` constant in wp-config.php — staging / CI overrides.
- *   4. `apply_filters('presssentinel.pro_license', '')` — programmatic override (extensions, tests).
+ *   3. `NIYIGUARD_PRO_LICENSE` constant in wp-config.php — staging / CI overrides.
+ *   4. `apply_filters('niyiguard.pro_license', '')` — programmatic override (extensions, tests).
  *
  * After resolution the key is validated through the injected
  * {@see LicenseValidatorInterface}. When there is **no** resolvable key (or an
@@ -25,20 +25,20 @@ use PressSentinel\Core\Support\WpHelper;
  * see `config/plugin.php` (`pro_license.early_access`, `pro_license.beta_trial.*`)
  * and {@see BetaTrial}. Early access is evaluated before the beta trial window.
  *
- * The "is Pro" check is wrapped in a filter (`presssentinel.is_pro`) so:
+ * The "is Pro" check is wrapped in a filter (`niyiguard.is_pro`) so:
  *  - test suites can flip behaviour without faking a license key;
  *  - integration packs (e.g., a future "Pro Bundle" plugin) can flip behaviour for
  *    the whole site without rewriting the manager.
  */
 final class LicenseManager
 {
-    public const OPTION_NAME = 'presssentinel_pro_license';
+    public const OPTION_NAME = 'niyiguard_pro_license';
 
-    public const PHP_CONSTANT = 'PRESS_SENTINEL_PRO_LICENSE';
+    public const PHP_CONSTANT = 'NIYIGUARD_PRO_LICENSE';
 
-    public const FILTER_LICENSE = 'presssentinel.pro_license';
+    public const FILTER_LICENSE = 'niyiguard.pro_license';
 
-    public const FILTER_IS_PRO = 'presssentinel.is_pro';
+    public const FILTER_IS_PRO = 'niyiguard.is_pro';
 
     private ?LicenseStatus $cached = null;
 

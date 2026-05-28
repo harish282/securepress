@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Middleware\Checkout;
+namespace NiyiGuard\WooCommerce\Middleware\Checkout;
 
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Signal;
-use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
-use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Signal;
+use NiyiGuard\WooCommerce\Middleware\WcMiddlewareInterface;
+use NiyiGuard\WooCommerce\Services\DisposableEmailRegistry;
 
 /**
  * Flags checkouts using disposable / throwaway email addresses.
@@ -18,7 +18,7 @@ use PressSentinel\WooCommerce\Services\DisposableEmailRegistry;
  * (privacy-conscious customers, devs testing prod, returning customers who lost
  * their account email). Denying on this signal alone is the textbook
  * false-positive trap — instead, we contribute weight and let
- * {@see \PressSentinel\WooCommerce\Services\FraudScoreService} make the final call by
+ * {@see \NiyiGuard\WooCommerce\Services\FraudScoreService} make the final call by
  * combining with other signals.
  *
  * `weight` is configurable so operators can dial sensitivity from the admin page.

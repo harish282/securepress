@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Middleware;
+namespace NiyiGuard\Core\Middleware;
 
-use PressSentinel\Core\Container;
+use NiyiGuard\Core\Container;
 
 final class MiddlewareManager
 {

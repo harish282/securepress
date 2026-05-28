@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Auth;
+namespace NiyiGuard\Auth;
 
-use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
-use PressSentinel\Core\Auth\Notifications\AuthNotifier;
-use PressSentinel\Core\Auth\Sessions\SessionFingerprinter;
-use PressSentinel\Core\Auth\Sessions\SessionService;
-use PressSentinel\Core\Auth\SuspiciousLogin\LoginContext;
-use PressSentinel\Core\Auth\SuspiciousLogin\SuspicionDetector;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Recovery\SafeMode;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutService;
+use NiyiGuard\Core\Auth\Notifications\AuthNotifier;
+use NiyiGuard\Core\Auth\Sessions\SessionFingerprinter;
+use NiyiGuard\Core\Auth\Sessions\SessionService;
+use NiyiGuard\Core\Auth\SuspiciousLogin\LoginContext;
+use NiyiGuard\Core\Auth\SuspiciousLogin\SuspicionDetector;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorService;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Recovery\SafeMode;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Registers all the WordPress hooks that make up the authentication-hardening flow.

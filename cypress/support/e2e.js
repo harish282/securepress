@@ -1,4 +1,4 @@
-// PressSentinel staging E2E — global hooks and custom commands.
+// NiyiGuard staging E2E — global hooks and custom commands.
 require('./commands')
 
 before(function () {

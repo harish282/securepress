@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Audit;
+namespace NiyiGuard\Tests\Unit\Audit;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Audit\AuditEvent;
-use PressSentinel\Core\Audit\AuditEventCategory;
-use PressSentinel\Core\Audit\AuditEventLevel;
+use NiyiGuard\Core\Audit\AuditEvent;
+use NiyiGuard\Core\Audit\AuditEventCategory;
+use NiyiGuard\Core\Audit\AuditEventLevel;
 
 final class AuditEventTest extends TestCase
 {

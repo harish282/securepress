@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Auth;
+namespace NiyiGuard\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\Notifications\AuthNotifier;
-use PressSentinel\Core\Auth\Notifications\ArrayMailer;
-use PressSentinel\Core\Auth\TwoFactor\ArrayChallengeStore;
-use PressSentinel\Core\Auth\TwoFactor\ArrayTwoFactorRepository;
-use PressSentinel\Core\Auth\TwoFactor\EmailOtpProvider;
-use PressSentinel\Core\Auth\TwoFactor\RecoveryCodeService;
-use PressSentinel\Core\Auth\TwoFactor\TotpProvider;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorMethod;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
-use PressSentinel\Core\Logging\NullLogger;
+use NiyiGuard\Core\Auth\Notifications\AuthNotifier;
+use NiyiGuard\Core\Auth\Notifications\ArrayMailer;
+use NiyiGuard\Core\Auth\TwoFactor\ArrayChallengeStore;
+use NiyiGuard\Core\Auth\TwoFactor\ArrayTwoFactorRepository;
+use NiyiGuard\Core\Auth\TwoFactor\EmailOtpProvider;
+use NiyiGuard\Core\Auth\TwoFactor\RecoveryCodeService;
+use NiyiGuard\Core\Auth\TwoFactor\TotpProvider;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorMethod;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorService;
+use NiyiGuard\Core\Logging\NullLogger;
 
 final class TwoFactorServiceTest extends TestCase
 {
@@ -67,7 +67,7 @@ final class TwoFactorServiceTest extends TestCase
         $challenges = new ArrayChallengeStore();
         $emailOtp = new EmailOtpProvider();
 
-        $users->save(3, \PressSentinel\Core\Auth\TwoFactor\TwoFactorState::enabled(
+        $users->save(3, \NiyiGuard\Core\Auth\TwoFactor\TwoFactorState::enabled(
             TwoFactorMethod::EMAIL_OTP,
             null,
             (new RecoveryCodeService(2))->generate()['hashes'],

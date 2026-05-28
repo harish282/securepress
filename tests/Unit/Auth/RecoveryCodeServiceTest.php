@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Auth;
+namespace NiyiGuard\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\TwoFactor\RecoveryCodeService;
+use NiyiGuard\Core\Auth\TwoFactor\RecoveryCodeService;
 
 final class RecoveryCodeServiceTest extends TestCase
 {

@@ -8,7 +8,7 @@ if (! defined('ABSPATH')) {
 // phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
 
 
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * @var string $templatePath
@@ -18,7 +18,7 @@ use PressSentinel\Core\Support\WpHelper;
 ?>
 <div class="notice notice-warning">
     <p>
-        <strong>PressSentinel:</strong>
+        <strong>NiyiGuard:</strong>
         MU loader is not installed. For earliest request monitoring, copy the loader file now.
     </p>
     <p>

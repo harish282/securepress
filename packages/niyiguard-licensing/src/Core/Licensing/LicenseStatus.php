@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Licensing;
+namespace NiyiGuard\Core\Licensing;
 
 /**
  * Outcome of a single license-key validation attempt.

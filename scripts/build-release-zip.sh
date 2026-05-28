@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
-# Package Press Sentinel for WordPress.
+# Package NiyiGuard for WordPress.
 # Excludes tests, dev tooling, git metadata, and Composer dev dependencies.
 # Ships readme.txt and license.txt (required for WordPress.org). Privacy policy: docs/PRIVACY.md.
 #
 # Usage (from repo root):
 #   bash scripts/build-release-zip.sh dev
-#     Copy runtime files to ../plugins/presssentinel (local WordPress plugins dir).
+#     Copy runtime files to ../plugins/niyiguard (local WordPress plugins dir).
 #   bash scripts/build-release-zip.sh prod
 #     Build a distribution zip in ./build (default).
 #   bash scripts/build-release-zip.sh prod /path/to/output-dir
@@ -18,8 +18,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGIN_SLUG="presssentinel"
-MAIN_FILE="$ROOT/press-sentinel.php"
+PLUGIN_SLUG="niyiguard"
+MAIN_FILE="$ROOT/niyiguard.php"
 
 MODE="prod"
 OUT_DIR="$ROOT/build"
@@ -81,13 +81,13 @@ stage_plugin_to() {
   local dest="$1"
   mkdir -p "$dest"
 
-  copy_if_exists "$dest" "press-sentinel.php"
+  copy_if_exists "$dest" "niyiguard.php"
   copy_if_exists "$dest" "bootstrap"
   copy_if_exists "$dest" "config"
   copy_if_exists "$dest" "src"
   copy_if_exists "$dest" "resources"
   copy_if_exists "$dest" "mu-loader"
-  for doc in docs/WHY_PRESSSENTINEL.md docs/USAGE.md docs/MU_LOADER_INSTALL.md docs/STAGING_TEST_PLAN.md docs/PRIVACY.md; do
+  for doc in docs/WHY_NIYIGUARD.md docs/USAGE.md docs/MU_LOADER_INSTALL.md docs/STAGING_TEST_PLAN.md docs/PRIVACY.md; do
     if [[ -f "$ROOT/$doc" ]]; then
       mkdir -p "$dest/docs"
       cp -a "$ROOT/$doc" "$dest/docs/"
@@ -129,7 +129,7 @@ if [[ "$MODE" == "dev" ]]; then
   exit 0
 fi
 
-STAGE="$(mktemp -d "${TMPDIR:-/tmp}/presssentinel-release.XXXXXX")"
+STAGE="$(mktemp -d "${TMPDIR:-/tmp}/niyiguard-release.XXXXXX")"
 trap 'rm -rf "$STAGE"' EXIT
 
 DEST="$STAGE/$PLUGIN_SLUG"

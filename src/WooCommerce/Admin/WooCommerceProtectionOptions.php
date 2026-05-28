@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Admin;
+namespace NiyiGuard\WooCommerce\Admin;
 
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
 
 /**
  * Resolves the effective WooCommerce-protection configuration for the current request.
  *
  * Defaults live in `config/plugin.php` (`woocommerce_protection.*`); the admin
  * Settings page persists overrides into a single autoloaded `wp_option`. This is the
- * same pattern as {@see \PressSentinel\Core\Auth\AuthHardeningOptions},
- * {@see \PressSentinel\Core\Integrity\IntegrityOptions}, and
- * {@see \PressSentinel\Core\Headers\SecurityHeadersOptions} — pick a pattern, stick to it.
+ * same pattern as {@see \NiyiGuard\Core\Auth\AuthHardeningOptions},
+ * {@see \NiyiGuard\Core\Integrity\IntegrityOptions}, and
+ * {@see \NiyiGuard\Core\Headers\SecurityHeadersOptions} — pick a pattern, stick to it.
  *
  * Schema (normalised):
  *
@@ -57,7 +57,7 @@ use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
  */
 final class WooCommerceProtectionOptions
 {
-    public const OPTION_NAME = 'presssentinel_wc_protection';
+    public const OPTION_NAME = 'niyiguard_wc_protection';
 
     public function __construct(private readonly Config $config)
     {
@@ -86,7 +86,7 @@ final class WooCommerceProtectionOptions
 
     /**
      * Flips just the master `enabled` flag, preserving every per-pipeline
-     * setting. Used by the centralized PressSentinel dashboard.
+     * setting. Used by the centralized NiyiGuard dashboard.
      */
     public function setEnabled(bool $enabled): void
     {
@@ -149,7 +149,7 @@ final class WooCommerceProtectionOptions
                     $checkout['timing_action'] ?? null,
                     $checkout['timing_enforcement'] ?? null
                 ),
-                'honeypot_field_name' => $this->string($checkout['honeypot_field_name'] ?? 'presssentinel_hp'),
+                'honeypot_field_name' => $this->string($checkout['honeypot_field_name'] ?? 'niyiguard_hp'),
                 'bot' => [
                     'extra_scanner_uas' => $this->stringList($bot['extra_scanner_uas'] ?? []),
                     'weight_honeypot' => $this->intIn($bot['weight_honeypot'] ?? 200, 0, 1000),
@@ -168,7 +168,7 @@ final class WooCommerceProtectionOptions
                 'rate_limit' => $this->intIn($registration['rate_limit'] ?? 5, 1, 1000),
                 'window' => $this->intIn($registration['window'] ?? 600, 30, 86400),
                 'deny_disposable_emails' => $this->bool($registration['deny_disposable_emails'] ?? true),
-                'honeypot_field_name' => $this->string($registration['honeypot_field_name'] ?? 'presssentinel_hp'),
+                'honeypot_field_name' => $this->string($registration['honeypot_field_name'] ?? 'niyiguard_hp'),
                 'min_seconds_to_submit' => $this->intIn($registration['min_seconds_to_submit'] ?? 0, 0, 600),
             ],
             'api' => [
@@ -261,7 +261,7 @@ final class WooCommerceProtectionOptions
     {
         $value = is_string($value) ? trim($value) : '';
 
-        return $value === '' ? 'presssentinel_hp' : $value;
+        return $value === '' ? 'niyiguard_hp' : $value;
     }
 
     /**

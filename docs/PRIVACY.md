@@ -1,27 +1,27 @@
-# PressSentinel — Privacy Policy
+# NiyiGuard — Privacy Policy
 
-**Plugin:** PressSentinel  
-**Version:** 0.1.0 (see `press-sentinel.php`)  
+**Plugin:** NiyiGuard  
+**Version:** 0.1.0 (see `niyiguard.php`)  
 **License:** GPL-2.0-or-later  
 
-This document describes how **PressSentinel** handles data on a WordPress site where it is installed. It is written for **site owners and administrators** (who act as data controllers for their visitors and users) and for **reviewers** assessing the plugin for the [WordPress Plugin Directory](https://wordpress.org/plugins/).
+This document describes how **NiyiGuard** handles data on a WordPress site where it is installed. It is written for **site owners and administrators** (who act as data controllers for their visitors and users) and for **reviewers** assessing the plugin for the [WordPress Plugin Directory](https://wordpress.org/plugins/).
 
-PressSentinel is **security infrastructure** for WordPress. It does **not** operate a separate SaaS backend for core features, does **not** sell personal data, and does **not** include advertising or behavioural analytics trackers.
+NiyiGuard is **security infrastructure** for WordPress. It does **not** operate a separate SaaS backend for core features, does **not** sell personal data, and does **not** include advertising or behavioural analytics trackers.
 
 ---
 
 ## Who is responsible?
 
-- **Site owner / administrator:** Decides whether to install and configure PressSentinel, sets retention and feature toggles, and is responsible for the site’s overall privacy policy and lawful basis for processing (for example under GDPR, UK GDPR, or CCPA, as applicable).
+- **Site owner / administrator:** Decides whether to install and configure NiyiGuard, sets retention and feature toggles, and is responsible for the site’s overall privacy policy and lawful basis for processing (for example under GDPR, UK GDPR, or CCPA, as applicable).
 - **Plugin author:** Provides the software only. Except for optional outbound requests documented below, personal data **stays on the server** where WordPress runs.
 
 ---
 
 ## Summary
 
-| Topic | PressSentinel behaviour |
+| Topic | NiyiGuard behaviour |
 |--------|------------------------|
-| Data sent to the plugin author | **No** telemetry or analytics to PressSentinel by default |
+| Data sent to the plugin author | **No** telemetry or analytics to NiyiGuard by default |
 | Data sent to third parties | **Only** when a documented feature makes an outbound request (see below) |
 | Visitor tracking / profiling | **No** cross-site tracking or ad networks |
 | Account required with vendor | **No** (free plugin; no license account) |
@@ -36,7 +36,7 @@ Personal data is processed **only when the relevant features are enabled** and a
 ### Identifiers and account data
 
 - **WordPress user ID**, **username**, and **email address** (from the logged-in user or order context).
-- **License key** — not used in the free WordPress.org edition. Commercial builds that add the optional licensing module may store a key in `presssentinel_pro_license`.
+- **License key** — not used in the free WordPress.org edition. Commercial builds that add the optional licensing module may store a key in `niyiguard_pro_license`.
 
 ### Network and device data
 
@@ -46,17 +46,17 @@ Personal data is processed **only when the relevant features are enabled** and a
 
 ### Authentication and security data
 
-- **Two-factor authentication (2FA):** TOTP secrets, recovery codes, and enrolment state in user meta (`_presssentinel_2fa_state`, `_presssentinel_2fa_pending_secret` during setup). Email OTP codes are sent via `wp_mail()` and held in short-lived transients until used or expired.
+- **Two-factor authentication (2FA):** TOTP secrets, recovery codes, and enrolment state in user meta (`_niyiguard_2fa_state`, `_niyiguard_2fa_pending_secret` during setup). Email OTP codes are sent via `wp_mail()` and held in short-lived transients until used or expired.
 - **Login lockout:** Failed-attempt counters and lock flags in **transients** (keys prefixed `sp_lockout_`), keyed by hashed identifiers derived from username/IP (not stored as plain usernames in the lockout keys themselves).
-- **Sessions (PressSentinel session log):** Session token hash, device fingerprint hash, IP, user agent, labels, and timestamps in table `{prefix}presssentinel_sessions` (see Retention).
+- **Sessions (NiyiGuard session log):** Session token hash, device fingerprint hash, IP, user agent, labels, and timestamps in table `{prefix}niyiguard_sessions` (see Retention).
 
 ### Audit log
 
-When the audit log is enabled, events may include actor ID/name, IP, user agent, request URI, message, and JSON **context** (event-specific details such as option names, plugin slugs, or WooCommerce order IDs). Stored in `{prefix}presssentinel_audit_logs`.
+When the audit log is enabled, events may include actor ID/name, IP, user agent, request URI, message, and JSON **context** (event-specific details such as option names, plugin slugs, or WooCommerce order IDs). Stored in `{prefix}niyiguard_audit_logs`.
 
 ### File integrity
 
-- **File paths and cryptographic hashes** of core, plugin, theme, and upload files in `{prefix}presssentinel_integrity_baselines` and `{prefix}presssentinel_integrity_findings`.
+- **File paths and cryptographic hashes** of core, plugin, theme, and upload files in `{prefix}niyiguard_integrity_baselines` and `{prefix}niyiguard_integrity_findings`.
 - **Code snippets** (limited excerpts) may be stored in finding context when heuristics match suspicious PHP patterns.
 
 ### WooCommerce (Pro, when licensed or in beta trial)
@@ -69,13 +69,13 @@ When enabled, request counts are stored in **transients** keyed by user ID and/o
 
 ### Site configuration (not personal data by itself)
 
-Plugin settings are stored in WordPress **options** (for example `presssentinel_auth_hardening`, `presssentinel_audit_log`, `presssentinel_security_headers`, `presssentinel_integrity`, `presssentinel_rate_limit`, `presssentinel_url_disguise`, `presssentinel_woocommerce_protection`).  
-A per-site **license HMAC secret** is stored in `presssentinel_license_hmac_secret` (used to verify offline license keys; treat as confidential).  
-Beta trial data (`presssentinel_beta_trial_started_at`) applies only if you use the optional commercial licensing module.
+Plugin settings are stored in WordPress **options** (for example `niyiguard_auth_hardening`, `niyiguard_audit_log`, `niyiguard_security_headers`, `niyiguard_integrity`, `niyiguard_rate_limit`, `niyiguard_url_disguise`, `niyiguard_woocommerce_protection`).  
+A per-site **license HMAC secret** is stored in `niyiguard_license_hmac_secret` (used to verify offline license keys; treat as confidential).  
+Beta trial data (`niyiguard_beta_trial_started_at`) applies only if you use the optional commercial licensing module.
 
 ### Log files
 
-If file logging is enabled, diagnostic messages may be written to `wp-content/plugins/press-sentinel/storage/logs/` (or the path configured). These logs are intended for administrators and should not include end-user passwords.
+If file logging is enabled, diagnostic messages may be written to `wp-content/uploads/niyiguard/logs/` (or the path configured). These logs are intended for administrators and should not include end-user passwords.
 
 ---
 
@@ -104,8 +104,8 @@ All data listed above is stored **on the same server** as the WordPress installa
 
 | Data | Default retention behaviour |
 |------|-----------------------------|
-| Audit log | Configurable; default **90 days**, with optional automatic pruning (`presssentinel_audit_log` settings) |
-| PressSentinel sessions | Pruned after configurable **retention** (default **90 days** of inactivity) |
+| Audit log | Configurable; default **90 days**, with optional automatic pruning (`niyiguard_audit_log` settings) |
+| NiyiGuard sessions | Pruned after configurable **retention** (default **90 days** of inactivity) |
 | Integrity findings | Configurable; default **60 days** (see `config/plugin.php` / integrity settings) |
 | Login lockout transients | Expire automatically after the lockout/window TTL |
 | Rate limit / WooCommerce abuse transients | Expire automatically after their window TTL |
@@ -119,7 +119,7 @@ Administrators can clear audit logs from the admin UI and adjust retention in pl
 
 ## Third-party services and outbound connections
 
-PressSentinel **does not** contact the plugin author’s servers for licensing or telemetry in the default build.
+NiyiGuard **does not** contact the plugin author’s servers for licensing or telemetry in the default build.
 
 The plugin **may** contact the following **only when the related feature runs**:
 
@@ -137,7 +137,7 @@ No other third-party APIs are required for core operation. **Email** delivery us
 
 ## Sharing and selling of data
 
-PressSentinel does **not** sell, rent, or share personal data with the plugin author for marketing purposes. Data is not transmitted to analytics or advertising networks by this plugin.
+NiyiGuard does **not** sell, rent, or share personal data with the plugin author for marketing purposes. Data is not transmitted to analytics or advertising networks by this plugin.
 
 Any sharing with **email providers**, **hosts**, or **security tools** happens only because the **site owner** configured WordPress or server infrastructure that way.
 
@@ -151,15 +151,15 @@ Users with appropriate WordPress capabilities (typically `manage_options`) can v
 
 ## End-user rights
 
-PressSentinel does not provide a separate “privacy portal” for visitors. Rights requests (access, erasure, restriction, etc.) should be handled by the **site owner** under their site privacy policy.
+NiyiGuard does not provide a separate “privacy portal” for visitors. Rights requests (access, erasure, restriction, etc.) should be handled by the **site owner** under their site privacy policy.
 
 Helpful WordPress tools:
 
 - **Tools → Export Personal Data** and **Tools → Erase Personal Data** (WordPress core)  
-- Removing a WordPress user account removes associated user meta (including PressSentinel 2FA meta) subject to WordPress behaviour  
+- Removing a WordPress user account removes associated user meta (including NiyiGuard 2FA meta) subject to WordPress behaviour  
 - Audit log rows may still contain historical references to a user ID or IP until pruned or cleared by an administrator  
 
-Site owners should document PressSentinel in their public privacy policy. The plugin may also register suggested policy text via `wp_add_privacy_policy_content()` when that integration is enabled in code.
+Site owners should document NiyiGuard in their public privacy policy. The plugin may also register suggested policy text via `wp_add_privacy_policy_content()` when that integration is enabled in code.
 
 ---
 
@@ -177,13 +177,13 @@ No security plugin can guarantee complete protection; administrators remain resp
 
 ## Children’s privacy
 
-PressSentinel does not target children and does not knowingly collect data from children. Sites directed at children should consult legal counsel and configure features appropriately.
+NiyiGuard does not target children and does not knowingly collect data from children. Sites directed at children should consult legal counsel and configure features appropriately.
 
 ---
 
 ## Uninstall and data removal
 
-PressSentinel does not register a WordPress `uninstall.php` hook at this time. **Deactivating** the plugin leaves database tables and options in place. To remove data, administrators should:
+NiyiGuard does not register a WordPress `uninstall.php` hook at this time. **Deactivating** the plugin leaves database tables and options in place. To remove data, administrators should:
 
 1. Clear audit logs and integrity data from the admin UI where available, and  
 2. Optionally delete plugin options and custom tables manually, or use a database cleanup tool.
@@ -200,7 +200,7 @@ This file may be updated between plugin releases. The version in the plugin pack
 
 ## Contact
 
-For **privacy questions about a specific site** using PressSentinel, contact that **site’s administrator**.
+For **privacy questions about a specific site** using NiyiGuard, contact that **site’s administrator**.
 
 For **questions about the plugin software**, use the support channel listed on the plugin’s WordPress.org page or repository (for example GitHub issues), not this file.
 

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Licensing;
+namespace NiyiGuard\Tests\Unit\Licensing;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Licensing\LicenseStatus;
-use PressSentinel\Core\Licensing\LocalLicenseValidator;
+use NiyiGuard\Core\Licensing\LicenseStatus;
+use NiyiGuard\Core\Licensing\LocalLicenseValidator;
 
 /**
- * @see \PressSentinel\Core\Licensing\LocalLicenseValidator
+ * @see \NiyiGuard\Core\Licensing\LocalLicenseValidator
  */
 final class LocalLicenseValidatorTest extends TestCase
 {

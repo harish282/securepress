@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Url;
+namespace NiyiGuard\Core\Url;
 
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Resolves the URL-signing secret with the priority:
@@ -35,11 +35,11 @@ final class WpSaltSecretProvider implements SecretProviderInterface
 
     private function configuredSecret(): string
     {
-        if (!\defined('PRESS_SENTINEL_CONFIG_PATH')) {
+        if (!\defined('NIYIGUARD_CONFIG_PATH')) {
             return '';
         }
 
-        $file = PRESS_SENTINEL_CONFIG_PATH . '/plugin.php';
+        $file = NIYIGUARD_CONFIG_PATH . '/plugin.php';
         if (!is_readable($file)) {
             return '';
         }

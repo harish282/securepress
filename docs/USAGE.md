@@ -1,6 +1,6 @@
-# PressSentinel Usage Guide
+# NiyiGuard Usage Guide
 
-This guide shows what PressSentinel does once you install and activate it, and how to use the security primitives that ship in the current build:
+This guide shows what NiyiGuard does once you install and activate it, and how to use the security primitives that ship in the current build:
 
 1. [Lifecycle: what happens on activation](#lifecycle-what-happens-on-activation)
 2. [The middleware pipeline](#the-middleware-pipeline)
@@ -18,48 +18,48 @@ This guide shows what PressSentinel does once you install and activate it, and h
 14. [Recipes / cookbook](#recipes--cookbook)
 15. [Troubleshooting](#troubleshooting)
 
-> **Convention.** All examples use the `PressSentinel\Facades\Security` facade. Import it once at the top of your file:
+> **Convention.** All examples use the `NiyiGuard\Facades\Security` facade. Import it once at the top of your file:
 >
 > ```php
-> use PressSentinel\Facades\Security;
+> use NiyiGuard\Facades\Security;
 > ```
 
 ---
 
 ## Lifecycle: what happens on activation
 
-When you activate PressSentinel (and optionally install the MU loader for earlier load), the following happens:
+When you activate NiyiGuard (and optionally install the MU loader for earlier load), the following happens:
 
-1. **Bootstrap** (`press-sentinel.php` → `bootstrap/constants.php`)
-   - Defines `PRESS_SENTINEL_PATH`, `PRESS_SENTINEL_CONFIG_PATH`, `PRESS_SENTINEL_SRC_PATH`, etc.
+1. **Bootstrap** (`niyiguard.php` → `bootstrap/constants.php`)
+   - Defines `NIYIGUARD_PATH`, `NIYIGUARD_CONFIG_PATH`, `NIYIGUARD_SRC_PATH`, etc.
    - Registers the PSR-4 autoloader.
 
 2. **`Plugin::boot()`** is called on the `plugins_loaded` hook (or earlier if MU loader is installed):
    - Validates PHP / WordPress requirements via `SystemRequirementsChecker`.
    - Builds the dependency-injection `Container` and registers all services:
      - `Config` (reads `config/plugin.php`)
-     - `LoggerInterface` (file-backed by default → `storage/logs/presssentinel.log`)
+     - `LoggerInterface` (file-backed by default → `wp-content/uploads/niyiguard/logs/niyiguard.log`)
      - `MiddlewareManager`, `MiddlewarePipeline`, `MiddlewareRegistry`, `MiddlewareStack`
      - `RateLimiter`, `RateLimitMiddleware`, `RateLimitStoreInterface` (transient-backed)
      - `CsrfProtectionMiddleware`
      - `UrlSigner`, `SignedUrlMiddleware`, `NonceStoreInterface` (transient-backed), `SecretProviderInterface` (`signed_url.secret` in config → `wp_salt('auth')`)
      - `SecurityHeadersOptions`, `HeaderRegistryFactory`, `SecurityHeadersDispatcher`, `SecurityHeadersMiddleware`, `SecurityHeadersSettingsPage`
-     - `SessionSchema`, `SessionRepositoryInterface`, `SessionService`, session pruner (`presssentinel_sessions_prune` daily cron)
+     - `SessionSchema`, `SessionRepositoryInterface`, `SessionService`, session pruner (`niyiguard_sessions_prune` daily cron)
      - `AuthenticationHardeningKernel`, `TwoFactorChallengeController`, two-factor services (`TotpProvider`, `EmailOtpProvider`, `RecoveryCodeService`, `TwoFactorService`), lockout + suspicion detector, `AuthNotifier`, `UserSecurityProfilePage`
    - Calls `Security::bootstrap($container)` and `AuditLog::bootstrap($container)` so the static facades can resolve services.
    - Registers the **security headers dispatcher** on the `send_headers` hook (priority 1) so the configured headers are emitted on every WordPress response.
-   - Runs the **audit log schema installer** (idempotent, only does work when `presssentinel_audit_log_db_version` is older than the bundled version) and registers each enabled audit listener.
-   - Runs the **sessions schema installer** (`wp_presssentinel_sessions`) when authentication hardening is enabled.
-   - Schedules the **daily audit log pruner** WP cron event and, when sessions are enabled, the **daily session pruner** (`presssentinel_sessions_prune`).
+   - Runs the **audit log schema installer** (idempotent, only does work when `niyiguard_audit_log_db_version` is older than the bundled version) and registers each enabled audit listener.
+   - Runs the **sessions schema installer** (`wp_niyiguard_sessions`) when authentication hardening is enabled.
+   - Schedules the **daily audit log pruner** WP cron event and, when sessions are enabled, the **daily session pruner** (`niyiguard_sessions_prune`).
    - Registers the **authentication hardening kernel** (login lockout, 2FA gate, session tracking, suspicious-login alerts) when `auth_hardening.enabled` is true.
-   - Registers admin hooks (notices, plugin row meta, the top-level **Press Sentinel** menu with submenus for Dashboard, Authentication, Security Headers, File Integrity, Audit Logs, WooCommerce Protection, and License, plus the user-facing **Account Security** top-level menu when auth hardening is enabled).
+   - Registers admin hooks (notices, plugin row meta, the top-level **NiyiGuard** menu with submenus for Dashboard, Authentication, Security Headers, File Integrity, Audit Logs, WooCommerce Protection, and License, plus the user-facing **Account Security** top-level menu when auth hardening is enabled).
 
 3. **Your code** registers middleware and protected routes during `init` or earlier:
    ```php
    add_action('plugins_loaded', static function (): void {
        Security::middleware([
-           PressSentinel\Middleware\RateLimitMiddleware::class,
-           PressSentinel\Middleware\CsrfProtectionMiddleware::class,
+           NiyiGuard\Middleware\RateLimitMiddleware::class,
+           NiyiGuard\Middleware\CsrfProtectionMiddleware::class,
        ]);
        Security::protectRoute('/api/v1/*');
    }, 20);
@@ -104,13 +104,13 @@ The `$context` array is the shared envelope — a middleware can read from it, a
 ### Running the pipeline
 
 ```php
-use PressSentinel\Core\Middleware\MiddlewareManager;
+use NiyiGuard\Core\Middleware\MiddlewareManager;
 
 $manager = $container->get(MiddlewareManager::class);
 $result  = $manager->handle(
     [
-        PressSentinel\Middleware\RateLimitMiddleware::class,
-        PressSentinel\Middleware\CsrfProtectionMiddleware::class,
+        NiyiGuard\Middleware\RateLimitMiddleware::class,
+        NiyiGuard\Middleware\CsrfProtectionMiddleware::class,
     ],
     [
         'request' => [
@@ -155,7 +155,7 @@ The middleware looks for a nonce in this order:
 
 It validates the nonce with `wp_verify_nonce()` against any of the configured actions. By default the middleware accepts:
 
-- `presssentinel_csrf` (the default action for app-minted forms), and
+- `niyiguard_csrf` (the default action for app-minted forms), and
 - `wp_rest` (the standard WordPress REST API action — set automatically when a script loads `wpApiSettings.nonce`).
 
 So **REST API clients sending `X-WP-Nonce` Just Work** without any extra wiring.
@@ -163,8 +163,8 @@ So **REST API clients sending `X-WP-Nonce` Just Work** without any extra wiring.
 ### Mint a nonce in a view / form
 
 ```php
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Middleware\CsrfProtectionMiddleware;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Middleware\CsrfProtectionMiddleware;
 
 $nonce = WpHelper::createNonce(CsrfProtectionMiddleware::DEFAULT_ACTION);
 ?>
@@ -184,7 +184,7 @@ For REST, you don't need to do anything beyond the standard `wp_localize_script(
 ```php
 add_action('plugins_loaded', static function (): void {
     Security::middleware([
-        PressSentinel\Middleware\CsrfProtectionMiddleware::class,
+        NiyiGuard\Middleware\CsrfProtectionMiddleware::class,
     ]);
 }, 20);
 ```
@@ -192,8 +192,8 @@ add_action('plugins_loaded', static function (): void {
 #### Manually, around an `admin-post.php` handler
 
 ```php
-use PressSentinel\Core\Middleware\MiddlewareManager;
-use PressSentinel\Middleware\CsrfProtectionMiddleware;
+use NiyiGuard\Core\Middleware\MiddlewareManager;
+use NiyiGuard\Middleware\CsrfProtectionMiddleware;
 
 add_action('admin_post_my_form', static function () use ($container): void {
     $result = $container->get(MiddlewareManager::class)->handle(
@@ -224,7 +224,7 @@ When CSRF passes, downstream code can read:
 ```php
 $result['csrf'] === [
     'verified' => true,
-    'action'   => 'presssentinel_csrf' | 'wp_rest' | ...,
+    'action'   => 'niyiguard_csrf' | 'wp_rest' | ...,
     'tick'     => 1, // 1 = within first half-life (fresh), 2 = second (stale-but-accepted)
     'fresh'    => true,
 ];
@@ -276,7 +276,7 @@ These are the global defaults. Per-route limiters are constructed manually (see 
 
 ```php
 Security::middleware([
-    PressSentinel\Middleware\RateLimitMiddleware::class,
+    NiyiGuard\Middleware\RateLimitMiddleware::class,
 ]);
 ```
 
@@ -318,8 +318,8 @@ A separate per-route limiter (5 attempts / minute, bucketed by IP + form action)
 
 ```php
 use Closure;
-use PressSentinel\Core\RateLimit\RateLimiter;
-use PressSentinel\Middleware\RateLimitMiddleware;
+use NiyiGuard\Core\RateLimit\RateLimiter;
+use NiyiGuard\Middleware\RateLimitMiddleware;
 
 $loginLimiter = new RateLimitMiddleware(
     limiter: $container->get(RateLimiter::class),
@@ -364,7 +364,7 @@ Use signed URLs for anything where WordPress nonces aren't a fit:
 ### Mint a URL
 
 ```php
-use PressSentinel\Facades\Security;
+use NiyiGuard\Facades\Security;
 
 // Standard signed URL — replayable until expiry, default TTL from config (3600s)
 $path = Security::signedUrl('/download', params: ['file' => 'manual.pdf']);
@@ -424,7 +424,7 @@ add_action('init', static function (): void {
 The middleware verifies + consumes nonces atomically. URLs minted with `oneTime: true` are rejected on replay.
 
 ```php
-use PressSentinel\Middleware\SignedUrlMiddleware;
+use NiyiGuard\Middleware\SignedUrlMiddleware;
 
 Security::middleware([
     SignedUrlMiddleware::class, // global
@@ -494,7 +494,7 @@ The Security Headers Manager lets administrators emit a curated set of HTTP secu
 After activating the plugin, log in as an administrator and visit:
 
 ```
-Press Sentinel → Security Headers
+NiyiGuard → Security Headers
 ```
 
 You'll see one section per supported header:
@@ -517,7 +517,7 @@ SecurityHeadersDispatcher::send()
         ↓
 HeaderRegistryFactory::make()  ←  SecurityHeadersOptions::all()
         ↓                                 ↓
-HeaderRegistry::emit()        ←  config/plugin.php  +  wp_options[presssentinel_security_headers]
+HeaderRegistry::emit()        ←  config/plugin.php  +  wp_options[niyiguard_security_headers]
         ↓
 header('Strict-Transport-Security: …')
 header('X-Frame-Options: …')
@@ -538,7 +538,7 @@ Save is handled by the standard WordPress Settings API, which already gives you:
 
 - A nonce for CSRF protection on the form submission.
 - A `manage_options` capability check.
-- Persistence into a single autoloaded `wp_option` named `presssentinel_security_headers`.
+- Persistence into a single autoloaded `wp_option` named `niyiguard_security_headers`.
 - Sanitisation through `SecurityHeadersOptions::sanitize()`, which coerces `'1'`/`'on'`/`'true'` to booleans, clamps negative `max-age` to zero, validates `X-Frame-Options` and `Referrer-Policy` against their allowed values, and trims policy strings.
 
 After saving, verify on the front of the site:
@@ -619,9 +619,9 @@ The only valid value is `nosniff`. Safe to leave on; the only requirement is tha
 Most installs only need the dispatcher's site-wide emission. If you want **different** headers on a specific route — say, a tighter CSP for `/admin/sensitive-tool` — register `SecurityHeadersMiddleware` in the pipeline; the middleware merges registry headers into `$context['response']['headers']` while letting any header you set on the response win.
 
 ```php
-use PressSentinel\Facades\Security;
-use PressSentinel\Middleware\SecurityHeadersMiddleware;
-use PressSentinel\Middleware\CsrfProtectionMiddleware;
+use NiyiGuard\Facades\Security;
+use NiyiGuard\Middleware\SecurityHeadersMiddleware;
+use NiyiGuard\Middleware\CsrfProtectionMiddleware;
 
 Security::middleware([
     SecurityHeadersMiddleware::class,
@@ -643,13 +643,13 @@ The route-level `Content-Security-Policy` will be emitted as-is; the registry-le
 The `SecurityHeadersOptions` resolver merges three sources, last-wins:
 
 1. The defaults baked into `config/plugin.php` (`security_headers.*`).
-2. Any keys present in `wp_options[presssentinel_security_headers]` (set by the admin UI or a deployment script).
+2. Any keys present in `wp_options[niyiguard_security_headers]` (set by the admin UI or a deployment script).
 3. Per-route overrides (via the middleware pattern above).
 
 For deploy-time configuration without touching the admin UI, you can seed the option from `wp-config.php` or a CLI script:
 
 ```php
-update_option('presssentinel_security_headers', [
+update_option('niyiguard_security_headers', [
     'hsts' => ['enabled' => true, 'max_age' => 31_536_000, 'include_subdomains' => true],
     'csp'  => ['enabled' => true, 'report_only' => false, 'policy' => "default-src 'self'"],
 ]);
@@ -683,7 +683,7 @@ Events that don't fit a built-in listener can be recorded via the `AuditLog` fac
 Once the plugin is active, log in as an administrator and visit:
 
 ```
-Press Sentinel → Audit Logs
+NiyiGuard → Audit Logs
 ```
 
 The page shows a paginated, filterable list with one row per event:
@@ -711,7 +711,7 @@ At the bottom of the page:
 A custom table is created by `dbDelta()` on first boot:
 
 ```
-wp_presssentinel_audit_logs
+wp_niyiguard_audit_logs
   id BIGINT UNSIGNED PK
   occurred_at DATETIME (UTC)
   level VARCHAR(20)
@@ -730,7 +730,7 @@ wp_presssentinel_audit_logs
   INDEX (occurred_at), (actor_id), (category, action), (level), (target_type, target_id)
 ```
 
-The `presssentinel_audit_log_db_version` option tracks schema generation — bump the constant in `AuditLogSchema::VERSION` if you change the table, and `dbDelta()` will alter the existing table on the next boot.
+The `niyiguard_audit_log_db_version` option tracks schema generation — bump the constant in `AuditLogSchema::VERSION` if you change the table, and `dbDelta()` will alter the existing table on the next boot.
 
 ### Recording events from your own code (Laravel-style)
 
@@ -739,7 +739,7 @@ The `AuditLog` facade is a thin static surface over `AuditLoggerInterface`. Thre
 #### 1. PSR-3 helpers — the fast path
 
 ```php
-use PressSentinel\Facades\AuditLog;
+use NiyiGuard\Facades\AuditLog;
 
 AuditLog::info('user.profile.updated', ['user_id' => 5]);
 AuditLog::warning('options.changed', ['option' => 'siteurl', 'old' => $old, 'new' => $new]);
@@ -769,9 +769,9 @@ The builder:
 #### 3. Full-fidelity AuditEvent — for custom listeners
 
 ```php
-use PressSentinel\Core\Audit\AuditEvent;
-use PressSentinel\Core\Audit\AuditEventCategory;
-use PressSentinel\Core\Audit\AuditEventLevel;
+use NiyiGuard\Core\Audit\AuditEvent;
+use NiyiGuard\Core\Audit\AuditEventCategory;
+use NiyiGuard\Core\Audit\AuditEventLevel;
 
 AuditLog::record(
     AuditEvent::make('webhook.signature.invalid', AuditEventCategory::SECURITY, AuditEventLevel::ERROR)
@@ -785,7 +785,7 @@ This is the most explicit form — useful when you're building a reusable listen
 
 ### Listening to your own events
 
-Need to record domain-specific events on every WP hook your plugin emits? Implement `\PressSentinel\Core\Audit\Listeners\ListenerInterface`, take the logger via constructor, and register your hooks in `register()`:
+Need to record domain-specific events on every WP hook your plugin emits? Implement `\NiyiGuard\Core\Audit\Listeners\ListenerInterface`, take the logger via constructor, and register your hooks in `register()`:
 
 ```php
 final class CartAbandonedListener implements ListenerInterface
@@ -808,7 +808,7 @@ final class CartAbandonedListener implements ListenerInterface
 }
 ```
 
-Bind it on the container during your own `plugins_loaded` hook (priority 30+ so PressSentinel is up):
+Bind it on the container during your own `plugins_loaded` hook (priority 30+ so NiyiGuard is up):
 
 ```php
 add_action('plugins_loaded', static function () use ($plugin): void {
@@ -819,11 +819,11 @@ add_action('plugins_loaded', static function () use ($plugin): void {
 
 ### Retention & pruning
 
-The pruner runs on a daily WP cron event named `presssentinel_audit_log_prune` and deletes entries older than `audit_log.retention_days` (default **90**). To disable pruning entirely (e.g. for compliance regimes that require permanent retention), set the value to `0`:
+The pruner runs on a daily WP cron event named `niyiguard_audit_log_prune` and deletes entries older than `audit_log.retention_days` (default **90**). To disable pruning entirely (e.g. for compliance regimes that require permanent retention), set the value to `0`:
 
 ```php
 // wp-config.php
-add_filter('option_presssentinel_audit_log_retention', static fn () => 0); // or via the option directly
+add_filter('option_niyiguard_audit_log_retention', static fn () => 0); // or via the option directly
 ```
 
 …or override at config-load time via the `audit_log.retention_days` key in `config/plugin.php`.
@@ -831,12 +831,12 @@ add_filter('option_presssentinel_audit_log_retention', static fn () => 0); // or
 To force a prune outside cron, click **Run prune now** in the admin UI, or invoke from PHP:
 
 ```php
-$plugin->container->get(\PressSentinel\Core\Audit\AuditLogPruner::class)->prune();
+$plugin->container->get(\NiyiGuard\Core\Audit\AuditLogPruner::class)->prune();
 ```
 
 ### Mirroring to the file logger (Laravel-style channels)
 
-Set `audit_log.mirror_to_file_logger` to `true` (default `false`) and every audit event will *also* be written to the existing `LoggerInterface` (which writes to `storage/logs/presssentinel.log` by default). Useful when you want to:
+Set `audit_log.mirror_to_file_logger` to `true` (default `false`) and every audit event will *also* be written to the existing `LoggerInterface` (which writes to `wp-content/uploads/niyiguard/logs/niyiguard.log` by default). Useful when you want to:
 
 - Ship audit events to a SIEM via tail / Filebeat / Vector without scraping the database.
 - Have a redundant copy in case the DB write fails.
@@ -875,19 +875,19 @@ Disabling at the listener level is preferred to leaving listeners on but ignorin
 
 ## Authentication hardening
 
-PressSentinel adds an optional **authentication hardening** stack that layers on top of WordPress’s normal login:
+NiyiGuard adds an optional **authentication hardening** stack that layers on top of WordPress’s normal login:
 
 | Capability | What it does |
 |---|---|
 | **Two-factor authentication (2FA)** | After a correct username/password, users with 2FA enabled must enter a **TOTP code** (authenticator app) or an **email one-time code**. Recovery codes work as a fallback. |
 | **Login rate limiting** | Tracks failed attempts **per username** and **per IP** (transient-backed). Crossing the threshold temporarily locks further attempts and optionally emails the account holder. |
-| **Session / device awareness** | Persists session rows (`wp_presssentinel_sessions`) with a coarse device fingerprint (IP prefix + User-Agent digest). Users can revoke sessions from **Account Security**. |
+| **Session / device awareness** | Persists session rows (`wp_niyiguard_sessions`) with a coarse device fingerprint (IP prefix + User-Agent digest). Users can revoke sessions from **Account Security**. |
 | **Email alerts** | Sends plain-text notifications for OTP delivery, 2FA enable/disable, recovery-code use, forced lockouts, and **suspicious logins** (see below). |
 | **Suspicious login detection** | Scores logins using pluggable rules. The shipped **New device** rule compares the current fingerprint against prior active sessions; when the score reaches the threshold (default **50**), an informational email is sent. |
 
-### Admin UI: Press Sentinel → Authentication
+### Admin UI: NiyiGuard → Authentication
 
-Site administrators (`manage_options`) configure the subsystem from **Press Sentinel → Authentication**. The page persists every value into a single autoloaded option (`presssentinel_auth_hardening`) using the WordPress Settings API, with the same nonce + capability protections WP applies to its own option pages. Available toggles:
+Site administrators (`manage_options`) configure the subsystem from **NiyiGuard → Authentication**. The page persists every value into a single autoloaded option (`niyiguard_auth_hardening`) using the WordPress Settings API, with the same nonce + capability protections WP applies to its own option pages. Available toggles:
 
 - **Authentication Hardening** — master killswitch. Disabling it stops registering the login lockout, 2FA gate, session tracking, and suspicion alerts on the next request. Existing 2FA enrolments remain in place; re-enabling restores enforcement immediately.
 - **Login lockout** — turn lockout on/off; configure max attempts (1–100), counting window (60–86400 s), and lock duration (60–86400 s).
@@ -898,7 +898,7 @@ Site administrators (`manage_options`) configure the subsystem from **Press Sent
 
 Saved values *override* the matching `config/plugin.php` defaults and take effect on the next request — every consumer (the kernel, the lockout policy, the suspicion detector, the session pruner, the notifier, the 2FA service) resolves its values via `AuthHardeningOptions` at container-resolution time.
 
-> Programmatic access: `$plugin->container->get(\PressSentinel\Core\Auth\AuthHardeningOptions::class)->all()` returns the fully merged shape, identical to what the page renders.
+> Programmatic access: `$plugin->container->get(\NiyiGuard\Core\Auth\AuthHardeningOptions::class)->all()` returns the fully merged shape, identical to what the page renders.
 
 ### User UI: Account Security
 
@@ -909,16 +909,16 @@ From there users can:
 - Enable **authenticator-app (TOTP)** 2FA — scan the provisioning URI or enter the secret manually, then confirm with a live code.
 - Enable **email OTP** 2FA — codes are emailed at each sign-in (recovery codes are still issued once at enrolment).
 - View **recovery codes** when they are generated or regenerated (shown once — store them offline).
-- Review **active PressSentinel sessions** and revoke individual sessions or all other sessions (the current browser session is preserved when revoking “all others”).
+- Review **active NiyiGuard sessions** and revoke individual sessions or all other sessions (the current browser session is preserved when revoking “all others”).
 
 ### Login flow with 2FA
 
 1. User submits valid credentials on `wp-login.php`.
 2. `AuthenticationHardeningKernel` intercepts **before** WordPress issues cookies (`authenticate` filter at priority **30**).
-3. If the account has 2FA enabled, PressSentinel creates a short-lived **pending challenge** (stored in transients), sends an email OTP immediately when that method is active, and redirects to  
+3. If the account has 2FA enabled, NiyiGuard creates a short-lived **pending challenge** (stored in transients), sends an email OTP immediately when that method is active, and redirects to  
    `wp-login.php?action=sp_2fa&token=…`
 4. The user enters their TOTP/email code or a recovery code.
-5. On success, PressSentinel calls `wp_set_auth_cookie()` and fires `wp_login` so audit logging and other plugins observe the same hook as a normal login.
+5. On success, NiyiGuard calls `wp_set_auth_cookie()` and fires `wp_login` so audit logging and other plugins observe the same hook as a normal login.
 
 ### Login lockout defaults
 
@@ -928,13 +928,13 @@ Defined under `auth_hardening.lockout` in `config/plugin.php`:
 
 ### Session retention
 
-Old rows in `wp_presssentinel_sessions` are removed by the daily cron hook `presssentinel_sessions_prune`. Retention is controlled by `auth_hardening.sessions.retention_days` (default **90**).
+Old rows in `wp_niyiguard_sessions` are removed by the daily cron hook `niyiguard_sessions_prune`. Retention is controlled by `auth_hardening.sessions.retention_days` (default **90**).
 
 ### Configuration keys (`auth_hardening`)
 
 See [Configuration reference](#configuration-reference) for the flattened table. Two ways to override:
 
-1. **Press Sentinel → Authentication** (UI) — recommended for production. Persists into the `presssentinel_auth_hardening` option and overrides the file-level defaults.
+1. **NiyiGuard → Authentication** (UI) — recommended for production. Persists into the `niyiguard_auth_hardening` option and overrides the file-level defaults.
 2. **`config/plugin.php`** — sets the *defaults* used when no admin override is stored. Useful for shipping environment-aware bundles (staging defaults differ from production).
 
 ```php
@@ -954,9 +954,9 @@ See [Configuration reference](#configuration-reference) for the flattened table.
 Reading the resolved (defaults + admin overrides) shape from PHP:
 
 ```php
-use PressSentinel\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
 
-/** @var \PressSentinel\Core\Plugin $plugin */
+/** @var \NiyiGuard\Core\Plugin $plugin */
 $opts = $plugin->container->get(AuthHardeningOptions::class)->all();
 
 if ($opts['enabled'] && $opts['lockout']['enabled']) {
@@ -969,16 +969,16 @@ if ($opts['enabled'] && $opts['lockout']['enabled']) {
 - **“Too many failed attempts”** — wait out the lockout window or temporarily raise `auth_hardening.lockout.max_attempts`.
 - **Email OTP never arrives** — verify SMTP/`wp_mail` works; check spam; ensure the user’s profile email is valid.
 - **Authenticator codes fail** — confirm the server clock is synchronised (NTP); TOTP allows ±30s drift via skew windows.
-- **Revoked sessions still work** — PressSentinel calls `WP_Session_Tokens::destroy()` for the matching verifier token when revoking from **Account Security**. If tokens were issued outside WordPress (custom SSO), revoke there too.
+- **Revoked sessions still work** — NiyiGuard calls `WP_Session_Tokens::destroy()` for the matching verifier token when revoking from **Account Security**. If tokens were issued outside WordPress (custom SSO), revoke there too.
 
 ---
 
 ## Security SDK (developer API)
 
-PressSentinel isn't just a plugin — it's a developer toolkit. Every primitive (CSRF, rate limit, signed URLs, 2FA, sessions, lockout, audit) is exposed through one cohesive static facade: **`PressSentinel\Facades\Security`**. Pulling protections from a single import means your code becomes idiomatic PressSentinel code, and migrating off it later means rewriting a lot of call sites — which is exactly the kind of ecosystem stickiness "developer-first" is supposed to create.
+NiyiGuard isn't just a plugin — it's a developer toolkit. Every primitive (CSRF, rate limit, signed URLs, 2FA, sessions, lockout, audit) is exposed through one cohesive static facade: **`NiyiGuard\Facades\Security`**. Pulling protections from a single import means your code becomes idiomatic NiyiGuard code, and migrating off it later means rewriting a lot of call sites — which is exactly the kind of ecosystem stickiness "developer-first" is supposed to create.
 
 ```php
-use PressSentinel\Facades\Security;
+use NiyiGuard\Facades\Security;
 ```
 
 The facade is bootstrapped automatically by `Plugin::register()`; third-party code should never call `Security::bootstrap()` manually.
@@ -997,7 +997,7 @@ if (!$result->allowed) {
 For the common "deny or execute" case, use `throttle()`:
 
 ```php
-use PressSentinel\Sdk\Exceptions\RateLimitExceededException;
+use NiyiGuard\Sdk\Exceptions\RateLimitExceededException;
 
 try {
     $report = Security::throttle('report.expensive', limit: 5, window: 60, callback: fn () => generateReport());
@@ -1043,7 +1043,7 @@ if (!$result->valid) {
 The `route()` builder is the most ergonomic way to compose multiple guards. Each method appends a middleware to a pipeline scoped to that route, and `run()` executes the callback only if every guard passes:
 
 ```php
-use PressSentinel\Sdk\Exceptions\RouteGuardException;
+use NiyiGuard\Sdk\Exceptions\RouteGuardException;
 
 add_action('admin_post_my_export', function () {
     try {
@@ -1138,7 +1138,7 @@ Security::audit()
 
 ### Events
 
-The facade ships a tiny in-process event bus for the SDK so plugins can react to PressSentinel activity without learning the underlying hook names. Listeners run synchronously in registration order. Every fire is also bridged to `do_action('presssentinel.<event>', ...$args)` for WordPress interop.
+The facade ships a tiny in-process event bus for the SDK so plugins can react to NiyiGuard activity without learning the underlying hook names. Listeners run synchronously in registration order. Every fire is also bridged to `do_action('niyiguard.<event>', ...$args)` for WordPress interop.
 
 ```php
 Security::on('login.failed', function (string $username, ?string $ip) {
@@ -1148,7 +1148,7 @@ Security::on('login.failed', function (string $username, ?string $ip) {
 Security::fire('login.failed', $username, $ip);
 
 // The same event is observable from native WP hooks:
-add_action('presssentinel.login.failed', function ($username, $ip) {
+add_action('niyiguard.login.failed', function ($username, $ip) {
     // ...
 });
 ```
@@ -1179,7 +1179,7 @@ Everything documented under **Security SDK** is part of the stable public API. T
 
 ## File integrity monitoring (Pro)
 
-(See the *File integrity monitoring* admin page under **Press Sentinel → File Integrity** once Pro is active. This section covers the Pro-gated additions in passing — the bulk of the FIM documentation lives in `docs/INTEGRITY.md` if you maintain that separately.)
+(See the *File integrity monitoring* admin page under **NiyiGuard → File Integrity** once Pro is active. This section covers the Pro-gated additions in passing — the bulk of the FIM documentation lives in `docs/INTEGRITY.md` if you maintain that separately.)
 
 ---
 
@@ -1187,7 +1187,7 @@ Everything documented under **Security SDK** is part of the stable public API. T
 
 The WooCommerce protection module is a **Pro-tier feature** focused on behavioural abuse prevention for stores: fake checkouts, registration spam, REST API abuse, and cart abuse. It runs only when:
 
-1. an active Pro license is configured (`Press Sentinel → License`), AND
+1. an active Pro license is configured (`NiyiGuard → License`), AND
 2. WooCommerce is active on the site.
 
 When either is missing, the module wires up **zero** hooks — there's no overhead on free installs or non-store sites.
@@ -1210,11 +1210,11 @@ Decisions are emitted into the audit log under the actions:
 - `wc.api.deny`
 - `wc.cart.deny`
 
-so you can review them under **Press Sentinel → Audit Logs**.
+so you can review them under **NiyiGuard → Audit Logs**.
 
 ### Configuring from the admin UI
 
-`Press Sentinel → WooCommerce Protection` exposes:
+`NiyiGuard → WooCommerce Protection` exposes:
 
 - **Module master switch** (single toggle to disable everything).
 - **Checkout**: velocity soft/hard thresholds + window, minimum-seconds-to-submit, fraud-score challenge/deny thresholds.
@@ -1229,9 +1229,9 @@ Per-route API limits don't have a UI — set them in `config/plugin.php` (`wooco
 For headless / custom checkout flows that don't fire the canonical WooCommerce hooks, evaluate a context yourself:
 
 ```php
-use PressSentinel\Facades\Security;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Decision;
+use NiyiGuard\Facades\Security;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Decision;
 
 $context = new DetectionContext(
     kind:        DetectionContext::KIND_CHECKOUT,
@@ -1266,7 +1266,7 @@ You can also branch on availability without instantiating a context:
 
 ```php
 if (Security::woo()->isAvailable()) {
-    // Show "Protected by PressSentinel" admin badge, etc.
+    // Show "Protected by NiyiGuard" admin badge, etc.
 }
 ```
 
@@ -1276,7 +1276,7 @@ The module is engineered so a request that doesn't touch any commerce event pays
 
 **Lazy construction.** The kernel (`WooCommerceModule`) is built *once* per request and receives only three small services in its constructor: the `LicenseManager`, the options resolver, and the DI container. Pipelines, middleware, the disposable-email registry, the cart fingerprinter, the abuse-counter store, and the behaviour clock are **lazy-resolved on the first hook that actually fires**. A request that never hits `woocommerce_checkout_process` never constructs `CheckoutPipeline`, never builds its five middleware, never instantiates the disposable-domain registry.
 
-**Conditional hook registration.** The kernel inspects `\PressSentinel\Core\Support\RequestContext` before adding any callbacks:
+**Conditional hook registration.** The kernel inspects `\NiyiGuard\Core\Support\RequestContext` before adding any callbacks:
 
 - REST hooks (`rest_pre_dispatch`) attach via `rest_api_init`, which only fires during REST requests — so on a plain page view the WC API filter is never even added to WordPress's global filter table.
 - Commerce hooks (`woocommerce_checkout_process`, `woocommerce_register_post`, `woocommerce_add_to_cart_validation`, `woocommerce_coupon_error`) only attach on "commerce-capable" requests (frontend + AJAX). Cron, CLI, REST-only, and admin-only requests skip these entirely.
@@ -1293,15 +1293,15 @@ The module is engineered so a request that doesn't touch any commerce event pays
 
 ### Extension points
 
-- `presssentinel.disposable_email_domains` (filter, returns `string[]`) — extend the disposable-domain list at runtime.
-- `presssentinel.disposable_email_allowed_domains` (filter, returns `string[]`) — mark specific domains as never-disposable.
-- `presssentinel.is_pro` (filter, returns `bool`) — programmatic Pro toggle (handy for tests).
+- `niyiguard.disposable_email_domains` (filter, returns `string[]`) — extend the disposable-domain list at runtime.
+- `niyiguard.disposable_email_allowed_domains` (filter, returns `string[]`) — mark specific domains as never-disposable.
+- `niyiguard.is_pro` (filter, returns `bool`) — programmatic Pro toggle (handy for tests).
 
 ---
 
 ## Licensing & Pro features
 
-PressSentinel ships as a **single plugin** with a Pro tier unlocked by an offline license key. There is no separate "Pro" plugin to install.
+NiyiGuard ships as a **single plugin** with a Pro tier unlocked by an offline license key. There is no separate "Pro" plugin to install.
 
 ### What's in Pro
 
@@ -1313,11 +1313,11 @@ Free tier still gets the full middleware framework, CSRF, rate limiting, signed 
 
 The default validator is **offline HMAC**: keys look like `SP-PRO-1714780800-1746316800-3f6d1c2e9f6d1c2e` and embed the tier, issuance timestamp, expiry timestamp, and a truncated HMAC-SHA256 signature.
 
-The vendor signs keys with a shared secret (auto-provisioned in the database, or set via `PRESS_SENTINEL_LICENSE_SECRET` in `wp-config.php`, or `licensing.secret` in `config/plugin.php`). No outbound network call is required to validate — your install can be air-gapped and still authenticate the key correctly.
+The vendor signs keys with a shared secret (auto-provisioned in the database, or set via `NIYIGUARD_LICENSE_SECRET` in `wp-config.php`, or `licensing.secret` in `config/plugin.php`). No outbound network call is required to validate — your install can be air-gapped and still authenticate the key correctly.
 
 ### Entering a license
 
-Go to **Press Sentinel → License**, paste the key, hit **Save license**. The page shows:
+Go to **NiyiGuard → License**, paste the key, hit **Save license**. The page shows:
 
 - Active / Expired / Invalid / None state.
 - Tier (`pro`, `agency`, …).
@@ -1326,15 +1326,15 @@ Go to **Press Sentinel → License**, paste the key, hit **Save license**. The p
 
 Alternative configuration sources (resolved in this order, first match wins):
 
-1. `wp_option('presssentinel_pro_license')` — what the Settings page writes to.
+1. `wp_option('niyiguard_pro_license')` — what the Settings page writes to.
 2. `pro_license.license_key` in `config/plugin.php` — optional shipped default (usually empty).
-3. `PRESS_SENTINEL_PRO_LICENSE` PHP constant in `wp-config.php`.
-4. `apply_filters('presssentinel.pro_license', '')` — programmatic override (extensions, tests).
+3. `NIYIGUARD_PRO_LICENSE` PHP constant in `wp-config.php`.
+4. `apply_filters('niyiguard.pro_license', '')` — programmatic override (extensions, tests).
 
 ### Checking Pro status from your code
 
 ```php
-use PressSentinel\Facades\Security;
+use NiyiGuard\Facades\Security;
 
 if (Security::isPro()) {
     // Pro-only behaviour.
@@ -1357,7 +1357,7 @@ Security::isFeatureEnabled('pro');                    // alias
 
 ## Configuration reference
 
-`config/plugin.php` ships with sensible defaults. Edit that file (or use `wp-config.php` constants documented below) to tune deploy-time behaviour. `security_headers.*`, `audit_log.*`, and `auth_hardening.*` are also configurable from the admin UI (`Press Sentinel → Security Headers` / `Press Sentinel → Authentication`); admin overrides are stored in autoloaded `wp_options` and merged on top of the file defaults.
+`config/plugin.php` ships with sensible defaults. Edit that file (or use `wp-config.php` constants documented below) to tune deploy-time behaviour. `security_headers.*`, `audit_log.*`, and `auth_hardening.*` are also configurable from the admin UI (`NiyiGuard → Security Headers` / `NiyiGuard → Authentication`); admin overrides are stored in autoloaded `wp_options` and merged on top of the file defaults.
 
 | Config key | Default | Used by |
 |---|---|---|
@@ -1367,7 +1367,7 @@ Security::isFeatureEnabled('pro');                    // alias
 | `requirements.wordpress` | `6.4` | activation gate |
 | `logging.channel` | `file` | `file` or anything else (NullLogger) |
 | `logging.level` | `info` | reserved (FileLogger) |
-| `logging.file` | `presssentinel.log` | log filename under `storage/logs/` |
+| `logging.file` | `niyiguard.log` | log filename under `wp-content/uploads/niyiguard/logs/` |
 | `rate_limit.limit` `60` | global RateLimitMiddleware |
 | `rate_limit.window` `60` | global RateLimitMiddleware (seconds) |
 | `signed_url.ttl_default` | `3600` | `Security::signedUrl()` when no `expires` is passed |
@@ -1391,7 +1391,7 @@ Security::isFeatureEnabled('pro');                    // alias
 | `security_headers.permissions_policy.enabled` `true` | Permissions-Policy dispatcher / middleware |
 | `security_headers.permissions_policy.policy` conservative deny-list | comma-separated `feature=(allowlist)` |
 | `security_headers.x_content_type_options.enabled` `true` | emits `nosniff` |
-| `licensing.secret` | `change-me-in-production` | HMAC fallback for `LocalLicenseValidator` (DB option or `PRESS_SENTINEL_LICENSE_SECRET` constant preferred) |
+| `licensing.secret` | `change-me-in-production` | HMAC fallback for `LocalLicenseValidator` (DB option or `NIYIGUARD_LICENSE_SECRET` constant preferred) |
 | `woocommerce_protection.enabled` `true` | Module master switch (Pro-gated) |
 | `woocommerce_protection.checkout.enabled` `true` | Fake checkout protection |
 | `woocommerce_protection.checkout.velocity_soft` `3` | Per-IP/email soft velocity threshold |
@@ -1404,7 +1404,7 @@ Security::isFeatureEnabled('pro');                    // alias
 | `woocommerce_protection.registration.rate_limit` `5` | Max registrations per IP per window |
 | `woocommerce_protection.registration.window` `600` | Registration window (seconds) |
 | `woocommerce_protection.registration.deny_disposable_emails` `true` | Hard-deny disposable email domains |
-| `woocommerce_protection.registration.honeypot_field_name` `presssentinel_hp` | Hidden honeypot field name |
+| `woocommerce_protection.registration.honeypot_field_name` `niyiguard_hp` | Hidden honeypot field name |
 | `woocommerce_protection.registration.min_seconds_to_submit` `2` | Honeypot-timing floor (seconds) |
 | `woocommerce_protection.api.enabled` `true` | WC REST API abuse protection |
 | `woocommerce_protection.api.default_limit` `60` | Per-IP default RPS limit |
@@ -1420,7 +1420,7 @@ Security::isFeatureEnabled('pro');                    // alias
 | `woocommerce_protection.cart.coupon_hard` `10` | Coupon failures hard threshold |
 | `audit_log.enabled` `true` | Master killswitch for audit logging |
 | `audit_log.retention_days` `90` | Days of audit history kept; `0` = forever |
-| `audit_log.mirror_to_file_logger` `false` | Mirror every event to `storage/logs/presssentinel.log` |
+| `audit_log.mirror_to_file_logger` `false` | Mirror every event to `wp-content/uploads/niyiguard/logs/niyiguard.log` |
 | `audit_log.listeners.auth` `true` | Login / logout / failed-login tracking |
 | `audit_log.listeners.plugin` `true` | Plugin activate / deactivate / install / update / delete |
 | `audit_log.listeners.user` `true` | User register / delete / role change / password reset |
@@ -1429,13 +1429,13 @@ Security::isFeatureEnabled('pro');                    // alias
 | `audit_log.listeners.woocommerce` `true` | WooCommerce orders / payments / refunds (no-op if WC inactive) |
 | `audit_log.option_allowlist` siteurl, home, admin_email, users_can_register, default_role, blogname, blogdescription, wp_user_roles, permalink_structure, template, stylesheet | List of options the `OptionsListener` watches — extend as needed |
 | `auth_hardening.enabled` `true` | Master killswitch for login lockout, 2FA gate, sessions, suspicion alerts |
-| `auth_hardening.two_factor.issuer` `PressSentinel` | Issuer label embedded in `otpauth://` provisioning URIs |
+| `auth_hardening.two_factor.issuer` `NiyiGuard` | Issuer label embedded in `otpauth://` provisioning URIs |
 | `auth_hardening.two_factor.challenge_ttl_seconds` `600` | Pending password→2FA window |
 | `auth_hardening.lockout.enabled` `true` | Failed-login counter / temporary bans |
 | `auth_hardening.lockout.max_attempts` `5` | Failures allowed inside the rolling window |
 | `auth_hardening.lockout.window_seconds` `900` | Rolling counter window |
 | `auth_hardening.lockout.lock_seconds` `900` | Lock duration once threshold exceeded |
-| `auth_hardening.sessions.enabled` `true` | Persist PressSentinel session rows + daily prune |
+| `auth_hardening.sessions.enabled` `true` | Persist NiyiGuard session rows + daily prune |
 | `auth_hardening.sessions.retention_days` `90` | Session table pruning horizon |
 | `auth_hardening.suspicion.enabled` `true` | Aggregate suspicion scoring after login |
 | `auth_hardening.suspicion.alert_threshold` `50` | Minimum score before emailing “new device” |
@@ -1470,8 +1470,8 @@ add_action('rest_api_init', static function () use ($container): void {
             $manager = $container->get(MiddlewareManager::class);
             $result  = $manager->handle(
                 [
-                    PressSentinel\Middleware\RateLimitMiddleware::class,
-                    PressSentinel\Middleware\CsrfProtectionMiddleware::class,
+                    NiyiGuard\Middleware\RateLimitMiddleware::class,
+                    NiyiGuard\Middleware\CsrfProtectionMiddleware::class,
                 ],
                 [
                     'request' => [
@@ -1569,7 +1569,7 @@ add_action('init', static function () use ($container): void {
     }
 
     $result = $container->get(MiddlewareManager::class)->handle(
-        [PressSentinel\Middleware\SignedUrlMiddleware::class],
+        [NiyiGuard\Middleware\SignedUrlMiddleware::class],
         ['request' => ['url' => $_SERVER['REQUEST_URI']]],
     );
 
@@ -1626,8 +1626,8 @@ The `admin_post_my_form` handler runs the CSRF middleware as shown in [Use the m
 
 ```php
 // 1. seed reasonable defaults from a deploy script
-update_option('presssentinel_security_headers', array_replace_recursive(
-    get_option('presssentinel_security_headers', []),
+update_option('niyiguard_security_headers', array_replace_recursive(
+    get_option('niyiguard_security_headers', []),
     [
         'csp' => [
             'enabled'     => true,
@@ -1650,17 +1650,17 @@ add_action('rest_api_init', static function (): void {
 });
 ```
 
-Once your reports are quiet for a day or two, log into **Press Sentinel → Security Headers** and untick "Report-Only mode" to start enforcing.
+Once your reports are quiet for a day or two, log into **NiyiGuard → Security Headers** and untick "Report-Only mode" to start enforcing.
 
 ### Recipe: alert on critical audit events
 
 Hook the `audit_log` listener pipeline yourself by wrapping the recorder — useful when you want to trigger Slack pings / email alerts without copying every event.
 
 ```php
-use PressSentinel\Core\Audit\AuditEvent;
-use PressSentinel\Core\Audit\AuditEventLevel;
-use PressSentinel\Core\Audit\AuditLoggerInterface;
-use PressSentinel\Core\Container;
+use NiyiGuard\Core\Audit\AuditEvent;
+use NiyiGuard\Core\Audit\AuditEventLevel;
+use NiyiGuard\Core\Audit\AuditLoggerInterface;
+use NiyiGuard\Core\Container;
 
 add_action('plugins_loaded', static function () use ($plugin): void {
     $original = $plugin->container->get(AuditLoggerInterface::class);
@@ -1692,7 +1692,7 @@ add_action('plugins_loaded', static function () use ($plugin): void {
 ### Recipe: extend the audit option allowlist
 
 ```php
-add_filter('presssentinel_audit_option_allowlist', static fn (array $options): array => array_merge($options, [
+add_filter('niyiguard_audit_option_allowlist', static fn (array $options): array => array_merge($options, [
     'mailserver_url',
     'wp_calendar_settings',
     'mystore_payment_gateway',
@@ -1704,8 +1704,8 @@ add_filter('presssentinel_audit_option_allowlist', static fn (array $options): a
 ### Recipe: tighten headers for a sensitive admin tool
 
 ```php
-use PressSentinel\Facades\Security;
-use PressSentinel\Middleware\SecurityHeadersMiddleware;
+use NiyiGuard\Facades\Security;
+use NiyiGuard\Middleware\SecurityHeadersMiddleware;
 
 Security::middleware([SecurityHeadersMiddleware::class]);
 
@@ -1714,7 +1714,7 @@ add_action('admin_post_export_secrets', static function () use ($container): voi
         wp_die('Forbidden', '', ['response' => 403]);
     }
 
-    $manager = $container->get(\PressSentinel\Core\Middleware\MiddlewareManager::class);
+    $manager = $container->get(\NiyiGuard\Core\Middleware\MiddlewareManager::class);
     $result  = $manager->handle([SecurityHeadersMiddleware::class], [
         'response' => ['headers' => [
             // a much tighter, page-specific CSP, just for this handler
@@ -1737,7 +1737,7 @@ The route-level `Content-Security-Policy` overrides the registry-level one (the 
 
 ## Troubleshooting
 
-### "PressSentinel has not been bootstrapped"
+### "NiyiGuard has not been bootstrapped"
 
 Cause: Calling `Security::signedUrl()` / `Security::middleware()` etc. before `Plugin::boot()` ran.
 Fix: Wrap the call in `add_action('plugins_loaded', ..., 20)` or later.
@@ -1798,7 +1798,7 @@ If you toggled `preload`: there is no easy escape — see <https://hstspreload.o
 Make sure:
 
 1. The plugin is actually active (it's a no-op while inactive).
-2. The header is enabled in **Press Sentinel → Security Headers** and saved.
+2. The header is enabled in **NiyiGuard → Security Headers** and saved.
 3. The page hits `send_headers` — most WP requests do, but `wp-cron.php` and a few admin AJAX endpoints can short-circuit before that point.
 4. No higher-priority `send_headers` hook (or a downstream proxy / CDN) is stripping the header. The dispatcher hooks at priority `1`, so most plugin-set headers will run after it; if something replaces a header you're trying to set, increase `Priority` or set the header at a different layer (Apache `Header set`, nginx `add_header`).
 
@@ -1807,14 +1807,14 @@ Make sure:
 The schema runs on first boot. Check:
 
 ```sql
-SHOW TABLES LIKE '%presssentinel_audit_logs%';
-SELECT option_value FROM wp_options WHERE option_name = 'presssentinel_audit_log_db_version';
+SHOW TABLES LIKE '%niyiguard_audit_logs%';
+SELECT option_value FROM wp_options WHERE option_name = 'niyiguard_audit_log_db_version';
 ```
 
 If the option is missing, the migration didn't run — usually because `dbDelta()` was unavailable (rare; happens when the plugin runs before `wp-admin/includes/upgrade.php` is on the include path). To manually trigger the install:
 
 ```php
-$plugin->container->get(\PressSentinel\Core\Audit\AuditLogSchema::class)->install();
+$plugin->container->get(\NiyiGuard\Core\Audit\AuditLogSchema::class)->install();
 ```
 
 If the table exists but stays empty, audit logging is probably disabled — check `audit_log.enabled` in `config/plugin.php`.
@@ -1829,7 +1829,7 @@ Each failed login is one row; with brute-force traffic this can run to thousands
 
 ### `notice` for high-volume events drowns out important entries
 
-Use the level filter in **Press Sentinel → Audit Logs** to focus on `warning` / `critical` only. For programmatic SIEM exports, the `audit_log.mirror_to_file_logger` mode lets you tail `storage/logs/presssentinel.log` and grep for the level prefix.
+Use the level filter in **NiyiGuard → Audit Logs** to focus on `warning` / `critical` only. For programmatic SIEM exports, the `audit_log.mirror_to_file_logger` mode lets you tail `wp-content/uploads/niyiguard/logs/niyiguard.log` and grep for the level prefix.
 
 ### Pruner cron isn't running
 
@@ -1839,7 +1839,7 @@ WP cron runs on traffic. On low-traffic sites (or when `DISABLE_WP_CRON` is set)
 */15 * * * * cd /var/www/html && /usr/bin/wp cron event run --due-now --quiet
 ```
 
-Verify the schedule exists with `wp cron event list | grep presssentinel_audit_log_prune`.
+Verify the schedule exists with `wp cron event list | grep niyiguard_audit_log_prune`.
 
 ### Tests fail with "Undefined function wp_verify_nonce"
 
@@ -1850,7 +1850,7 @@ composer install
 vendor/bin/phpunit
 ```
 
-The test bootstrap (`tests/bootstrap.php`) loads stubs for `wp_verify_nonce`, `wp_salt`, transient functions, etc., backed by `PressSentinel\Tests\Stubs\WpStubState`.
+The test bootstrap (`tests/bootstrap.php`) loads stubs for `wp_verify_nonce`, `wp_salt`, transient functions, etc., backed by `NiyiGuard\Tests\Stubs\WpStubState`.
 
 ---
 
@@ -1860,9 +1860,9 @@ The current build provides the **primitives** (signer, limiter, CSRF middleware,
 
 - An HTTP **kernel** that automatically dispatches the global middleware stack on every request matching a registered route — until then, use the fluent `Security::route()->run(...)` builder to wire guards on a per-route basis.
 - **Bot/firewall** rules
-- A richer admin **dashboard** UI with charts and trend lines (the current dashboard at **Press Sentinel → Dashboard** shows status badges only)
+- A richer admin **dashboard** UI with charts and trend lines (the current dashboard at **NiyiGuard → Dashboard** shows status badges only)
 - An **audit log CSV / NDJSON exporter** for offline forensics
-- **WP-CLI** commands (`wp presssentinel audit:list`, `wp presssentinel audit:prune`, `wp presssentinel 2fa:status <user>`)
+- **WP-CLI** commands (`wp niyiguard audit:list`, `wp niyiguard audit:prune`, `wp niyiguard 2fa:status <user>`)
 - **PHP 8 attribute-based** route protection (`#[ProtectedRoute(rate: 60, csrf: true)]`) — the manual `Security::route(...)->...->run(...)` builder is the supported approach today.
 
 See [`ROADMAP_AGILE.md`](../ROADMAP_AGILE.md) for the prioritized backlog.

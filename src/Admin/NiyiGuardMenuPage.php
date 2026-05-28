@@ -2,29 +2,29 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Audit\AuditLogRepositoryInterface;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Integrity\FindingRepositoryInterface;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\Audit\AuditLogRepositoryInterface;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Integrity\FindingRepositoryInterface;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
- * Top-level "Press Sentinel" admin menu controller.
+ * Top-level "NiyiGuard" admin menu controller.
  */
-final class PressSentinelMenuPage
+final class NiyiGuardMenuPage
 {
-    public const PARENT_SLUG = 'presssentinel';
+    public const PARENT_SLUG = 'niyiguard';
 
-    public const DASHBOARD_SLUG = 'presssentinel';
+    public const DASHBOARD_SLUG = 'niyiguard';
 
-    public const NONCE_ACTION = 'presssentinel_features';
+    public const NONCE_ACTION = 'niyiguard_features';
 
-    public const STATUS_QUERY_KEY = 'presssentinel_status';
+    public const STATUS_QUERY_KEY = 'niyiguard_status';
 
     private const MENU_POSITION = 58;
 
@@ -60,8 +60,8 @@ final class PressSentinelMenuPage
     public function addMenu(): void
     {
         WpHelper::addMenuPage(
-            'Press Sentinel',
-            'Press Sentinel',
+            'NiyiGuard',
+            'NiyiGuard',
             'manage_options',
             self::PARENT_SLUG,
             [$this, 'render'],
@@ -71,7 +71,7 @@ final class PressSentinelMenuPage
 
         WpHelper::addSubmenuPage(
             self::PARENT_SLUG,
-            'Press Sentinel Dashboard',
+            'NiyiGuard Dashboard',
             'Dashboard',
             'manage_options',
             self::DASHBOARD_SLUG,
@@ -188,7 +188,7 @@ final class PressSentinelMenuPage
         $url = $base . '?' . http_build_query($args);
 
         WpHelper::safeRedirect($url);
-        if (!\defined('PRESS_SENTINEL_TESTING')) {
+        if (!\defined('NIYIGUARD_TESTING')) {
             exit; // @codeCoverageIgnore
         }
     }

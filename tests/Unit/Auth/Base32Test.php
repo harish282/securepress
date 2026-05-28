@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Auth;
+namespace NiyiGuard\Tests\Unit\Auth;
 
 use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\TwoFactor\Base32;
+use NiyiGuard\Core\Auth\TwoFactor\Base32;
 
 final class Base32Test extends TestCase
 {

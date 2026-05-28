@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Sdk\Csrf;
+namespace NiyiGuard\Sdk\Csrf;
 
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Middleware\CsrfProtectionMiddleware;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Middleware\CsrfProtectionMiddleware;
 
 /**
  * Developer-facing wrapper around WordPress's nonce API.
@@ -17,10 +17,10 @@ use PressSentinel\Middleware\CsrfProtectionMiddleware;
  *  - **Per-action HTML helper.** {@see field()} produces a hidden `<input>` ready to drop
  *    into custom forms, with proper escaping baked in.
  *  - **Test seam.** Routes through {@see WpHelper} so the test suite can deterministically
- *    stub `wp_verify_nonce` / `wp_create_nonce` via {@see \PressSentinel\Tests\Stubs\WpStubState}.
+ *    stub `wp_verify_nonce` / `wp_create_nonce` via {@see \NiyiGuard\Tests\Stubs\WpStubState}.
  *
  * Tokens are NOT one-use — that's a WordPress nonce property (12-/24-hour lifecycle ticks).
- * For single-use semantics use {@see \PressSentinel\Facades\Security::signedUrl(...,
+ * For single-use semantics use {@see \NiyiGuard\Facades\Security::signedUrl(...,
  * oneTime: true)} instead.
  */
 final class CsrfTokenManager

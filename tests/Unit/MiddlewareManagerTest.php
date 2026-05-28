@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit;
+namespace NiyiGuard\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Container;
-use PressSentinel\Core\Middleware\MiddlewareException;
-use PressSentinel\Core\Middleware\MiddlewareInterface;
-use PressSentinel\Core\Middleware\MiddlewareManager;
-use PressSentinel\Core\Middleware\MiddlewarePipeline;
-use PressSentinel\Core\Middleware\MiddlewareRegistry;
+use NiyiGuard\Core\Container;
+use NiyiGuard\Core\Middleware\MiddlewareException;
+use NiyiGuard\Core\Middleware\MiddlewareInterface;
+use NiyiGuard\Core\Middleware\MiddlewareManager;
+use NiyiGuard\Core\Middleware\MiddlewarePipeline;
+use NiyiGuard\Core\Middleware\MiddlewareRegistry;
 
 final class MiddlewareManagerTest extends TestCase
 {

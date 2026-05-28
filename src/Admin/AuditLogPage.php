@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Audit\AuditEventCategory;
-use PressSentinel\Core\Audit\AuditEventLevel;
-use PressSentinel\Core\Audit\AuditLogPruner;
-use PressSentinel\Core\Audit\AuditLogQuery;
-use PressSentinel\Core\Audit\AuditLogRepositoryInterface;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\Audit\AuditEventCategory;
+use NiyiGuard\Core\Audit\AuditEventLevel;
+use NiyiGuard\Core\Audit\AuditLogPruner;
+use NiyiGuard\Core\Audit\AuditLogQuery;
+use NiyiGuard\Core\Audit\AuditLogRepositoryInterface;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
  * Admin "Tools → Audit Logs" page.
@@ -27,11 +27,11 @@ use PressSentinel\Core\View\View;
  */
 final class AuditLogPage
 {
-    public const PAGE_SLUG = 'presssentinel-audit-logs';
+    public const PAGE_SLUG = 'niyiguard-audit-logs';
 
-    public const NONCE_ACTION = 'presssentinel_audit_logs';
+    public const NONCE_ACTION = 'niyiguard_audit_logs';
 
-    public const STATUS_QUERY_KEY = 'presssentinel_status';
+    public const STATUS_QUERY_KEY = 'niyiguard_status';
 
     public function __construct(
         private readonly AuditLogRepositoryInterface $repository,
@@ -43,15 +43,15 @@ final class AuditLogPage
     public function register(): void
     {
         WpHelper::addAction('admin_menu', [$this, 'addMenu']);
-        WpHelper::addAction('admin_post_presssentinel_clear_audit_logs', [$this, 'handleClear']);
-        WpHelper::addAction('admin_post_presssentinel_prune_audit_logs', [$this, 'handlePrune']);
+        WpHelper::addAction('admin_post_niyiguard_clear_audit_logs', [$this, 'handleClear']);
+        WpHelper::addAction('admin_post_niyiguard_prune_audit_logs', [$this, 'handlePrune']);
     }
 
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel Audit Logs',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard Audit Logs',
             'Audit Logs',
             'manage_options',
             self::PAGE_SLUG,
@@ -155,7 +155,7 @@ final class AuditLogPage
         $url = $base . '?' . http_build_query($args);
 
         WpHelper::safeRedirect($url);
-        if (!\defined('PRESS_SENTINEL_TESTING')) {
+        if (!\defined('NIYIGUARD_TESTING')) {
             exit; // @codeCoverageIgnore
         }
     }

@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Licensing;
+namespace NiyiGuard\Tests\Unit\Licensing;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Licensing\BetaTrial;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\Licensing\LicenseStatus;
-use PressSentinel\Core\Licensing\LicenseValidatorInterface;
-use PressSentinel\Core\Licensing\LocalLicenseValidator;
-use PressSentinel\Core\Licensing\StaticLicenseValidator;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Licensing\BetaTrial;
+use NiyiGuard\Core\Licensing\LicenseManager;
+use NiyiGuard\Core\Licensing\LicenseStatus;
+use NiyiGuard\Core\Licensing\LicenseValidatorInterface;
+use NiyiGuard\Core\Licensing\LocalLicenseValidator;
+use NiyiGuard\Core\Licensing\StaticLicenseValidator;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * @see \PressSentinel\Core\Licensing\LicenseManager
+ * @see \NiyiGuard\Core\Licensing\LicenseManager
  */
 final class LicenseManagerTest extends TestCase
 {
@@ -28,7 +28,7 @@ final class LicenseManagerTest extends TestCase
     {
         WpStubState::$options = [];
         if (\function_exists('remove_all_filters')) {
-            \remove_all_filters('presssentinel_config');
+            \remove_all_filters('niyiguard_config');
         }
     }
 
@@ -39,7 +39,7 @@ final class LicenseManagerTest extends TestCase
     {
         if ($overrides !== [] && \function_exists('add_filter')) {
             \add_filter(
-                'presssentinel_config',
+                'niyiguard_config',
                 static function (array $config) use ($overrides): array {
                     return array_replace_recursive($config, $overrides);
                 }

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Sdk\Exceptions;
+namespace NiyiGuard\Sdk\Exceptions;
 
 use RuntimeException;
 
 /**
- * Thrown by the fluent {@see \PressSentinel\Sdk\Routing\RouteBuilder} when one of the
+ * Thrown by the fluent {@see \NiyiGuard\Sdk\Routing\RouteBuilder} when one of the
  * registered guards (CSRF, rate-limit, capability check, signed-URL verification, …)
  * rejects the current request.
  *

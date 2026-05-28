@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Core\UrlDisguise;
+namespace NiyiGuard\Tests\Unit\Core\UrlDisguise;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseModule;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseModule;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class UrlDisguiseModuleTest extends TestCase
 {
@@ -85,7 +85,6 @@ final class UrlDisguiseModuleTest extends TestCase
         $module = new UrlDisguiseModule(new UrlDisguiseOptions($config));
         $ref = new \ReflectionClass($module);
         $m = $ref->getMethod('getRequestPathRelativeToHome');
-        $m->setAccessible(true);
 
         WpStubState::$siteUrl = 'https://example.test/blog';
         $_SERVER['REQUEST_URI'] = '/blog/my-login/?action=logout';

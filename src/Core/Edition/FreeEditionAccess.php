@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Edition;
+namespace NiyiGuard\Core\Edition;
 
 /**
  * Free distribution: every feature ships unlocked.
  */
 final class FreeEditionAccess implements EditionAccess
 {
-    public const FILTER_IS_PRO = 'presssentinel.is_pro';
+    public const FILTER_IS_PRO = 'niyiguard.is_pro';
 
     public function isPro(): bool
     {

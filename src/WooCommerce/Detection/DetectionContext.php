@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Detection;
+namespace NiyiGuard\WooCommerce\Detection;
 
 /**
  * Immutable request envelope passed through every WooCommerce protection pipeline.
@@ -19,7 +19,7 @@ namespace PressSentinel\WooCommerce\Detection;
  * copies so the pipeline can compose context without aliasing surprises.
  *
  * Signals are *accumulating* — every middleware appends what it learned. The final
- * {@see \PressSentinel\WooCommerce\Services\FraudScoreService} reads them all and turns
+ * {@see \NiyiGuard\WooCommerce\Services\FraudScoreService} reads them all and turns
  * them into a single {@see Decision}.
  */
 final class DetectionContext

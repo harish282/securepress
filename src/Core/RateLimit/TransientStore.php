@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\RateLimit;
+namespace NiyiGuard\Core\RateLimit;
 
 use Closure;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Persists rate-limit counters in WordPress transients.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Edition;
+namespace NiyiGuard\Core\Edition;
 
 /**
  * Whether the current install may use premium-tier features.

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Edition;
+namespace NiyiGuard\Core\Edition;
 
 /**
- * Edition state for the free, fully unlocked PressSentinel distribution.
+ * Edition state for the free, fully unlocked NiyiGuard distribution.
  *
- * Third-party code that still calls {@see \PressSentinel\Facades\Security::licenseStatus()}
+ * Third-party code that still calls {@see \NiyiGuard\Facades\Security::licenseStatus()}
  * receives this shape. Paid licensing lives in the optional
- * `packages/press-sentinel-licensing` add-on.
+ * `packages/niyiguard-licensing` add-on.
  */
 final class EditionStatus
 {
@@ -29,7 +29,7 @@ final class EditionStatus
             self::STATE_FREE,
             'free',
             null,
-            'PressSentinel is distributed as a free plugin. All features are included.',
+            'NiyiGuard is distributed as a free plugin. All features are included.',
         );
     }
 

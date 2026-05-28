@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Audit\Listeners;
+namespace NiyiGuard\Core\Audit\Listeners;
 
 // phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- Core file-editor requests; save path verifies editor nonce.
-use PressSentinel\Core\Audit\AuditEvent;
-use PressSentinel\Core\Audit\AuditEventCategory;
-use PressSentinel\Core\Audit\AuditEventLevel;
-use PressSentinel\Core\Audit\AuditLoggerInterface;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Audit\AuditEvent;
+use NiyiGuard\Core\Audit\AuditEventCategory;
+use NiyiGuard\Core\Audit\AuditEventLevel;
+use NiyiGuard\Core\Audit\AuditLoggerInterface;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Detects access to the WordPress file editors (`theme-editor.php`, `plugin-editor.php`).

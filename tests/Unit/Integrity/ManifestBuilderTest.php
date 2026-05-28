@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Integrity;
+namespace NiyiGuard\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Integrity\IntegrityScope;
-use PressSentinel\Core\Integrity\ManifestBuilder;
+use NiyiGuard\Core\Integrity\IntegrityScope;
+use NiyiGuard\Core\Integrity\ManifestBuilder;
 
 /**
- * @see \PressSentinel\Core\Integrity\ManifestBuilder
+ * @see \NiyiGuard\Core\Integrity\ManifestBuilder
  */
 final class ManifestBuilderTest extends TestCase
 {

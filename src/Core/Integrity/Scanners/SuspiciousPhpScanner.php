@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity\Scanners;
+namespace NiyiGuard\Core\Integrity\Scanners;
 
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use PressSentinel\Core\Integrity\Finding;
-use PressSentinel\Core\Integrity\FindingSeverity;
-use PressSentinel\Core\Integrity\FindingType;
-use PressSentinel\Core\Integrity\Heuristics\HeuristicInterface;
-use PressSentinel\Core\Integrity\Heuristics\HeuristicMatch;
+use NiyiGuard\Core\Integrity\Finding;
+use NiyiGuard\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingType;
+use NiyiGuard\Core\Integrity\Heuristics\HeuristicInterface;
+use NiyiGuard\Core\Integrity\Heuristics\HeuristicMatch;
 use SplFileInfo;
 
 /**

@@ -1,4 +1,4 @@
-# PressSentinel
+# NiyiGuard
 
 **Self-hosted application-layer security for WordPress** — login hardening, audit trail, file integrity, security headers, optional rate limits, WooCommerce abuse protection, and a developer SDK. **Free, full feature set, no cloud account required.**
 
@@ -17,13 +17,13 @@ Laravel-inspired architecture: middleware-style helpers, a `Security` facade, au
 
 ---
 
-## Why PressSentinel?
+## Why NiyiGuard?
 
-PressSentinel hardens WordPress **inside** the application: it does not replace Cloudflare, your host firewall, or a CDN. Use it **together with** edge and host protections.
+NiyiGuard hardens WordPress **inside** the application: it does not replace Cloudflare, your host firewall, or a CDN. Use it **together with** edge and host protections.
 
 ### Why site owners install it
 
-| You need… | PressSentinel helps by… |
+| You need… | NiyiGuard helps by… |
 | --- | --- |
 | Fewer brute-force logins | IP + username lockouts; optional 2FA (TOTP, email OTP, recovery codes) |
 | Accountability | Audit log: logins, plugin/role changes, sensitive options, file editor, WooCommerce events |
@@ -32,13 +32,13 @@ PressSentinel hardens WordPress **inside** the application: it does not replace 
 | Less REST / front-end abuse | Optional global rate limiting (wp-admin excluded by default) |
 | WooCommerce spam & fake checkouts | Checkout, cart, registration, and Store API protection pipelines |
 | Recovery from misconfiguration | Safe mode via `wp-config.php` if lockout or login disguise blocks access |
-| Privacy & control | Data stays on your server; no PressSentinel account required |
+| Privacy & control | Data stays on your server; no NiyiGuard account required |
 
 **Pitch:** *Security building blocks on your server — not in our cloud. Turn on what you need from one dashboard.*
 
 ### What makes it different
 
-Many plugins (Wordfence, Solid Security, All-In-One WP Security, etc.) overlap on 2FA, lockouts, headers, or scanning. PressSentinel does **not** claim to be the only plugin with those features. It is distinctive in three ways:
+Many plugins (Wordfence, Solid Security, All-In-One WP Security, etc.) overlap on 2FA, lockouts, headers, or scanning. NiyiGuard does **not** claim to be the only plugin with those features. It is distinctive in three ways:
 
 1. **Developer SDK** — protect custom `admin-post` handlers, forms, and REST routes with CSRF, rate limits, signed URLs, and route guards (`Security` facade).
 2. **WooCommerce abuse pipelines** — checkout velocity, cart/coupon abuse, registration spam, fraud scoring, and API throttling alongside audit and login hardening.
@@ -56,7 +56,7 @@ Many plugins (Wordfence, Solid Security, All-In-One WP Security, etc.) overlap o
 - Does **not** provide commercial cloud antivirus scanning (heuristics + checksums only).
 - Does **not** auto-protect every WordPress hook — the SDK protects **routes you wire**.
 
-More copy blocks and FAQs: **[docs/WHY_PRESSSENTINEL.md](docs/WHY_PRESSSENTINEL.md)**.
+More copy blocks and FAQs: **[docs/WHY_NIYIGUARD.md](docs/WHY_NIYIGUARD.md)**.
 
 ---
 
@@ -78,9 +78,9 @@ More copy blocks and FAQs: **[docs/WHY_PRESSSENTINEL.md](docs/WHY_PRESSSENTINEL.
 
 ## Quick start
 
-1. Clone or copy into `wp-content/plugins/presssentinel` (or run `bash scripts/build-release-zip.sh dev` from this repo).
-2. Activate **PressSentinel** in wp-admin.
-3. Open **Press Sentinel → Dashboard** and review feature toggles.
+1. Clone or copy into `wp-content/plugins/niyiguard` (or run `bash scripts/build-release-zip.sh dev` from this repo).
+2. Activate **NiyiGuard** in wp-admin.
+3. Open **NiyiGuard → Dashboard** and review feature toggles.
 4. Optional: install the [MU loader](docs/MU_LOADER_INSTALL.md) for earlier bootstrap.
 5. Read [docs/USAGE.md](docs/USAGE.md) for CSRF, rate limits, signed URLs, and route protection.
 6. Before production: [docs/STAGING_TEST_PLAN.md](docs/STAGING_TEST_PLAN.md).
@@ -88,16 +88,16 @@ More copy blocks and FAQs: **[docs/WHY_PRESSSENTINEL.md](docs/WHY_PRESSSENTINEL.
 ```bash
 composer install
 vendor/bin/phpunit
-bash scripts/build-release-zip.sh prod   # build/presssentinel-0.1.0.zip
+bash scripts/build-release-zip.sh prod   # build/niyiguard-0.1.0.zip
 ```
 
-Configuration: `config/plugin.php` and optional `wp-config.php` constants (`PRESS_SENTINEL_SAFE_MODE`, `PRESS_SENTINEL_INTERNAL_SECRET`). Optional tips: `support.donation_url` in config ([Ko-fi](https://ko-fi.com/)).
+Configuration: `config/plugin.php` and optional `wp-config.php` constants (`NIYIGUARD_SAFE_MODE`, `NIYIGUARD_INTERNAL_SECRET`). Optional tips: `support.donation_url` in config ([Ko-fi](https://ko-fi.com/)).
 
 ---
 
 ## Implementation status (vs project plan)
 
-Maps [presssentinel_wordpress_security_plugin_project_plan.md](presssentinel_wordpress_security_plugin_project_plan.md) and [ROADMAP_AGILE.md](ROADMAP_AGILE.md) to **0.1.0**.
+Maps [niyiguard_wordpress_security_plugin_project_plan.md](niyiguard_wordpress_security_plugin_project_plan.md) and [ROADMAP_AGILE.md](ROADMAP_AGILE.md) to **0.1.0**.
 
 ### MVP and core security
 
@@ -141,7 +141,7 @@ Maps [presssentinel_wordpress_security_plugin_project_plan.md](presssentinel_wor
 | Document | Purpose |
 | --- | --- |
 | [readme.txt](readme.txt) | WordPress.org plugin directory readme (canonical public description) |
-| [docs/WHY_PRESSSENTINEL.md](docs/WHY_PRESSSENTINEL.md) | Why install, comparisons, reusable marketing copy |
+| [docs/WHY_NIYIGUARD.md](docs/WHY_NIYIGUARD.md) | Why install, comparisons, reusable marketing copy |
 | [docs/USAGE.md](docs/USAGE.md) | Developer and operator usage |
 | [docs/MU_LOADER_INSTALL.md](docs/MU_LOADER_INSTALL.md) | Early-load MU plugin setup |
 | [docs/STAGING_TEST_PLAN.md](docs/STAGING_TEST_PLAN.md) | Staging QA checklist |
@@ -154,10 +154,10 @@ Maps [presssentinel_wordpress_security_plugin_project_plan.md](presssentinel_wor
 Offline HMAC licensing was extracted for private/commercial forks:
 
 ```bash
-bash packages/press-sentinel-licensing/scripts/build-licensing-zip.sh
+bash packages/niyiguard-licensing/scripts/build-licensing-zip.sh
 ```
 
-See [packages/press-sentinel-licensing/INTEGRATION.md](packages/press-sentinel-licensing/INTEGRATION.md).
+See [packages/niyiguard-licensing/INTEGRATION.md](packages/niyiguard-licensing/INTEGRATION.md).
 
 ---
 

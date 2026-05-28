@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Auth;
+namespace NiyiGuard\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\Sessions\ArraySessionRepository;
-use PressSentinel\Core\Auth\Sessions\SessionFingerprinter;
-use PressSentinel\Core\Auth\Sessions\SessionRecord;
-use PressSentinel\Core\Auth\SuspiciousLogin\LoginContext;
-use PressSentinel\Core\Auth\SuspiciousLogin\Rules\NewDeviceRule;
-use PressSentinel\Core\Auth\SuspiciousLogin\SuspicionDetector;
+use NiyiGuard\Core\Auth\Sessions\ArraySessionRepository;
+use NiyiGuard\Core\Auth\Sessions\SessionFingerprinter;
+use NiyiGuard\Core\Auth\Sessions\SessionRecord;
+use NiyiGuard\Core\Auth\SuspiciousLogin\LoginContext;
+use NiyiGuard\Core\Auth\SuspiciousLogin\Rules\NewDeviceRule;
+use NiyiGuard\Core\Auth\SuspiciousLogin\SuspicionDetector;
 
 final class SuspicionDetectorTest extends TestCase
 {

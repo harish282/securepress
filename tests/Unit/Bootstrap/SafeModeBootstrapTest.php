@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Bootstrap;
+namespace NiyiGuard\Tests\Unit\Bootstrap;
 
 use PHPUnit\Framework\TestCase;
 
@@ -10,8 +10,8 @@ final class SafeModeBootstrapTest extends TestCase
 {
     public function test_config_safe_mode_defines_constant_in_fresh_process(): void
     {
-        if (\defined('PRESS_SENTINEL_SAFE_MODE')) {
-            self::markTestSkipped('PRESS_SENTINEL_SAFE_MODE already defined in parent process');
+        if (\defined('NIYIGUARD_SAFE_MODE')) {
+            self::markTestSkipped('NIYIGUARD_SAFE_MODE already defined in parent process');
         }
 
         $root = dirname(__DIR__, 3);
@@ -21,10 +21,10 @@ final class SafeModeBootstrapTest extends TestCase
         $script = <<<PHP
 <?php
 define('ABSPATH', '/tmp');
-define('PRESS_SENTINEL_CONFIG_PATH', '{$fixture}');
-define('PRESS_SENTINEL_BOOTSTRAP_PATH', '{$bootstrap}');
-require PRESS_SENTINEL_BOOTSTRAP_PATH . '/safe-mode.php';
-echo (defined('PRESS_SENTINEL_SAFE_MODE') && PRESS_SENTINEL_SAFE_MODE) ? '1' : '0';
+define('NIYIGUARD_CONFIG_PATH', '{$fixture}');
+define('NIYIGUARD_BOOTSTRAP_PATH', '{$bootstrap}');
+require NIYIGUARD_BOOTSTRAP_PATH . '/safe-mode.php';
+echo (defined('NIYIGUARD_SAFE_MODE') && NIYIGUARD_SAFE_MODE) ? '1' : '0';
 PHP;
 
         $tmp = tempnam(sys_get_temp_dir(), 'ps-safe-mode-');

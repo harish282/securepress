@@ -12,8 +12,8 @@ describe('Audit log', () => {
   })
 
   it('opens audit log viewer and filters', () => {
-    cy.visitPressSentinel('presssentinel-audit-logs')
-    cy.contains('h1', 'PressSentinel Audit Logs').should('be.visible')
+    cy.visitNiyiGuard('niyiguard-audit-logs')
+    cy.contains('h1', 'NiyiGuard Audit Logs').should('be.visible')
     cy.get('select[name="category"]').should('exist')
     cy.get('select[name="level"]').should('exist')
     cy.get('input[name="s"]').should('exist')
@@ -22,17 +22,17 @@ describe('Audit log', () => {
   })
 
   it('saves audit settings retention', () => {
-    cy.visitPressSentinel('presssentinel-audit-settings')
-    cy.contains('h1', 'PressSentinel audit log settings').should('be.visible')
-    cy.get('input[name="presssentinel_audit_log[retention_days]"]')
+    cy.visitNiyiGuard('niyiguard-audit-settings')
+    cy.contains('h1', 'NiyiGuard audit log settings').should('be.visible')
+    cy.get('input[name="niyiguard_audit_log[retention_days]"]')
       .clear()
       .type('90')
     cy.saveWpOptionsForm()
-    cy.get('input[name="presssentinel_audit_log[retention_days]"]').should('have.value', '90')
+    cy.get('input[name="niyiguard_audit_log[retention_days]"]').should('have.value', '90')
   })
 
   it('runs prune now from maintenance section', () => {
-    cy.visitPressSentinel('presssentinel-audit-logs')
+    cy.visitNiyiGuard('niyiguard-audit-logs')
     cy.window().then((win) => {
       cy.stub(win, 'confirm').returns(true)
     })
@@ -41,7 +41,7 @@ describe('Audit log', () => {
   })
 
   it('shows event detail when detail link exists', () => {
-    cy.visitPressSentinel('presssentinel-audit-logs')
+    cy.visitNiyiGuard('niyiguard-audit-logs')
     cy.get('tbody tr').then(($rows) => {
       if ($rows.find('a:contains("View")').length === 0) {
         cy.log('No audit events yet — skip detail view (run plugin toggle with runDestructive)')

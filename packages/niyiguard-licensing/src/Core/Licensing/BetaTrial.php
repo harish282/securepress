@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Licensing;
+namespace NiyiGuard\Core\Licensing;
 
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Time-boxed Pro access for public beta installs that do not yet have a paid
  * license key.
  *
- * The trial window is stored in the WordPress database (`presssentinel_beta_trial_started_at`
+ * The trial window is stored in the WordPress database (`niyiguard_beta_trial_started_at`
  * option + duration from config), not in a short-lived transient, so object-cache
  * flushes cannot silently reset the clock. The clock starts the first time
  * {@see self::trialEndsAt()} runs with an empty license key and trial mode enabled
@@ -20,11 +20,11 @@ use PressSentinel\Core\Support\WpHelper;
  *
  * Operators enable or disable the programme via `pro_license.beta_trial.enabled`
  * in config/plugin.php. PHPUnit forces the programme off unless a test opts in
- * through the `presssentinel_config` filter.
+ * through the `niyiguard_config` filter.
  */
 final class BetaTrial
 {
-    public const STARTED_AT_OPTION = 'presssentinel_beta_trial_started_at';
+    public const STARTED_AT_OPTION = 'niyiguard_beta_trial_started_at';
 
     public static function isProgrammeEnabled(Config $config): bool
     {

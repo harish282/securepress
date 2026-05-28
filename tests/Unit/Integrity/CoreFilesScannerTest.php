@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Integrity;
+namespace NiyiGuard\Tests\Unit\Integrity;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Integrity\Checksums\ArrayChecksumProvider;
-use PressSentinel\Core\Integrity\FindingType;
-use PressSentinel\Core\Integrity\IntegrityScope;
-use PressSentinel\Core\Integrity\Scanners\CoreFilesScanner;
+use NiyiGuard\Core\Integrity\Checksums\ArrayChecksumProvider;
+use NiyiGuard\Core\Integrity\FindingType;
+use NiyiGuard\Core\Integrity\IntegrityScope;
+use NiyiGuard\Core\Integrity\Scanners\CoreFilesScanner;
 
 /**
- * @see \PressSentinel\Core\Integrity\Scanners\CoreFilesScanner
+ * @see \NiyiGuard\Core\Integrity\Scanners\CoreFilesScanner
  */
 final class CoreFilesScannerTest extends TestCase
 {

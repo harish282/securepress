@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Middleware;
+namespace NiyiGuard\Middleware;
 
 // phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- Locates CSRF tokens via WpHelper; wp_verify_nonce() validates them.
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Core\Middleware\MiddlewareInterface;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Core\Middleware\MiddlewareInterface;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Verifies WordPress nonces on state-changing requests.
@@ -36,7 +36,7 @@ use PressSentinel\Core\Support\WpHelper;
  */
 final class CsrfProtectionMiddleware implements MiddlewareInterface
 {
-    public const DEFAULT_ACTION = 'presssentinel_csrf';
+    public const DEFAULT_ACTION = 'niyiguard_csrf';
 
     public const REST_ACTION = 'wp_rest';
 

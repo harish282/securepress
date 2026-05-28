@@ -2,27 +2,27 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\Core\View\View;
 
 /**
- * PressSentinel → URL disguise: custom login path slug.
+ * NiyiGuard → URL disguise: custom login path slug.
  *
  * Uses the Settings API; saves through {@see UrlDisguiseOptions::sanitize()}.
- * {@see \PressSentinel\Core\UrlDisguise\UrlDisguiseModule} registers rewrites when
+ * {@see \NiyiGuard\Core\UrlDisguise\UrlDisguiseModule} registers rewrites when
  * {@see UrlDisguiseOptions::isActive()} is true; changing these options flushes
  * rewrite rules via {@see Plugin::boot()}.
  */
 final class UrlDisguiseSettingsPage
 {
-    public const PAGE_SLUG = 'presssentinel-url-disguise';
+    public const PAGE_SLUG = 'niyiguard-url-disguise';
 
-    public const OPTION_GROUP = 'presssentinel_url_disguise_group';
+    public const OPTION_GROUP = 'niyiguard_url_disguise_group';
 
-    public const SECTION = 'presssentinel_section_url_disguise';
+    public const SECTION = 'niyiguard_section_url_disguise';
 
     public function __construct(
         private readonly UrlDisguiseOptions $options,
@@ -39,8 +39,8 @@ final class UrlDisguiseSettingsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel URL disguise',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard URL disguise',
             'URL disguise',
             'manage_options',
             self::PAGE_SLUG,

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Admin;
+namespace NiyiGuard\WooCommerce\Admin;
 
-use PressSentinel\Admin\PressSentinelMenuPage;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
+use NiyiGuard\Admin\NiyiGuardMenuPage;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
 
 /**
  * Settings → WooCommerce Protection admin page.
@@ -20,8 +20,8 @@ use PressSentinel\WooCommerce\Middleware\Checkout\BotCheckoutMiddleware;
  */
 final class WooCommerceProtectionPage
 {
-    public const PAGE_SLUG = 'presssentinel-woocommerce';
-    public const OPTION_GROUP = 'presssentinel_wc_protection_group';
+    public const PAGE_SLUG = 'niyiguard-woocommerce';
+    public const OPTION_GROUP = 'niyiguard_wc_protection_group';
 
     public function __construct(
         private readonly WooCommerceProtectionOptions $options,
@@ -37,8 +37,8 @@ final class WooCommerceProtectionPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel WooCommerce Protection',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard WooCommerce Protection',
             'WooCommerce Protection',
             'manage_options',
             self::PAGE_SLUG,
@@ -64,7 +64,7 @@ final class WooCommerceProtectionPage
         $values = $this->options->all();
 
         echo '<div class="wrap">';
-        echo '<h1>PressSentinel &mdash; WooCommerce Protection</h1>';
+        echo '<h1>NiyiGuard &mdash; WooCommerce Protection</h1>';
 
         if (!class_exists('WooCommerce', false)) {
             echo '<div class="notice notice-warning"><p>WooCommerce does not appear to be active. Activate WooCommerce to enable this module.</p></div>';

@@ -14,7 +14,7 @@ describe('WooCommerce protection', () => {
 
   it('loads WooCommerce protection settings when Pro is active', () => {
     cy.setDashboardFeature('woocommerce_protection', true)
-    cy.visitPressSentinel('presssentinel-woocommerce')
+    cy.visitNiyiGuard('niyiguard-woocommerce')
     cy.get('body').then(($body) => {
       if ($body.text().match(/upgrade|Pro license|evaluation/i)) {
         cy.log('Pro not active — enable license on staging first')

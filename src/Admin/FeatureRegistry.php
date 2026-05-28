@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
  * Source of truth for the "what features can the dashboard toggle?" question.

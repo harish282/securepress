@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity\Scanners;
+namespace NiyiGuard\Core\Integrity\Scanners;
 
-use PressSentinel\Core\Integrity\Checksums\ChecksumProviderInterface;
-use PressSentinel\Core\Integrity\Finding;
-use PressSentinel\Core\Integrity\FindingSeverity;
-use PressSentinel\Core\Integrity\FindingType;
-use PressSentinel\Core\Integrity\IntegrityScope;
+use NiyiGuard\Core\Integrity\Checksums\ChecksumProviderInterface;
+use NiyiGuard\Core\Integrity\Finding;
+use NiyiGuard\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingType;
+use NiyiGuard\Core\Integrity\IntegrityScope;
 
 /**
  * Diffs the live WordPress core tree against the official WP.org checksums for the

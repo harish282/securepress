@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\SuspiciousLogin;
+namespace NiyiGuard\Core\Auth\SuspiciousLogin;
 
-use PressSentinel\Core\Auth\SuspiciousLogin\Rules\RuleInterface;
+use NiyiGuard\Core\Auth\SuspiciousLogin\Rules\RuleInterface;
 
 /**
  * Sums the contributions of every registered rule into a single {@see SuspicionResult}.

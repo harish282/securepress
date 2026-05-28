@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Sdk;
+namespace NiyiGuard\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Middleware\CsrfProtectionMiddleware;
-use PressSentinel\Sdk\Csrf\CsrfTokenManager;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Middleware\CsrfProtectionMiddleware;
+use NiyiGuard\Sdk\Csrf\CsrfTokenManager;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * @see \PressSentinel\Sdk\Csrf\CsrfTokenManager
+ * @see \NiyiGuard\Sdk\Csrf\CsrfTokenManager
  */
 final class CsrfTokenManagerTest extends TestCase
 {

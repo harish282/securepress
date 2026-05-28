@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Integrity\FindingRepositoryInterface;
-use PressSentinel\Core\Integrity\FindingSeverity;
-use PressSentinel\Core\Integrity\FindingType;
-use PressSentinel\Core\Integrity\IntegrityScheduler;
-use PressSentinel\Core\Integrity\IntegrityService;
-use PressSentinel\Core\Integrity\ManifestRepositoryInterface;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\Integrity\FindingRepositoryInterface;
+use NiyiGuard\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingType;
+use NiyiGuard\Core\Integrity\IntegrityScheduler;
+use NiyiGuard\Core\Integrity\IntegrityService;
+use NiyiGuard\Core\Integrity\ManifestRepositoryInterface;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
  * Admin "Tools → File Integrity" page.
@@ -30,9 +30,9 @@ use PressSentinel\Core\View\View;
  */
 final class FileIntegrityPage
 {
-    public const PAGE_SLUG = 'presssentinel-file-integrity';
-    public const NONCE_ACTION = 'presssentinel_file_integrity';
-    public const STATUS_QUERY_KEY = 'presssentinel_status';
+    public const PAGE_SLUG = 'niyiguard-file-integrity';
+    public const NONCE_ACTION = 'niyiguard_file_integrity';
+    public const STATUS_QUERY_KEY = 'niyiguard_status';
 
     public function __construct(
         private readonly FindingRepositoryInterface $findings,
@@ -46,18 +46,18 @@ final class FileIntegrityPage
     public function register(): void
     {
         WpHelper::addAction('admin_menu', [$this, 'addMenu']);
-        WpHelper::addAction('admin_post_presssentinel_integrity_rescan', [$this, 'handleRescan']);
-        WpHelper::addAction('admin_post_presssentinel_integrity_review', [$this, 'handleReview']);
-        WpHelper::addAction('admin_post_presssentinel_integrity_delete', [$this, 'handleDelete']);
-        WpHelper::addAction('admin_post_presssentinel_integrity_clear', [$this, 'handleClear']);
-        WpHelper::addAction('admin_post_presssentinel_integrity_reset_baseline', [$this, 'handleResetBaseline']);
+        WpHelper::addAction('admin_post_niyiguard_integrity_rescan', [$this, 'handleRescan']);
+        WpHelper::addAction('admin_post_niyiguard_integrity_review', [$this, 'handleReview']);
+        WpHelper::addAction('admin_post_niyiguard_integrity_delete', [$this, 'handleDelete']);
+        WpHelper::addAction('admin_post_niyiguard_integrity_clear', [$this, 'handleClear']);
+        WpHelper::addAction('admin_post_niyiguard_integrity_reset_baseline', [$this, 'handleResetBaseline']);
     }
 
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel File Integrity',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard File Integrity',
             'File Integrity',
             'manage_options',
             self::PAGE_SLUG,
@@ -200,7 +200,7 @@ final class FileIntegrityPage
         $url = $base . '?' . http_build_query($args);
 
         WpHelper::safeRedirect($url);
-        if (!\defined('PRESS_SENTINEL_TESTING')) {
+        if (!\defined('NIYIGUARD_TESTING')) {
             exit; // @codeCoverageIgnore
         }
     }
