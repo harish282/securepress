@@ -87,7 +87,7 @@ stage_plugin_to() {
   copy_if_exists "$dest" "src"
   copy_if_exists "$dest" "resources"
   copy_if_exists "$dest" "mu-loader"
-  for doc in docs/WHY_NIYIGUARD.md docs/USAGE.md docs/MU_LOADER_INSTALL.md docs/STAGING_TEST_PLAN.md docs/PRIVACY.md; do
+  for doc in docs/WHY_NIYIGUARD.md docs/USAGE.md docs/MU_LOADER_INSTALL.md docs/PRIVACY.md; do
     if [[ -f "$ROOT/$doc" ]]; then
       mkdir -p "$dest/docs"
       cp -a "$ROOT/$doc" "$dest/docs/"
@@ -98,27 +98,11 @@ stage_plugin_to() {
   copy_required "$dest" "readme.txt"
   copy_required "$dest" "license.txt"
 
-  # Storage: ship directory skeleton + lockdown files only (never local *.log).
-  mkdir -p "$dest/storage/logs"
-  if [[ -f "$ROOT/storage/logs/index.html" ]]; then
-    cp -a "$ROOT/storage/logs/index.html" "$dest/storage/logs/"
-  fi
-  for subdir in cache tmp; do
-    if [[ -d "$ROOT/storage/$subdir" ]]; then
-      mkdir -p "$dest/storage/$subdir"
-      shopt -s nullglob
-      for f in "$ROOT/storage/$subdir"/index.html "$ROOT/storage/$subdir"/.gitkeep; do
-        [[ -e "$f" ]] || continue
-        cp -a "$f" "$dest/storage/$subdir/"
-      done
-      shopt -u nullglob
-    fi
-  done
+  # Writable runtime data (logs, cache, temp) lives under wp-content/uploads/niyiguard — not in the plugin package.
 
   # Drop legacy paths removed from source (cp -a does not delete stale deploy files).
   rm -f "$dest/bootstrap/env.php" "$dest/env.example" "$dest/.env" "$dest/.env.local"
-  rm -f "$dest/storage/tmp/"*.php "$dest/storage/cache/"*.php 2>/dev/null || true
-  rm -f "$dest/storage/tmp/.htaccess" "$dest/storage/cache/.htaccess" 2>/dev/null || true
+  rm -rf "$dest/storage" 2>/dev/null || true
 }
 
 if [[ "$MODE" == "dev" ]]; then

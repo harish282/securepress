@@ -31,14 +31,14 @@ if (!defined('NIYIGUARD_STORAGE_PATH')) {
 }
 
 if (!defined('NIYIGUARD_LOG_PATH')) {
-    $niyiguard_uploads_base = defined('WP_CONTENT_DIR') ? WP_CONTENT_DIR . '/uploads' : NIYIGUARD_STORAGE_PATH;
-    if (function_exists('wp_upload_dir')) {
-        $niyiguard_upload_info = wp_upload_dir();
+    $niyiguard_log_path = NIYIGUARD_STORAGE_PATH . '/logs';
+    if (function_exists('wp_get_upload_dir')) {
+        $niyiguard_upload_info = wp_get_upload_dir();
         if (is_array($niyiguard_upload_info) && !empty($niyiguard_upload_info['basedir']) && is_string($niyiguard_upload_info['basedir'])) {
-            $niyiguard_uploads_base = rtrim($niyiguard_upload_info['basedir'], '/');
+            $niyiguard_log_path = rtrim($niyiguard_upload_info['basedir'], '/\\') . '/niyiguard/logs';
         }
     }
-    define('NIYIGUARD_LOG_PATH', $niyiguard_uploads_base . '/niyiguard/logs');
+    define('NIYIGUARD_LOG_PATH', $niyiguard_log_path);
 }
 
 if (!defined('NIYIGUARD_RESOURCES_PATH')) {
