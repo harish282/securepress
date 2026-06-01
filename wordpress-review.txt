@@ -1,92 +1,52 @@
-Hi, I changed the plugin slug to "niyiguard".
+🎉 harish282 - Congratulations!
 
-You changed the plugin display name to "NiyiGuard".
+The plugin was approved.	The Plugins Team volunteers are pleased to inform you that your plugin hosting request has been approved and the review process is now complete.
 
-It's time to move forward with the plugin review "harish282"!
+Please read this email carefully to understand the next steps. To allow us to focus on other plugin reviews, we kindly ask you to not reply to this email unless you encounter an issue after reviewing the provided links and following the suggested actions.
+Repository details
+SVN URL: https://plugins.svn.wordpress.org/niyiguard
+Using Subversion with the Plugin Directory
+Your account will be granted commit access to your Subversion (SVN) repository within one (1) hour.
+Directory details
+Public URL: https://wordpress.org/plugins/niyiguard. The page will not be visible until you upload the plugin files using SVN.
+How your readme.txt works (this controls your public page)
+Plugin Assets (banners, screenshots, icons shown in the public page)
+Due to directory size, it may take up to 72 hours for search results and your user profile to fully update.
 
-Your plugin is not yet ready to be approved, you are receiving this email because the volunteers have manually checked it and have found some issues in the code / functionality of your plugin.
+👉 Your next steps
 
-Please check this email thoroughly, address any issues listed, test your changes, and upload a corrected version of your code if all is well.
+Add plugins@wordpress.org to your email whitelist to ensure you receive important updates regarding your plugin. If we’re unable to contact you, your plugin may be closed.
+Follow https://make.wordpress.org/plugins for important announcements and updates.
+Upload your code to the directory via SVN once your access is activated.
+Continue reviewing the Plugin Guidelines — all plugins, developers, and support staff are required to follow them: https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/
 
-List of issues found
+🔧 SVN Credentials & Tips
 
+Our SVN system functions as a release system (not like Git), so you should only push ready-to-use versions of your plugin.
+Your SVN username is your WordPress.org username (not your email).
+Usernames are case-sensitive (e.g. JoDoe123HAY must be used exactly as registered).
+Your SVN password is separate from your WordPress.org password. You can set or retrieve it in the "Account & Security" section of your WordPress profile: https://profiles.wordpress.org/me/profile/edit/group/3/?screen=svn-password
+This is a common password for all your repositories.
+We cannot upload your code for you — you will need to use an SVN client of your choice.
+Please read all the links before asking us for help. Note that we will not be able to give you explicit usage directions, as many SVN clients are out there, and we are not experts in all of them.
 
-## AI generated output.
+📚 Helpful Resources
 
-We've detected files that appear to be the output of an AI tool used during development.
+Plugin Directory Guidelines
+Plugin Developer FAQ
+readme.txt standard & validator
+Block-Specific Plugin Guidelines
 
-These files usually include explanations or summaries of the changes made by the AI. That's great! We appreciate the effort you're putting into improving your plugin. However, those files aren't necessary for the plugin functionality.
+A Note on Security & Compliance
 
-They are also typically not useful as documentation because they tend to be partial and unconnected files that are also not maintained or updated.
+A successful review does not guarantee that your plugin is entirely free from security issues or guideline violations — we are all human and mistakes happen. We recommend you to keep the guidelines in mind and regularly checking your code with tools such as PHPCS+WPCS and Plugin Check to keep it secure, compliant, and compatible.
 
-We encourage you to use the available tools to improve your plugin. However, please remove any unnecessary AI-generated output. This will help keep the plugin package clean and reduce potential confusion for users and reviewers.
+From this point forward, we will not re-review your code manually unless a guideline or security issue is flagged by the community or the automated scanners. If an issue arises, your plugin may be temporarily or permanently closed and you will be notified about that. This is standard procedure for all plugins, and we appreciate your understanding.
 
-From your plugin:
-niyiguard/docs/STAGING_TEST_PLAN.md
+Please ensure ongoing compliance with all Plugin Guidelines. Violations — such as including non-GPL-compliant code, failing to maintain source code, tracking users without consent, intentionally restricting included functionality, or manipulating reviews — among others may result in permanent removal from the directory. Staying listed in the directory requires ongoing compliance with our guidelines. We want to keep you included. Ultimately, maintaining compliance is your responsibility.
 
+To ensure smooth processing for everyone, please do not reply to this email unless you have specific questions.
 
+Thank you for sharing your work with the WordPress community — best of luck with your plugin! 🚀
 
-## Determine files and directories locations correctly
-
-WordPress provides several functions for easily determining where a given file or directory lives.
-
-We detected that the way your plugin references some files, directories and/or URLs may not work with all WordPress setups. This happens because there are hardcoded references or you are using the WordPress internal constants.
-
-Let's improve it, please check out the following documentation:
-
-https://developer.wordpress.org/plugins/plugin-basics/determining-plugin-and-content-directories/
-
-It contains all the functions available to determine locations correctly.
-
-Most common cases in plugins can be solved using the following functions:
-For where your plugin is located: plugin_dir_path(), plugin_dir_url(), plugins_url()
-For the uploads directory: wp_upload_dir() (Note: If you need to write files, please do so in a folder in the uploads directory, not in your plugin directories).
-
-Example(s) from your plugin:
-bootstrap/constants.php:34 $niyiguard_uploads_base = defined('WP_CONTENT_DIR') ? WP_CONTENT_DIR . '/uploads' : NIYIGUARD_STORAGE_PATH;
- -----> WP_CONTENT_DIR
-# ✨ Building the uploads path as WP_CONTENT_DIR . '/uploads' hardcodes the uploads location and can break custom or multisite setups; use wp_upload_dir() instead
-
-
-
-ℹ️ If your plugin creates files, those should be saved in the uploads directory.
-
-In order to determine that directory location you can make use of the wp_upload_dir() function.
-
-Also, it's a good practice that you store those files under a folder with the same name as your plugin slug "niyiguard"
-
-Example:
-
-$path = wp_upload_dir()['basedir'] . '/niyiguard';
-
-
-Example(s) from your plugin:
-bootstrap/constants.php:34 $niyiguard_uploads_base = defined('WP_CONTENT_DIR') ? WP_CONTENT_DIR . '/uploads' : NIYIGUARD_STORAGE_PATH;
- -----> WP_CONTENT_DIR
- -----> '/uploads'
-
-
-
-👉 Continue with the review process.
-
-Read this email thoroughly.
-
-Take the time to thoroughly review and understand the issues identified. Examine the provided examples, consult the relevant documentation, and conduct any additional research necessary. The goal of our review process is to help you clearly understand the reported issues so you can resolve them effectively and prevent similar problems in future updates to your plugin.
-Note that there may be false positives - we are humans and make mistakes, we apologize if there is anything we have gotten wrong. If you have doubts you can ask us for clarification, when asking us please be clear, concise, direct and include an example.
-
-📋 Complete your checklist.
-
-✔️ I fixed all the issues in my plugin based on the feedback I received and my own review, as I know that the Plugins Team may not share all cases of the same issue. I am familiar with tools such as Plugin Check, PHPCS + WPCS, and similar utilities to help me identify problems in my code.
-✔️ I tested my updated plugin on a clean WordPress installation with WP_DEBUG set to true.
-⚠️ Do not skip this step. Testing is essential to make sure your fixes actually work and that you haven’t introduced new issues.
-
-✔️ I acknowledge that this review will be rejected if I overlook the issues or fail to test my code.
-✔️ I went to "Add your plugin" and uploaded the updated version. I can continue updating the code there throughout the review process — the team will always check the latest version.
-✔️ I replied to this email. I was concise and shared any clarifications or important context that the team needed to know.
-I didn't list all the changes, as the team will review the entire plugin again and that is not necessary at all.
-
-ℹ️ To help speed up the review process, we kindly ask that you carefully verify and address all reported issues before resubmitting your code.
-
-While we try to make our reviews as exhaustive as possible we, like you, are humans and may have missed things. We appreciate your patience and understanding.
-
-Review ID: R niyiguard/harish282/27May26/T2 29May26/4.0.1RC2 (P0TDX319097HGN)
+Review ID: APPROVED niyiguard/harish282/27May26/T4 31May26/4.0.2 (P0TDX319097HGN)
