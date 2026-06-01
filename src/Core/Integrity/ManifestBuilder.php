@@ -39,7 +39,7 @@ final class ManifestBuilder
         '/.git/',
         '/.svn/',
         '/vendor/bin/',
-        '/storage/cache/',
+        '/uploads/niyiguard/',
         '/cache/',
         '/wp-content/cache/',
         '/wp-content/upgrade/',
