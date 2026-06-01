@@ -202,7 +202,7 @@ This file may be updated between plugin releases. The version in the plugin pack
 
 For **privacy questions about a specific site** using NiyiGuard, contact that **site’s administrator**.
 
-For **questions about the plugin software**, use the support channel listed on the plugin’s WordPress.org page or repository (for example GitHub issues), not this file.
+For **questions about the plugin software**, use the support channel listed on the plugin’s [WordPress.org page](https://wordpress.org/plugins/niyiguard/) or [GitHub repository](https://github.com/harish282/securepress) (issues), not this file.
 
 ---
 

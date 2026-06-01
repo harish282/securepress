@@ -7,6 +7,11 @@
 # Usage (from repo root):
 #   bash scripts/build-release-zip.sh dev
 #     Copy runtime files to ../plugins/niyiguard (local WordPress plugins dir).
+#   bash scripts/build-release-zip.sh svn
+#     Copy runtime files to ../svn/niyiguard/trunk and ../svn/niyiguard/tags/<Version>
+#     (<Version> is read from the Version header in niyiguard.php).
+#   bash scripts/build-release-zip.sh svn /path/to/svn-checkout
+#     Same as svn, but use a custom SVN working copy root (expects trunk/ and tags/ inside).
 #   bash scripts/build-release-zip.sh prod
 #     Build a distribution zip in ./build (default).
 #   bash scripts/build-release-zip.sh prod /path/to/output-dir
@@ -23,13 +28,16 @@ MAIN_FILE="$ROOT/niyiguard.php"
 
 MODE="prod"
 OUT_DIR="$ROOT/build"
+SVN_ROOT=""
 
 if [[ $# -ge 1 ]]; then
   case "$1" in
-    dev|prod)
+    dev|prod|svn)
       MODE="$1"
       if [[ "$MODE" == "prod" && $# -ge 2 ]]; then
         OUT_DIR="$2"
+      elif [[ "$MODE" == "svn" && $# -ge 2 ]]; then
+        SVN_ROOT="$2"
       fi
       ;;
     *)
@@ -110,6 +118,33 @@ if [[ "$MODE" == "dev" ]]; then
   mkdir -p "$(dirname "$DEV_DEST")"
   stage_plugin_to "$DEV_DEST"
   echo "Deployed to $DEV_DEST (version $VERSION)"
+  exit 0
+fi
+
+if [[ "$MODE" == "svn" ]]; then
+  if [[ -z "$SVN_ROOT" ]]; then
+    SVN_ROOT="$(cd "$ROOT/../svn/$PLUGIN_SLUG" && pwd)"
+  else
+    SVN_ROOT="$(cd "$SVN_ROOT" && pwd)"
+  fi
+
+  for required in trunk tags; do
+    if [[ ! -d "$SVN_ROOT/$required" ]]; then
+      echo "error: expected SVN directory $SVN_ROOT/$required (checkout https://plugins.svn.wordpress.org/$PLUGIN_SLUG first)" >&2
+      exit 1
+    fi
+  done
+
+  TRUNK_DEST="$SVN_ROOT/trunk"
+  TAG_DEST="$SVN_ROOT/tags/$VERSION"
+
+  mkdir -p "$TAG_DEST"
+  stage_plugin_to "$TRUNK_DEST"
+  stage_plugin_to "$TAG_DEST"
+
+  echo "Deployed to $TRUNK_DEST (version $VERSION)"
+  echo "Deployed to $TAG_DEST"
+  echo "Next: cd $SVN_ROOT && svn status && svn commit -m \"Release $VERSION\""
   exit 0
 fi
 

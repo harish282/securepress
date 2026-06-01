@@ -14,6 +14,8 @@ Self-hosted WordPress security: 2FA, lockouts, audit log, integrity, headers, ra
 
 NiyiGuard hardens WordPress at the **application layer**: login abuse, accountability, file integrity, browser security headers, optional rate limits, and WooCommerce-specific threats. It **complements** your host firewall, CDN, or WAF — it does not replace them.
 
+Source code and issue tracker: https://github.com/harish282/securepress
+
 = Why install NiyiGuard? =
 
 * **Self-hosted** — security data stays on your server; no NiyiGuard account and no usage telemetry to the author.

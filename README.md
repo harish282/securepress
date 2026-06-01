@@ -1,5 +1,7 @@
 # NiyiGuard
 
+**Repository:** https://github.com/harish282/securepress
+
 **Self-hosted application-layer security for WordPress** — login hardening, audit trail, file integrity, security headers, optional rate limits, WooCommerce abuse protection, and a developer SDK. **Free, full feature set, no cloud account required.**
 
 Laravel-inspired architecture: middleware-style helpers, a `Security` facade, authentication hardening, audit logging, and WooCommerce protection pipelines.
