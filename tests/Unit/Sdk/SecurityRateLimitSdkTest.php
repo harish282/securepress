@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Sdk;
+namespace NiyiGuard\Tests\Unit\Sdk;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Container;
-use PressSentinel\Core\Http\RouteGuardRegistry;
-use PressSentinel\Core\Middleware\MiddlewareRegistry;
-use PressSentinel\Core\Middleware\MiddlewareStack;
-use PressSentinel\Core\RateLimit\ArrayStore;
-use PressSentinel\Core\RateLimit\RateLimitStoreInterface;
-use PressSentinel\Core\RateLimit\RateLimiter;
-use PressSentinel\Facades\Security;
-use PressSentinel\Sdk\Exceptions\RateLimitExceededException;
+use NiyiGuard\Core\Container;
+use NiyiGuard\Core\Http\RouteGuardRegistry;
+use NiyiGuard\Core\Middleware\MiddlewareRegistry;
+use NiyiGuard\Core\Middleware\MiddlewareStack;
+use NiyiGuard\Core\RateLimit\ArrayStore;
+use NiyiGuard\Core\RateLimit\RateLimitStoreInterface;
+use NiyiGuard\Core\RateLimit\RateLimiter;
+use NiyiGuard\Facades\Security;
+use NiyiGuard\Sdk\Exceptions\RateLimitExceededException;
 
 /**
- * @see \PressSentinel\Facades\Security::rateLimit
- * @see \PressSentinel\Facades\Security::throttle
- * @see \PressSentinel\Facades\Security::resetRateLimit
+ * @see \NiyiGuard\Facades\Security::rateLimit
+ * @see \NiyiGuard\Facades\Security::throttle
+ * @see \NiyiGuard\Facades\Security::resetRateLimit
  */
 final class SecurityRateLimitSdkTest extends TestCase
 {

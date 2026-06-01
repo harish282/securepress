@@ -2,41 +2,40 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin\Diagnostics;
+namespace NiyiGuard\Admin\Diagnostics;
 
-use PressSentinel\Admin\FeatureDescriptor;
-use PressSentinel\Admin\FeatureRegistry;
-use PressSentinel\Admin\MuLoaderStatus;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Audit\AuditLogPruner;
-use PressSentinel\Core\Audit\AuditLogSchema;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Auth\Sessions\SessionPruner;
-use PressSentinel\Core\Auth\Sessions\SessionSchema;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\SecurityHeadersDispatcher;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\Integrity\IntegrityScheduler;
-use PressSentinel\Core\Integrity\IntegritySchema;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\Recovery\SafeMode;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
-use PressSentinel\WooCommerce\WooCommerceModule;
+use NiyiGuard\Admin\FeatureDescriptor;
+use NiyiGuard\Admin\FeatureRegistry;
+use NiyiGuard\Admin\MuLoaderStatus;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Audit\AuditLogPruner;
+use NiyiGuard\Core\Audit\AuditLogSchema;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Auth\Sessions\SessionPruner;
+use NiyiGuard\Core\Auth\Sessions\SessionSchema;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\SecurityHeadersDispatcher;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\Integrity\IntegrityScheduler;
+use NiyiGuard\Core\Integrity\IntegritySchema;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\Recovery\SafeMode;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\WooCommerce\Admin\WooCommerceProtectionOptions;
+use NiyiGuard\WooCommerce\WooCommerceModule;
 
 /**
  * Read-only snapshot of plugin health for the admin diagnostics screen.
  */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- Diagnostics probes; table names from schema helpers only.
 final class HealthDiagnosticsCollector
 {
-    private const TRANSIENT_PROBE_PREFIX = 'presssentinel_health_probe_';
+    private const TRANSIENT_PROBE_PREFIX = 'niyiguard_health_probe_';
 
     public function __construct(
         private readonly FeatureRegistry $features,
-        private readonly LicenseManager $license,
         private readonly SecurityHeadersOptions $headersOptions,
         private readonly UrlDisguiseOptions $urlDisguiseOptions,
         private readonly RateLimitOptions $rateLimitOptions,
@@ -108,17 +107,6 @@ final class HealthDiagnosticsCollector
                     : 'Disabled.'),
         ];
 
-        $secret = (string) $this->config->get('licensing.secret', '');
-        $weakSecret = $secret === '' || $secret === 'change-me-in-production' || strlen($secret) < 24;
-        $rows[] = [
-            'key' => 'license_hmac_secret',
-            'label' => 'License HMAC secret',
-            'state' => $weakSecret ? 'blocked' : 'active',
-            'detail' => $weakSecret
-                ? 'Ensure the database option presssentinel_license_hmac_secret is writable, or set PRESS_SENTINEL_LICENSE_SECRET (24+ chars) via wp-config.php, .env, or environment.'
-                : 'Strong secret resolved (auto-generated option, constant, or environment).',
-        ];
-
         $rows[] = [
             'key' => 'rate_limit_http',
             'label' => 'Global rate limiting (HTTP)',
@@ -128,7 +116,7 @@ final class HealthDiagnosticsCollector
                 : 'Disabled — enable from the dashboard or Rate Limiting settings after tuning limit/window.',
         ];
 
-        if ($this->license->isPro() && $this->wcOptions->isEnabled()) {
+        if ($this->wcOptions->isEnabled()) {
             $wc = $this->wcOptions->all();
             $checkout = is_array($wc['checkout'] ?? null) ? $wc['checkout'] : [];
             $parts = ['checkout', 'registration', 'cart', 'api'];
@@ -162,10 +150,7 @@ final class HealthDiagnosticsCollector
         $state = 'inactive';
         $detail = 'Disabled in settings.';
 
-        if ($enabled && $feature->isPro && !$this->license->isPro()) {
-            $state = 'blocked';
-            $detail = 'Enabled in settings but requires an active Pro license to run.';
-        } elseif ($enabled) {
+        if ($enabled) {
             $state = 'active';
             $detail = 'Enabled and eligible to run.';
         }
@@ -207,8 +192,7 @@ final class HealthDiagnosticsCollector
         $authEnabled = (bool) ($authOpts['enabled'] ?? true);
         $sessionsOn = $authEnabled && (bool) ($authOpts['sessions']['enabled'] ?? true);
 
-        $wcCanRun = $this->license->isPro()
-            && $this->wcOptions->isEnabled()
+        $wcCanRun = $this->wcOptions->isEnabled()
             && (class_exists('WooCommerce', false) || class_exists('WC_Cart', false));
 
         $integrityConfig = $this->integrityOptions->all();
@@ -243,7 +227,7 @@ final class HealthDiagnosticsCollector
                 'hook' => 'login_form_sp_2fa',
                 'kind' => 'action',
                 'expected' => $authEnabled,
-                'note' => 'PressSentinel-specific login form action.',
+                'note' => 'NiyiGuard-specific login form action.',
             ],
             [
                 'label' => 'Auth hardening (lockout pre-check)',
@@ -257,7 +241,7 @@ final class HealthDiagnosticsCollector
                 'hook' => SessionPruner::CRON_HOOK,
                 'kind' => 'action',
                 'expected' => $sessionsOn,
-                'note' => 'Daily cron for presssentinel_sessions rows.',
+                'note' => 'Daily cron for niyiguard_sessions rows.',
             ],
             [
                 'label' => 'File integrity scan',
@@ -433,6 +417,7 @@ final class HealthDiagnosticsCollector
             return false;
         }
 
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching -- Diagnostics probe; table name from schema helpers.
         $found = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table));
 
         return is_string($found) && $found === $table;
@@ -446,6 +431,7 @@ final class HealthDiagnosticsCollector
         }
 
         // Table name comes from our schema helpers only — not user input.
+        // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
         $raw = $wpdb->get_var("SELECT COUNT(*) FROM `{$table}`");
         if (!is_numeric($raw)) {
             return null;

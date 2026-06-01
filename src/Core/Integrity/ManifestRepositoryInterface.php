@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity;
+namespace NiyiGuard\Core\Integrity;
 
 /**
  * Persists scoped baselines (manifests) so each scan compares the live filesystem
@@ -10,7 +10,7 @@ namespace PressSentinel\Core\Integrity;
  *
  * Implementations:
  *  - {@see ArrayManifestRepository} — in-memory, used by tests.
- *  - {@see WpdbManifestRepository}  — production, backed by `wp_presssentinel_integrity_baselines`.
+ *  - {@see WpdbManifestRepository}  — production, backed by `wp_niyiguard_integrity_baselines`.
  *
  * The contract is intentionally narrow: save / load / delete by scope. The scope string
  * is the only key — there is never more than one baseline per scope. Re-running the

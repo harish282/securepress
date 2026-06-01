@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Pipelines;
+namespace NiyiGuard\WooCommerce\Pipelines;
 
 /**
  * Pipeline configured for WooCommerce cart abuse protection.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Url;
+namespace NiyiGuard\Core\Url;
 
 /**
  * Supplies the HMAC secret used by {@see UrlSigner}.

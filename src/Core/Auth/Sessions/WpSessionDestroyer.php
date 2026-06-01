@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Sessions;
+namespace NiyiGuard\Core\Auth\Sessions;
 
 /**
  * Destroys the matching entry in WordPress core's session token store so the user's

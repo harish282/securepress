@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Pipelines;
+namespace NiyiGuard\WooCommerce\Pipelines;
 
 /**
  * The configured pipeline for WooCommerce checkout protection.

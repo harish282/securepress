@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Url;
+namespace NiyiGuard\Core\Url;
 
 /**
  * Persistence contract for one-time-use signed-URL nonces.

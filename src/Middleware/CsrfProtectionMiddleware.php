@@ -2,12 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Middleware;
+namespace NiyiGuard\Middleware;
 
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Core\Middleware\MiddlewareInterface;
-use PressSentinel\Core\Support\WpHelper;
+// phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- Locates CSRF tokens via WpHelper; wp_verify_nonce() validates them.
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Core\Middleware\MiddlewareInterface;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Verifies WordPress nonces on state-changing requests.
@@ -35,7 +36,7 @@ use PressSentinel\Core\Support\WpHelper;
  */
 final class CsrfProtectionMiddleware implements MiddlewareInterface
 {
-    public const DEFAULT_ACTION = 'presssentinel_csrf';
+    public const DEFAULT_ACTION = 'niyiguard_csrf';
 
     public const REST_ACTION = 'wp_rest';
 
@@ -174,12 +175,7 @@ final class CsrfProtectionMiddleware implements MiddlewareInterface
             return strtoupper($request['method']);
         }
 
-        $serverMethod = $_SERVER['REQUEST_METHOD'] ?? null;
-        if (is_string($serverMethod) && $serverMethod !== '') {
-            return strtoupper($serverMethod);
-        }
-
-        return 'GET';
+        return WpHelper::getRequestMethod();
     }
 
     /**
@@ -200,9 +196,9 @@ final class CsrfProtectionMiddleware implements MiddlewareInterface
         }
 
         foreach (self::HEADER_SERVER_KEYS as $key) {
-            $value = $_SERVER[$key] ?? null;
-            if (is_string($value) && $value !== '') {
-                return WpHelper::unslash($value);
+            $value = WpHelper::getServerString($key);
+            if ($value !== null) {
+                return $value;
             }
         }
 
@@ -217,9 +213,9 @@ final class CsrfProtectionMiddleware implements MiddlewareInterface
         }
 
         foreach (self::BODY_KEYS as $field) {
-            $value = $_POST[$field] ?? null;
-            if (is_string($value) && $value !== '') {
-                return WpHelper::unslash($value);
+            $value = WpHelper::getPostString($field);
+            if ($value !== '') {
+                return $value;
             }
         }
 
@@ -234,9 +230,9 @@ final class CsrfProtectionMiddleware implements MiddlewareInterface
         }
 
         foreach (self::QUERY_KEYS as $field) {
-            $value = $_GET[$field] ?? null;
-            if (is_string($value) && $value !== '') {
-                return WpHelper::unslash($value);
+            $value = WpHelper::getQueryString($field);
+            if ($value !== '') {
+                return $value;
             }
         }
 

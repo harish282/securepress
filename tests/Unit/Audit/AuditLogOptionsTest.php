@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Audit;
+namespace NiyiGuard\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Audit\AuditEventLevel;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Audit\AuditEventLevel;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * @see \PressSentinel\Core\Audit\AuditLogOptions
+ * @see \NiyiGuard\Core\Audit\AuditLogOptions
  */
 final class AuditLogOptionsTest extends TestCase
 {

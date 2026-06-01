@@ -1,12 +1,9 @@
-# Environment files
-.env
-.env.local
-.env.*.local
-
 # Runtime artifacts
 storage/logs/*.log
 storage/cache/*
 storage/tmp/*
+!storage/tmp/index.html
+!storage/tmp/.gitkeep
 
 # Keep storage folders when needed
 !storage/logs/.gitkeep
@@ -16,6 +13,9 @@ storage/tmp/*
 # Dependency directories
 vendor/
 node_modules/
+cypress.env.json
+cypress/screenshots/
+cypress/videos/
 
 # Release artifacts
 build/

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Services;
+namespace NiyiGuard\WooCommerce\Services;
 
 /**
  * Produces a stable, deterministic hash of a cart's *content*, independent of order

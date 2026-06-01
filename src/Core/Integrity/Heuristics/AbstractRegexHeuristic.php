@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity\Heuristics;
+namespace NiyiGuard\Core\Integrity\Heuristics;
 
 /**
  * Base class for heuristics that look for one or more regex patterns in the file body.

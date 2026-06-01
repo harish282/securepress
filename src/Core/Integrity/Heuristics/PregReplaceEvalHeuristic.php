@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity\Heuristics;
+namespace NiyiGuard\Core\Integrity\Heuristics;
 
-use PressSentinel\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingSeverity;
 
 /**
  * Detects the `preg_replace('/pattern/e', ...)` form, where the `e` modifier silently

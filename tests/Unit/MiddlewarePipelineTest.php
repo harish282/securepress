@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit;
+namespace NiyiGuard\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Middleware\MiddlewareInterface;
-use PressSentinel\Core\Middleware\MiddlewarePipeline;
+use NiyiGuard\Core\Middleware\MiddlewareInterface;
+use NiyiGuard\Core\Middleware\MiddlewarePipeline;
 
 final class MiddlewarePipelineTest extends TestCase
 {

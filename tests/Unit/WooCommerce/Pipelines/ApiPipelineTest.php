@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\WooCommerce\Pipelines;
+namespace NiyiGuard\Tests\Unit\WooCommerce\Pipelines;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
-use PressSentinel\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware;
-use PressSentinel\WooCommerce\Pipelines\ApiPipeline;
-use PressSentinel\WooCommerce\Storage\ArrayAbuseCounterStore;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Middleware\Api\ApiRateLimitMiddleware;
+use NiyiGuard\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware;
+use NiyiGuard\WooCommerce\Pipelines\ApiPipeline;
+use NiyiGuard\WooCommerce\Storage\ArrayAbuseCounterStore;
 
 /**
- * @see \PressSentinel\WooCommerce\Pipelines\ApiPipeline
- * @see \PressSentinel\WooCommerce\Middleware\Api\ApiRateLimitMiddleware
- * @see \PressSentinel\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware
+ * @see \NiyiGuard\WooCommerce\Pipelines\ApiPipeline
+ * @see \NiyiGuard\WooCommerce\Middleware\Api\ApiRateLimitMiddleware
+ * @see \NiyiGuard\WooCommerce\Middleware\Api\SuspiciousRequestMiddleware
  */
 final class ApiPipelineTest extends TestCase
 {

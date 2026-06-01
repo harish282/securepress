@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\View;
+namespace NiyiGuard\Core\View;
 
 use RuntimeException;
 
@@ -17,6 +17,8 @@ final class View
      */
     public function render(string $view, array $data = []): void
     {
+        // Views escape their own output; this emits the composed template markup.
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
         echo $this->renderToString($view, $data);
     }
 
@@ -45,6 +47,7 @@ final class View
         $path = rtrim($this->basePath, '/') . '/' . $relative . '.php';
 
         if (!is_readable($path)) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Internal diagnostic, not rendered in admin HTML.
             throw new RuntimeException(sprintf('View "%s" was not found.', $view));
         }
 

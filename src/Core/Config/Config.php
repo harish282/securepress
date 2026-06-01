@@ -2,19 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Config;
+namespace NiyiGuard\Core\Config;
 
-use PressSentinel\Core\Licensing\LicenseHmacSecretProvisioner;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
- * Merged file config + environment.
+ * Loads merged settings from {@see NIYIGUARD_CONFIG_PATH}/plugin.php.
  *
- * Licensing secret resolution (first match wins): non-empty
- * {@see PRESS_SENTINEL_LICENSE_SECRET} constant → strong value in option
- * {@see LicenseHmacSecretProvisioner::OPTION_NAME} (auto-generated, plug-and-play)
- * → `PRESS_SENTINEL_LICENSE_SECRET` environment variable → shipped file default →
- * {@see apply_filters()} for hook `presssentinel_licensing_secret`.
+ * Internal secret resolution: `NIYIGUARD_INTERNAL_SECRET` constant →
+ * `security.internal_secret` in config → filter `niyiguard_internal_secret`.
  */
 final class Config
 {
@@ -50,116 +46,85 @@ final class Config
      */
     private function load(): array
     {
-        $file = PRESS_SENTINEL_CONFIG_PATH . '/plugin.php';
+        $file = NIYIGUARD_CONFIG_PATH . '/plugin.php';
         $config = is_readable($file) ? require $file : [];
 
         if (!is_array($config)) {
             $config = [];
         }
 
-        $config['app']['env'] = $this->env('PRESS_SENTINEL_APP_ENV', (string) ($config['app']['env'] ?? 'production'));
-        $config['app']['debug'] = filter_var(
-            $this->env('PRESS_SENTINEL_DEBUG', ($config['app']['debug'] ?? false) ? 'true' : 'false'),
-            FILTER_VALIDATE_BOOL
-        );
-        $config['requirements']['php'] = $this->env('PRESS_SENTINEL_MIN_PHP_VERSION', (string) ($config['requirements']['php'] ?? '8.2.0'));
-        $config['requirements']['wordpress'] = $this->env('PRESS_SENTINEL_MIN_WP_VERSION', (string) ($config['requirements']['wordpress'] ?? '6.4'));
-        $config['logging']['channel'] = $this->env('PRESS_SENTINEL_LOG_CHANNEL', (string) ($config['logging']['channel'] ?? 'file'));
-        $config['logging']['level'] = $this->env('PRESS_SENTINEL_LOG_LEVEL', (string) ($config['logging']['level'] ?? 'info'));
-        $config['logging']['file'] = $this->env('PRESS_SENTINEL_LOG_FILE', (string) ($config['logging']['file'] ?? 'presssentinel.log'));
-        $config['signed_url']['ttl_default'] = (int) $this->env(
-            'PRESS_SENTINEL_SIGNED_URL_TTL',
-            (string) ($config['signed_url']['ttl_default'] ?? 3600)
-        );
+        $config['app']['env'] = (string) ($config['app']['env'] ?? 'production');
+        $config['app']['debug'] = (bool) ($config['app']['debug'] ?? false);
+        $config['requirements']['php'] = (string) ($config['requirements']['php'] ?? '8.2.0');
+        $config['requirements']['wordpress'] = (string) ($config['requirements']['wordpress'] ?? '6.4');
+        $config['logging']['channel'] = (string) ($config['logging']['channel'] ?? 'file');
+        $config['logging']['level'] = (string) ($config['logging']['level'] ?? 'info');
+        $config['logging']['file'] = (string) ($config['logging']['file'] ?? 'niyiguard.log');
+        $config['signed_url']['ttl_default'] = (int) ($config['signed_url']['ttl_default'] ?? 3600);
+        $config['signed_url']['secret'] = (string) ($config['signed_url']['secret'] ?? '');
 
-        if (!is_array($config['pro_license'] ?? null)) {
-            $config['pro_license'] = [];
+        if (!is_array($config['support'] ?? null)) {
+            $config['support'] = [];
         }
-
-        $earlyDefault = ($config['pro_license']['early_access'] ?? false) ? 'true' : 'false';
-        $config['pro_license']['early_access'] = filter_var(
-            $this->env('PRESS_SENTINEL_EARLY_ACCESS', $earlyDefault),
-            FILTER_VALIDATE_BOOL
+        $config['support']['review_url'] = (string) ($config['support']['review_url'] ?? '');
+        $config['support']['donation_url'] = (string) ($config['support']['donation_url'] ?? '');
+        $config['support']['donation_label'] = (string) (
+            $config['support']['donation_label'] ?? 'Support on Ko-fi'
         );
 
-        if (!is_array($config['pro_license']['beta_trial'] ?? null)) {
-            $config['pro_license']['beta_trial'] = [];
+        if (!is_array($config['recovery'] ?? null)) {
+            $config['recovery'] = [];
         }
+        $config['recovery']['safe_mode'] = (bool) ($config['recovery']['safe_mode'] ?? false);
 
-        $betaTrialDefault = ($config['pro_license']['beta_trial']['enabled'] ?? false) ? 'true' : 'false';
-        $config['pro_license']['beta_trial']['enabled'] = filter_var(
-            $this->env('PRESS_SENTINEL_BETA_TRIAL_ENABLED', $betaTrialDefault),
-            FILTER_VALIDATE_BOOL
-        );
-        $trialDays = (int) $this->env(
-            'PRESS_SENTINEL_BETA_TRIAL_DURATION_DAYS',
-            (string) ($config['pro_license']['beta_trial']['duration_days'] ?? 182)
-        );
-        $config['pro_license']['beta_trial']['duration_days'] = max(1, min(730, $trialDays));
-
-        if (!is_array($config['licensing'] ?? null)) {
-            $config['licensing'] = [];
+        if (!is_array($config['security'] ?? null)) {
+            $config['security'] = [];
         }
-        $defaultLicenseSecret = (string) ($config['licensing']['secret'] ?? 'change-me-in-production');
-        $secret = $this->resolveLicensingSecret($defaultLicenseSecret);
+        $defaultSecret = (string) ($config['security']['internal_secret'] ?? 'change-me-in-production');
+        $secret = $this->resolveInternalSecret($defaultSecret);
         if (\function_exists('apply_filters')) {
-            $filtered = \apply_filters('presssentinel_licensing_secret', $secret);
+            $filtered = \apply_filters('niyiguard_internal_secret', $secret);
             if (is_string($filtered) && $filtered !== '') {
                 $secret = $filtered;
             }
         }
-        $config['licensing']['secret'] = $secret;
+        $config['security']['internal_secret'] = $secret;
 
         if (is_array($config['audit_log'] ?? null)) {
             $audit = $config['audit_log'];
             $config['audit_log']['retention_days'] = max(
                 0,
-                min(3650, (int) $this->env(
-                    'PRESS_SENTINEL_AUDIT_RETENTION_DAYS',
-                    (string) ($audit['retention_days'] ?? 90)
-                ))
+                min(3650, (int) ($audit['retention_days'] ?? 90))
             );
-            $config['audit_log']['auto_prune_enabled'] = filter_var(
-                $this->env(
-                    'PRESS_SENTINEL_AUDIT_AUTO_PRUNE',
-                    ($audit['auto_prune_enabled'] ?? true) ? 'true' : 'false'
-                ),
-                FILTER_VALIDATE_BOOL
-            );
-            $config['audit_log']['min_storage_level'] = $this->env(
-                'PRESS_SENTINEL_AUDIT_MIN_STORAGE_LEVEL',
-                (string) ($audit['min_storage_level'] ?? 'notice')
-            );
+            $config['audit_log']['auto_prune_enabled'] = (bool) ($audit['auto_prune_enabled'] ?? true);
+            $config['audit_log']['min_storage_level'] = (string) ($audit['min_storage_level'] ?? 'notice');
+        }
+
+        if (\function_exists('apply_filters')) {
+            $support = $config['support'];
+            $filteredSupport = \apply_filters('niyiguard_support', $support);
+            if (is_array($filteredSupport)) {
+                $config['support'] = array_merge($support, $filteredSupport);
+            }
+
+            $filtered = \apply_filters('niyiguard_config', $config);
+            if (is_array($filtered)) {
+                $config = $filtered;
+            }
         }
 
         return $config;
     }
 
-    private function resolveLicensingSecret(string $defaultLicenseSecret): string
+    private function resolveInternalSecret(string $defaultSecret): string
     {
-        if (\defined('PRESS_SENTINEL_LICENSE_SECRET')) {
-            $fromConstant = \constant('PRESS_SENTINEL_LICENSE_SECRET');
+        if (\defined('NIYIGUARD_INTERNAL_SECRET')) {
+            $fromConstant = \constant('NIYIGUARD_INTERNAL_SECRET');
             if (is_string($fromConstant) && $fromConstant !== '') {
                 return $fromConstant;
             }
         }
 
-        $dbRaw = WpHelper::getOption(LicenseHmacSecretProvisioner::OPTION_NAME, '');
-        $dbSecret = is_string($dbRaw) ? trim($dbRaw) : '';
-        if (LicenseHmacSecretProvisioner::isStoredSecretStrong($dbSecret)) {
-            return $dbSecret;
-        }
-
-        return $this->env('PRESS_SENTINEL_LICENSE_SECRET', $defaultLicenseSecret);
-    }
-
-    private function env(string $name, string $default): string
-    {
-        $value = getenv($name);
-        if ($value === false || $value === '') {
-            return $default;
-        }
-
-        return $value;
+        return $defaultSecret;
     }
 }

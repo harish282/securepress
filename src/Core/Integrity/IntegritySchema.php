@@ -2,29 +2,30 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity;
+namespace NiyiGuard\Core\Integrity;
 
 /**
  * DDL + idempotent migration for the two integrity-monitoring tables.
  *
  * Two tables instead of one because their access patterns are completely different:
  *
- *  - `wp_presssentinel_integrity_baselines` is a wide, write-heavy table: every scan
+ *  - `wp_niyiguard_integrity_baselines` is a wide, write-heavy table: every scan
  *    re-writes the entire baseline rows for one scope. Indexed by `(scope, path)` so
  *    diff lookups are O(log n).
- *  - `wp_presssentinel_integrity_findings` is append-mostly and read by the admin UI.
+ *  - `wp_niyiguard_integrity_findings` is append-mostly and read by the admin UI.
  *    Indexed by `(severity, created_at)` for the default "highest severity, newest
  *    first" listing.
  *
  * Both follow the same versioning convention as the other plugin schemas — a stored
  * `..._db_version` option is compared on boot, `dbDelta` only runs when it lags.
  */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Schema DDL via dbDelta; DROP uses internal table names only.
 final class IntegritySchema
 {
-    public const BASELINE_TABLE = 'presssentinel_integrity_baselines';
-    public const FINDING_TABLE = 'presssentinel_integrity_findings';
+    public const BASELINE_TABLE = 'niyiguard_integrity_baselines';
+    public const FINDING_TABLE = 'niyiguard_integrity_findings';
 
-    public const VERSION_OPTION = 'presssentinel_integrity_db_version';
+    public const VERSION_OPTION = 'niyiguard_integrity_db_version';
     public const VERSION = 1;
 
     public function baselineTable(): string
@@ -71,8 +72,7 @@ final class IntegritySchema
         $table = $this->baselineTable();
         $charsetCollate = $this->charsetCollate();
 
-        return <<<SQL
-CREATE TABLE {$table} (
+        return 'CREATE TABLE ' . $table . ' (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     scope VARCHAR(32) NOT NULL,
     path VARCHAR(512) NOT NULL,
@@ -83,8 +83,7 @@ CREATE TABLE {$table} (
     PRIMARY KEY  (id),
     UNIQUE KEY scope_path (scope, path(190)),
     KEY scope_idx (scope)
-) {$charsetCollate};
-SQL;
+) ' . $charsetCollate . ';';
     }
 
     public function findingSql(): string
@@ -92,8 +91,7 @@ SQL;
         $table = $this->findingTable();
         $charsetCollate = $this->charsetCollate();
 
-        return <<<SQL
-CREATE TABLE {$table} (
+        return 'CREATE TABLE ' . $table . ' (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     scope VARCHAR(32) NOT NULL,
     type VARCHAR(40) NOT NULL,
@@ -108,8 +106,7 @@ CREATE TABLE {$table} (
     KEY scope_type_idx (scope, type),
     KEY created_at_idx (created_at),
     KEY reviewed_idx (reviewed_at)
-) {$charsetCollate};
-SQL;
+) ' . $charsetCollate . ';';
     }
 
     private function prefix(): string

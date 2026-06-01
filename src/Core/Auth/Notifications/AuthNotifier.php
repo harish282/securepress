@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Notifications;
+namespace NiyiGuard\Core\Auth\Notifications;
 
-use PressSentinel\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\LoggerInterface;
 
 /**
  * Renders and dispatches authentication-related emails.
@@ -45,18 +45,15 @@ final class AuthNotifier
         $minutes = max(1, (int) ceil($ttlSeconds / 60));
         $subject = sprintf('[%s] Your verification code: %s', $this->siteName, $code);
 
-        $body = <<<TXT
-Hi {$userDisplayName},
-
-Your verification code for {$this->siteName} is:
-
-    {$code}
-
-This code is valid for {$minutes} minute(s). If you didn't request it, please change your password immediately.
-
-— {$this->siteName}
-{$this->siteUrl}
-TXT;
+        $body = sprintf(
+            "Hi %s,\n\nYour verification code for %s is:\n\n    %s\n\nThis code is valid for %d minute(s). If you didn't request it, please change your password immediately.\n\n— %s\n%s",
+            $userDisplayName,
+            $this->siteName,
+            $code,
+            $minutes,
+            $this->siteName,
+            $this->siteUrl
+        );
 
         return $this->dispatch($to, $subject, $body, 'otp_code');
     }
@@ -66,16 +63,14 @@ TXT;
         $subject = sprintf('[%s] Two-factor authentication enabled', $this->siteName);
         $methodLabel = $method === 'totp' ? 'authenticator app' : 'email one-time code';
 
-        $body = <<<TXT
-Hi {$userDisplayName},
-
-Two-factor authentication ({$methodLabel}) was just enabled on your account at {$this->siteName}.
-
-If this wasn't you, contact a site administrator immediately and reset your password — your account credentials may be compromised.
-
-— {$this->siteName}
-{$this->siteUrl}
-TXT;
+        $body = sprintf(
+            "Hi %s,\n\nTwo-factor authentication (%s) was just enabled on your account at %s.\n\nIf this wasn't you, contact a site administrator immediately and reset your password — your account credentials may be compromised.\n\n— %s\n%s",
+            $userDisplayName,
+            $methodLabel,
+            $this->siteName,
+            $this->siteName,
+            $this->siteUrl
+        );
 
         return $this->dispatch($to, $subject, $body, 'two_factor_enabled');
     }
@@ -84,16 +79,13 @@ TXT;
     {
         $subject = sprintf('[%s] Two-factor authentication disabled', $this->siteName);
 
-        $body = <<<TXT
-Hi {$userDisplayName},
-
-Two-factor authentication was just disabled on your account at {$this->siteName}.
-
-If this wasn't you, contact a site administrator immediately and reset your password — your account credentials may be compromised.
-
-— {$this->siteName}
-{$this->siteUrl}
-TXT;
+        $body = sprintf(
+            "Hi %s,\n\nTwo-factor authentication was just disabled on your account at %s.\n\nIf this wasn't you, contact a site administrator immediately and reset your password — your account credentials may be compromised.\n\n— %s\n%s",
+            $userDisplayName,
+            $this->siteName,
+            $this->siteName,
+            $this->siteUrl
+        );
 
         return $this->dispatch($to, $subject, $body, 'two_factor_disabled');
     }
@@ -102,16 +94,14 @@ TXT;
     {
         $subject = sprintf('[%s] Recovery code used', $this->siteName);
 
-        $body = <<<TXT
-Hi {$userDisplayName},
-
-A recovery code was just used to sign in to your {$this->siteName} account. {$remainingCodes} code(s) remain.
-
-If this wasn't you, change your password and regenerate your recovery codes immediately.
-
-— {$this->siteName}
-{$this->siteUrl}
-TXT;
+        $body = sprintf(
+            "Hi %s,\n\nA recovery code was just used to sign in to your %s account. %d code(s) remain.\n\nIf this wasn't you, change your password and regenerate your recovery codes immediately.\n\n— %s\n%s",
+            $userDisplayName,
+            $this->siteName,
+            $remainingCodes,
+            $this->siteName,
+            $this->siteUrl
+        );
 
         return $this->dispatch($to, $subject, $body, 'recovery_code_used');
     }
@@ -123,20 +113,16 @@ TXT;
         $ipLine = $ip ?? 'unknown';
         $uaLine = $userAgent ?? 'unknown';
 
-        $body = <<<TXT
-Hi {$userDisplayName},
-
-We noticed a sign-in to your {$this->siteName} account from a device or location we don't recognise:
-
-    Time:       {$when}
-    IP:         {$ipLine}
-    Browser:    {$uaLine}
-
-If this was you, you can ignore this message. If it wasn't, change your password and review your active sessions immediately.
-
-— {$this->siteName}
-{$this->siteUrl}
-TXT;
+        $body = sprintf(
+            "Hi %s,\n\nWe noticed a sign-in to your %s account from a device or location we don't recognise:\n\n    Time:       %s\n    IP:         %s\n    Browser:    %s\n\nIf this was you, you can ignore this message. If it wasn't, change your password and review your active sessions immediately.\n\n— %s\n%s",
+            $userDisplayName,
+            $this->siteName,
+            $when,
+            $ipLine,
+            $uaLine,
+            $this->siteName,
+            $this->siteUrl
+        );
 
         return $this->dispatch($to, $subject, $body, 'new_device_login');
     }
@@ -147,19 +133,15 @@ TXT;
         $unlockAt = gmdate('Y-m-d H:i', $unlockTimestamp) . ' UTC';
         $ipLine = $ip ?? 'unknown';
 
-        $body = <<<TXT
-Hi {$userDisplayName},
-
-We've temporarily locked sign-ins to your {$this->siteName} account because of repeated failed login attempts.
-
-    Locked until:        {$unlockAt}
-    Most recent IP:      {$ipLine}
-
-If this was you, please wait until the lockout expires or use the password-reset flow. If it wasn't, your account credentials may be under attack — change your password as soon as the lockout expires.
-
-— {$this->siteName}
-{$this->siteUrl}
-TXT;
+        $body = sprintf(
+            "Hi %s,\n\nWe've temporarily locked sign-ins to your %s account because of repeated failed login attempts.\n\n    Locked until:        %s\n    Most recent IP:      %s\n\nIf this was you, please wait until the lockout expires or use the password-reset flow. If it wasn't, your account credentials may be under attack — change your password as soon as the lockout expires.\n\n— %s\n%s",
+            $userDisplayName,
+            $this->siteName,
+            $unlockAt,
+            $ipLine,
+            $this->siteName,
+            $this->siteUrl
+        );
 
         return $this->dispatch($to, $subject, $body, 'account_locked');
     }

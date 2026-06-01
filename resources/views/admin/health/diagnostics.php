@@ -1,8 +1,14 @@
 <?php
 
 declare(strict_types=1);
+if (! defined('ABSPATH')) {
+    exit;
+}
 
-use PressSentinel\Core\Support\WpHelper;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
+
+
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * @var array{
@@ -26,7 +32,7 @@ $badge = static function (string $status, string $label): string {
 
     return '<span style="display:inline-block;padding:2px 10px;border-radius:10px;background:'
         . $styles[0] . ';color:' . $styles[1] . ';font-weight:600;font-size:12px;">'
-        . WpHelper::escapeHtml($label) . '</span>';
+        . esc_html($label) . '</span>';
 };
 
 $hookLabel = static function (string $status): string {
@@ -65,14 +71,14 @@ $protectionLabel = static function (string $state): string {
     <h1>Health diagnostics</h1>
     <p style="max-width:720px;color:#50575e;">
         Read-only snapshot for support and pre-launch checks. Refreshed on each page load
-        (<?php echo WpHelper::escapeHtml(gmdate('Y-m-d H:i:s', $report['generated_at']) . ' UTC'); ?>).
+        (<?php echo esc_html(gmdate('Y-m-d H:i:s', $report['generated_at']) . ' UTC'); ?>).
     </p>
 
     <?php if ($report['safe_mode']['active']) : ?>
         <div class="notice notice-warning" style="margin:12px 0;">
             <p><strong>Safe mode is active.</strong>
-                Emergency bypasses: <?php echo WpHelper::escapeHtml(implode(', ', $report['safe_mode']['bypasses'])); ?>.
-                Remove <code>PRESS_SENTINEL_SAFE_MODE</code> from wp-config or <code>.env</code> when recovery is complete.</p>
+                Emergency bypasses: <?php echo esc_html(implode(', ', $report['safe_mode']['bypasses'])); ?>.
+                Remove <code>NIYIGUARD_SAFE_MODE</code> from wp-config or set <code>recovery.safe_mode</code> to <code>false</code> in <code>config/plugin.php</code> when recovery is complete.</p>
         </div>
     <?php endif; ?>
 
@@ -88,9 +94,9 @@ $protectionLabel = static function (string $state): string {
         <tbody>
         <?php foreach ($report['protections'] as $row) : ?>
             <tr>
-                <td><strong><?php echo WpHelper::escapeHtml($row['label']); ?></strong></td>
-                <td><?php echo $badge($row['state'], $protectionLabel($row['state'])); ?></td>
-                <td style="color:#50575e;"><?php echo WpHelper::escapeHtml($row['detail']); ?></td>
+                <td><strong><?php echo esc_html($row['label']); ?></strong></td>
+                <td><?php echo wp_kses_post($badge($row['state'], $protectionLabel($row['state']))); ?></td>
+                <td style="color:#50575e;"><?php echo esc_html($row['detail']); ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>
@@ -115,13 +121,13 @@ $protectionLabel = static function (string $state): string {
         <?php foreach ($report['hooks'] as $row) : ?>
             <tr>
                 <td>
-                    <strong><?php echo WpHelper::escapeHtml($row['label']); ?></strong>
-                    <div style="color:#787c82;font-size:12px;margin-top:4px;"><?php echo WpHelper::escapeHtml($row['note']); ?></div>
+                    <strong><?php echo esc_html($row['label']); ?></strong>
+                    <div style="color:#787c82;font-size:12px;margin-top:4px;"><?php echo esc_html($row['note']); ?></div>
                 </td>
-                <td><code><?php echo WpHelper::escapeHtml($row['kind'] . ':' . $row['hook']); ?></code></td>
-                <td><?php echo $row['expected'] ? 'Yes' : 'No'; ?></td>
-                <td><?php echo $row['registered'] ? 'Yes' : 'No'; ?></td>
-                <td><?php echo $badge($row['status'], $hookLabel($row['status'])); ?></td>
+                <td><code><?php echo esc_html($row['kind'] . ':' . $row['hook']); ?></code></td>
+                <td><?php echo esc_html($row['expected'] ? 'Yes' : 'No'); ?></td>
+                <td><?php echo esc_html($row['registered'] ? 'Yes' : 'No'); ?></td>
+                <td><?php echo wp_kses_post($badge($row['status'], $hookLabel($row['status']))); ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>
@@ -143,13 +149,13 @@ $protectionLabel = static function (string $state): string {
         <tbody>
         <?php foreach ($report['storage'] as $row) : ?>
             <tr>
-                <td><strong><?php echo WpHelper::escapeHtml($row['label']); ?></strong></td>
-                <td><code><?php echo WpHelper::escapeHtml($row['table']); ?></code></td>
-                <td><?php echo $row['expected'] ? 'Yes' : 'No'; ?></td>
-                <td><?php echo $row['exists'] ? 'Yes' : 'No'; ?></td>
-                <td><?php echo $row['version'] !== null ? (string) (int) $row['version'] : '—'; ?></td>
-                <td><?php echo $row['row_count'] !== null ? number_format($row['row_count']) : '—'; ?></td>
-                <td><?php echo $badge($row['status'], $storageLabel($row['status'])); ?></td>
+                <td><strong><?php echo esc_html($row['label']); ?></strong></td>
+                <td><code><?php echo esc_html($row['table']); ?></code></td>
+                <td><?php echo esc_html($row['expected'] ? 'Yes' : 'No'); ?></td>
+                <td><?php echo esc_html($row['exists'] ? 'Yes' : 'No'); ?></td>
+                <td><?php echo esc_html($row['version'] !== null ? (string) (int) $row['version'] : '—'); ?></td>
+                <td><?php echo esc_html($row['row_count'] !== null ? number_format($row['row_count']) : '—'); ?></td>
+                <td><?php echo wp_kses_post($badge($row['status'], $storageLabel($row['status']))); ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>
@@ -160,7 +166,7 @@ $protectionLabel = static function (string $state): string {
         <tbody>
             <tr>
                 <th scope="row" style="width:220px;">WordPress transient API</th>
-                <td><?php echo $report['transients']['functions_available'] ? 'Available' : 'Unavailable'; ?></td>
+                <td><?php echo esc_html($report['transients']['functions_available'] ? 'Available' : 'Unavailable'); ?></td>
             </tr>
             <tr>
                 <th scope="row">Read/write probe</th>
@@ -169,20 +175,20 @@ $protectionLabel = static function (string $state): string {
                     if (!$report['transients']['functions_available']) {
                         echo 'Skipped';
                     } elseif ($report['transients']['read_write_ok']) {
-                        echo $badge('ok', 'Pass');
+                        echo wp_kses_post($badge('ok', 'Pass'));
                     } else {
-                        echo $badge('missing', 'Failed');
+                        echo wp_kses_post($badge('missing', 'Failed'));
                     }
                     ?>
                 </td>
             </tr>
             <tr>
                 <th scope="row">Persistent object cache</th>
-                <td><?php echo $report['transients']['object_cache_active'] ? 'Detected' : 'Not detected'; ?></td>
+                <td><?php echo esc_html($report['transients']['object_cache_active'] ? 'Detected' : 'Not detected'); ?></td>
             </tr>
             <tr>
                 <th scope="row">Notes</th>
-                <td style="color:#50575e;"><?php echo WpHelper::escapeHtml($report['transients']['note']); ?></td>
+                <td style="color:#50575e;"><?php echo esc_html($report['transients']['note']); ?></td>
             </tr>
         </tbody>
     </table>

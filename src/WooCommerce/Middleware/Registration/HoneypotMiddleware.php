@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Middleware\Registration;
+namespace NiyiGuard\WooCommerce\Middleware\Registration;
 
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Signal;
-use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Signal;
+use NiyiGuard\WooCommerce\Middleware\WcMiddlewareInterface;
 
 /**
  * Honeypot field check — short-circuits with `DENY` when a hidden form field has
@@ -18,7 +18,7 @@ use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
  *  - `honeypot_filled` (bool): true when the hidden field was non-empty. Real users
  *    can't see the field (it's CSS-hidden and `aria-hidden`) so any value is bot.
  *  - `min_age_seconds` violated: rendered-too-recently. A separate timing token is
- *    inspected by the {@see \PressSentinel\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware}
+ *    inspected by the {@see \NiyiGuard\WooCommerce\Middleware\Checkout\CheckoutBehaviorMiddleware}
  *    on the checkout side; on the registration side we keep the rule here so the
  *    registration pipeline stays self-contained.
  *
@@ -29,7 +29,7 @@ use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
 final class HoneypotMiddleware implements WcMiddlewareInterface
 {
     public function __construct(
-        private readonly string $fieldName = 'presssentinel_hp',
+        private readonly string $fieldName = 'niyiguard_hp',
         private readonly int $minSecondsToSubmit = 0,
     ) {
     }

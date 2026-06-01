@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
 use RuntimeException;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 use ZipArchive;
 
 /**
  * `admin-post.php` handler that lets administrators download the MU loader
- * as a zip from the PressSentinel dashboard.
+ * as a zip from the NiyiGuard dashboard.
  *
  * Why a controller and not just a plain file link? Two reasons:
  *
@@ -35,7 +35,7 @@ final class MuLoaderDownloadController
      * acts as the nonce action. Public so the dashboard form can render the
      * same string in both `<input name="action">` and `wp_nonce_field()`.
      */
-    public const ACTION = 'presssentinel_mu_loader_download';
+    public const ACTION = 'niyiguard_mu_loader_download';
 
     public function __construct(private readonly MuLoaderStatus $status)
     {
@@ -50,7 +50,7 @@ final class MuLoaderDownloadController
      * Entry point invoked by WordPress on POST to admin-post.php.
      *
      * In production this method emits headers + bytes and `exit`s. In tests
-     * (where `PRESS_SENTINEL_TESTING` is defined) it returns early so the test
+     * (where `NIYIGUARD_TESTING` is defined) it returns early so the test
      * process keeps running and can assert what would have been sent.
      */
     public function handle(): void
@@ -69,7 +69,7 @@ final class MuLoaderDownloadController
         $payload = $this->buildPayload();
 
         // In tests we skip header emission + exit so the assertions can run.
-        if (\defined('PRESS_SENTINEL_TESTING')) {
+        if (\defined('NIYIGUARD_TESTING')) {
             return;
         }
 
@@ -79,6 +79,7 @@ final class MuLoaderDownloadController
             \header('Content-Length: ' . \strlen($payload['body'])); // @codeCoverageIgnore
             \header('X-Content-Type-Options: nosniff'); // @codeCoverageIgnore
         }
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Binary zip attachment payload.
         echo $payload['body']; // @codeCoverageIgnore
 
         exit; // @codeCoverageIgnore
@@ -94,7 +95,8 @@ final class MuLoaderDownloadController
     {
         $loaderSource = $this->status->templatePath();
         if ($loaderSource === '' || !is_readable($loaderSource)) {
-            throw new RuntimeException('PressSentinel MU loader template is not readable: ' . $loaderSource);
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Admin download diagnostic.
+            throw new RuntimeException('NiyiGuard MU loader template is not readable: ' . $loaderSource);
         }
 
         $loaderContents = (string) file_get_contents($loaderSource);
@@ -102,7 +104,7 @@ final class MuLoaderDownloadController
 
         if (class_exists(ZipArchive::class)) {
             return [
-                'filename' => 'presssentinel-mu-loader.zip',
+                'filename' => 'niyiguard-mu-loader.zip',
                 'contentType' => 'application/zip',
                 'body' => $this->buildZip($loaderFilename, $loaderContents),
                 'format' => 'zip',
@@ -148,7 +150,12 @@ final class MuLoaderDownloadController
             return $bytes;
         } finally {
             if (is_file($tmp)) {
-                @\unlink($tmp);
+                if (\function_exists('wp_delete_file')) {
+                    \call_user_func('wp_delete_file', $tmp);
+                } else {
+                    // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink -- Temp zip outside uploads; wp_delete_file unavailable.
+                    @\unlink($tmp);
+                }
             }
         }
     }
@@ -160,41 +167,39 @@ final class MuLoaderDownloadController
      */
     private function installNotes(): string
     {
-        return <<<TXT
-        PressSentinel MU Loader
-        =====================
+        $loaderFilename = $this->statusFilenameForReadme();
 
-        Why this file exists
-        --------------------
-        Standard WordPress plugins do not guarantee load order. Must-Use plugins
-        (in wp-content/mu-plugins/) are loaded BEFORE every regular plugin, so
-        PressSentinel can intercept requests earlier when bootstrapped via this
-        loader. That's the difference between checking a malicious request
-        before any theme/plugin code has run and checking it after.
-
-        How to install
-        --------------
-        1. Locate your wp-content/mu-plugins/ folder.
-           If it does not exist yet, create it: wp-content/mu-plugins/
-
-        2. Copy the loader file from this zip into that folder:
-           wp-content/mu-plugins/{$this->statusFilenameForReadme()}
-
-        3. Keep PressSentinel active in your normal plugin list. The MU loader
-           only changes WHEN it boots; it does not replace the main plugin.
-
-        4. Verify:
-           - Visit any wp-admin page.
-           - Go to PressSentinel -> Dashboard.
-           - The "MU loader not installed" callout should disappear.
-
-        Troubleshooting
-        ---------------
-        - Filename must be exactly: {$this->statusFilenameForReadme()}
-        - File must be readable by the PHP user (typically www-data / nobody).
-        - If your plugins directory has a custom location, edit the loader
-          file's `\$pressSentinelBootstrap = ...` line accordingly.
-        TXT;
+        return sprintf(
+            "NiyiGuard MU Loader\n"
+            . "=====================\n\n"
+            . "Why this file exists\n"
+            . "--------------------\n"
+            . "Standard WordPress plugins do not guarantee load order. Must-Use plugins\n"
+            . "(in wp-content/mu-plugins/) are loaded BEFORE every regular plugin, so\n"
+            . "NiyiGuard can intercept requests earlier when bootstrapped via this\n"
+            . "loader. That's the difference between checking a malicious request\n"
+            . "before any theme/plugin code has run and checking it after.\n\n"
+            . "How to install\n"
+            . "--------------\n"
+            . "1. Locate your wp-content/mu-plugins/ folder.\n"
+            . "   If it does not exist yet, create it: wp-content/mu-plugins/\n\n"
+            . "2. Copy the loader file from this zip into that folder:\n"
+            . "   wp-content/mu-plugins/%s\n\n"
+            . "3. Keep NiyiGuard active in your normal plugin list. The MU loader\n"
+            . "   only changes WHEN it boots; it does not replace the main plugin.\n\n"
+            . "4. Verify:\n"
+            . "   - Visit any wp-admin page.\n"
+            . "   - Go to NiyiGuard -> Dashboard.\n"
+            . "   - The \"MU loader not installed\" callout should disappear.\n\n"
+            . "Troubleshooting\n"
+            . "---------------\n"
+            . "- Filename must be exactly: %s\n"
+            . "- File must be readable by the PHP user (typically www-data / nobody).\n"
+            . "- If your plugins directory has a custom location, edit the loader\n"
+            . "  file's `\$niyiguard_bootstrap_candidates` paths accordingly.\n",
+            $loaderFilename,
+            $loaderFilename
+        );
     }
 
     /**

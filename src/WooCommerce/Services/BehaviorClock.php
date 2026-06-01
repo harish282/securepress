@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Services;
+namespace NiyiGuard\WooCommerce\Services;
 
 use Closure;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Tracks "when did the user start this flow?" for impossible-timing detection.

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Sessions;
+namespace NiyiGuard\Core\Auth\Sessions;
 
 /**
  * Production session repository backed by `$wpdb`.
  *
- * Modelled on {@see \PressSentinel\Core\Audit\WpdbAuditLogRepository} so the access
+ * Modelled on {@see \NiyiGuard\Core\Audit\WpdbAuditLogRepository} so the access
  * patterns are familiar:
  *  - All raw input goes through `$wpdb->prepare` to defeat injection.
  *  - Reads use `ARRAY_A` and `SessionRecord::fromRow()` to keep the public boundary
@@ -15,6 +15,7 @@ namespace PressSentinel\Core\Auth\Sessions;
  *  - Writes return useful information (the new id; the affected row count) so callers
  *    don't have to do follow-up SELECTs.
  */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom tables; names from schema helpers; values use $wpdb->prepare().
 final class WpdbSessionRepository implements SessionRepositoryInterface
 {
     public function __construct(private readonly SessionSchema $schema)

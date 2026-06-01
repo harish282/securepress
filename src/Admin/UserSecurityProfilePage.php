@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Auth\Sessions\SessionService;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorMethod;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\Auth\Sessions\SessionService;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorMethod;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorService;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
  * "Account Security" admin page — the user-facing surface for everything in
@@ -19,7 +19,7 @@ use PressSentinel\Core\View\View;
  *  - The page is meaningful to *every* logged-in user, not just admins, and the
  *    `read` capability is enough to access it. profile.php integration would couple
  *    rendering to capability juggling around `edit_user`/`current_user_can`.
- *  - Separates PressSentinel UI from WP core profile updates so a 2FA change can't get
+ *  - Separates NiyiGuard UI from WP core profile updates so a 2FA change can't get
  *    interleaved with a password reset in the same form submission.
  *
  * Submission flow: each form posts back to `?page=sp-account-security&action=…&_wpnonce=…`.
@@ -30,7 +30,7 @@ final class UserSecurityProfilePage
 {
     public const SLUG = 'sp-account-security';
     public const NONCE_ACTION = 'sp_account_security';
-    public const ENROLMENT_META_KEY = '_presssentinel_2fa_pending_secret';
+    public const ENROLMENT_META_KEY = '_niyiguard_2fa_pending_secret';
 
     public function __construct(
         private readonly TwoFactorService $twoFactor,
@@ -97,8 +97,8 @@ final class UserSecurityProfilePage
      */
     private function dispatch(int $userId): ?array
     {
-        $action = $_REQUEST['action'] ?? '';
-        if (!is_string($action) || $action === '') {
+        $action = WpHelper::getRequestString('action');
+        if ($action === '') {
             return null;
         }
 
@@ -144,7 +144,7 @@ final class UserSecurityProfilePage
             return ['type' => 'error', 'message' => 'No pending enrolment found. Please start over.'];
         }
 
-        $code = trim((string) ($_POST['sp_2fa_code'] ?? ''));
+        $code = trim(WpHelper::getPostString('sp_2fa_code'));
         if ($code === '') {
             return ['type' => 'error', 'message' => 'Please enter the code shown in your authenticator app.'];
         }
@@ -220,7 +220,7 @@ final class UserSecurityProfilePage
      */
     private function revokeSession(int $userId): array
     {
-        $sessionId = isset($_POST['session_id']) ? (int) $_POST['session_id'] : 0;
+        $sessionId = max(0, (int) WpHelper::getPostString('session_id', '0'));
         if ($sessionId <= 0) {
             return ['type' => 'error', 'message' => 'Invalid session reference.'];
         }
@@ -236,7 +236,8 @@ final class UserSecurityProfilePage
      */
     private function revokeAllOtherSessions(int $userId): array
     {
-        $excludeId = isset($_POST['current_session_id']) ? (int) $_POST['current_session_id'] : null;
+        $excludeRaw = WpHelper::getPostString('current_session_id', '');
+        $excludeId = is_numeric($excludeRaw) ? (int) $excludeRaw : null;
         $count = $this->sessions->revokeAllExceptCurrent($userId, $excludeId);
 
         return ['type' => 'success', 'message' => sprintf('%d other session(s) revoked.', $count)];

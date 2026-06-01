@@ -1,510 +1,166 @@
-# PressSentinel
+# NiyiGuard
 
-> Laravel-inspired security infrastructure for WordPress.
+**Self-hosted application-layer security for WordPress** — login hardening, audit trail, file integrity, security headers, optional rate limits, WooCommerce abuse protection, and a developer SDK. **Free, full feature set, no cloud account required.**
 
-PressSentinel is a modern security framework plugin for WordPress focused on middleware-based protection, developer experience, WooCommerce security, and lightweight architecture.
+Laravel-inspired architecture: middleware-style helpers, a `Security` facade, authentication hardening, audit logging, and WooCommerce protection pipelines.
 
-Unlike traditional bloated firewall plugins, PressSentinel focuses on application-layer security inspired by modern PHP frameworks like Laravel.
+| | |
+| --- | --- |
+| **Version** | 0.1.0 |
+| **Edition** | Free — all features included |
+| **PHP** | 8.2+ |
+| **WordPress** | 6.4+ (tested up to 7.0) |
+| **Tests** | 484 PHPUnit tests passing |
+| **Plugin Check** | Clean (errors and warnings resolved) |
 
----
-
-# Vision
-
-PressSentinel aims to become:
-
-> "The Laravel-style security framework for WordPress developers."
-
-Core principles:
-
-* Modern architecture
-* Middleware-driven security
-* Developer-first APIs
-* Lightweight and modular
-* WooCommerce-friendly
-* Extensible and scalable
+> **WordPress.org listing:** the canonical directory readme is **[readme.txt](readme.txt)**. This file is for GitHub and developers.
 
 ---
 
-# Current Status
+## Why NiyiGuard?
 
-## Project Stage
+NiyiGuard hardens WordPress **inside** the application: it does not replace Cloudflare, your host firewall, or a CDN. Use it **together with** edge and host protections.
 
-* [ ] Planning
-* [ ] Architecture Design
-* [ ] MVP Development
-* [ ] Alpha Release
-* [ ] Beta Release
-* [ ] Public Launch
+### Why site owners install it
 
-## Agile Roadmap
+| You need… | NiyiGuard helps by… |
+| --- | --- |
+| Fewer brute-force logins | IP + username lockouts; optional 2FA (TOTP, email OTP, recovery codes) |
+| Accountability | Audit log: logins, plugin/role changes, sensitive options, file editor, WooCommerce events |
+| Early warning on tampering | Core checksums, plugin manifest diff, PHP heuristics (scheduled scans) |
+| Stronger browser policies | HSTS, CSP, X-Frame-Options, Referrer-Policy, and more (per-header toggles) |
+| Less REST / front-end abuse | Optional global rate limiting (wp-admin excluded by default) |
+| WooCommerce spam & fake checkouts | Checkout, cart, registration, and Store API protection pipelines |
+| Recovery from misconfiguration | Safe mode via `wp-config.php` if lockout or login disguise blocks access |
+| Privacy & control | Data stays on your server; no NiyiGuard account required |
 
-* [ ] Roadmap document created: [`ROADMAP_AGILE.md`](ROADMAP_AGILE.md)
-* [ ] Sprint issues created in GitHub project
-* [ ] Sprint 0 initialized
+**Pitch:** *Security building blocks on your server — not in our cloud. Turn on what you need from one dashboard.*
 
-## MU Loader (Early Load)
+### What makes it different
 
-To make PressSentinel load earlier in WordPress lifecycle, install the MU loader:
+Many plugins (Wordfence, Solid Security, All-In-One WP Security, etc.) overlap on 2FA, lockouts, headers, or scanning. NiyiGuard does **not** claim to be the only plugin with those features. It is distinctive in three ways:
 
-* [ ] Copy `mu-loader/00-press-sentinel-loader.php` to `wp-content/mu-plugins/00-press-sentinel-loader.php`
-* [ ] Keep `PressSentinel` active in normal plugin list
-* [ ] Verify plugin list shows: `MU Loader: Installed`
+1. **Developer SDK** — protect custom `admin-post` handlers, forms, and REST routes with CSRF, rate limits, signed URLs, and route guards (`Security` facade).
+2. **WooCommerce abuse pipelines** — checkout velocity, cart/coupon abuse, registration spam, fraud scoring, and API throttling alongside audit and login hardening.
+3. **Privacy-first, fully free** — no license server, no paywalled module, no telemetry to the author.
 
-Install guide: [`docs/MU_LOADER_INSTALL.md`](docs/MU_LOADER_INSTALL.md)
+### Who it is for
 
-## Usage Guide
+**Good fit:** WooCommerce stores; agencies with custom plugins; teams wanting audit + integrity + login protection on-server; developers wiring security into custom code.
 
-How to use what's already shipped (CSRF, rate limiter, signed URLs) inside WordPress, with end-to-end recipes for REST endpoints, admin-post forms, magic-link login, paid downloads, and WooCommerce checkout throttling: [`docs/USAGE.md`](docs/USAGE.md).
+**Less ideal:** Sites that only want a single famous cloud firewall/malware suite with no setup. Multisite is not formally certified in 0.1.0.
+
+### What it does not claim
+
+- Does **not** replace edge WAF/CDN or host firewalls.
+- Does **not** provide commercial cloud antivirus scanning (heuristics + checksums only).
+- Does **not** auto-protect every WordPress hook — the SDK protects **routes you wire**.
+
+More copy blocks and FAQs: **[docs/WHY_NIYIGUARD.md](docs/WHY_NIYIGUARD.md)**.
 
 ---
 
-# Core Features
+## Features (0.1.0)
 
-## Security Middleware System
+- **Authentication hardening** — lockouts, TOTP/email 2FA, recovery codes, sessions, new-device alerts
+- **Security headers** — HSTS, CSP, XFO, Referrer-Policy, Permissions-Policy, XCTO
+- **Audit log** — UI, detail view, retention, pruning
+- **File integrity** — core checksums, manifest diff, PHP heuristics; themes/uploads optional
+- **Rate limiting** — optional; REST, front end, AJAX, wp-login (wp-admin excluded by default)
+- **WooCommerce Protection** — when WooCommerce is active
+- **Security SDK** — CSRF, rate limits, signed URLs, route guards
+- **Login URL disguise** — off by default
+- **Safe mode** — emergency recovery
+- **Health diagnostics** — module and environment snapshot
+- **MU loader** — optional early bootstrap
 
-* [ ] Middleware pipeline
-* [ ] Request interception
-* [ ] Route protection
-* [ ] Middleware registration system
-* [ ] Custom middleware support
+---
 
-Example:
+## Quick start
 
-```php
-Security::middleware([
-    RateLimit::class,
-    CsrfProtection::class,
-    BotProtection::class,
-]);
+1. Clone or copy into `wp-content/plugins/niyiguard` (or run `bash scripts/build-release-zip.sh dev` from this repo).
+2. Activate **NiyiGuard** in wp-admin.
+3. Open **NiyiGuard → Dashboard** and review feature toggles.
+4. Optional: install the [MU loader](docs/MU_LOADER_INSTALL.md) for earlier bootstrap.
+5. Read [docs/USAGE.md](docs/USAGE.md) for CSRF, rate limits, signed URLs, and route protection.
+6. Before production: [docs/STAGING_TEST_PLAN.md](docs/STAGING_TEST_PLAN.md).
+
+```bash
+composer install
+vendor/bin/phpunit
+bash scripts/build-release-zip.sh prod   # build/niyiguard-0.1.0.zip
 ```
 
+Configuration: `config/plugin.php` and optional `wp-config.php` constants (`NIYIGUARD_SAFE_MODE`, `NIYIGUARD_INTERNAL_SECRET`). Optional tips: `support.donation_url` in config ([Ko-fi](https://ko-fi.com/)).
+
 ---
 
-## Rate Limiting
+## Implementation status (vs project plan)
 
-* [ ] Login rate limiting
-* [ ] REST API throttling
-* [ ] XML-RPC protection
-* [ ] WooCommerce checkout throttling
-* [ ] Contact form protection
-* [ ] User/IP-based throttling
-* [ ] Temporary bans
+Maps [niyiguard_wordpress_security_plugin_project_plan.md](niyiguard_wordpress_security_plugin_project_plan.md) and [ROADMAP_AGILE.md](ROADMAP_AGILE.md) to **0.1.0**.
 
-Example:
+### MVP and core security
 
-```php
-RateLimiter::for('login', 5, 'minute');
+| Feature | Status | Notes |
+| --- | --- | --- |
+| Login protection (lockout, failed-login tracking) | **Shipped** | `LoginLockoutService`; tested |
+| Rate limiting (login, REST, front end) | **Shipped** | Global subscriber + SDK; wp-admin excluded by default |
+| Security headers | **Shipped** | Per-header toggles |
+| Signed URLs | **Shipped** | `UrlSigner`, `SignedUrlMiddleware` |
+| CSRF layer | **Shipped** | `Security` facade |
+| Audit logging | **Shipped** | DB storage, listeners, admin UI |
+| Developer SDK | **Shipped** | `Security` / `AuditLog` facades, `RouteBuilder` |
+
+### Version 1.1 items (largely in 0.1.0)
+
+| Feature | Status | Notes |
+| --- | --- | --- |
+| Two-factor (TOTP, email OTP, recovery codes) | **Shipped** | wp-login challenge flow |
+| Device & session management | **Shipped** | Sessions table, revoke, pruning |
+| WooCommerce security pack | **Shipped** | Checkout/cart/registration/API pipelines |
+| Laravel-style validation layer | **Not shipped** | — |
+
+### Version 2.0 / advanced
+
+| Feature | Status | Notes |
+| --- | --- | --- |
+| File integrity monitoring | **Shipped** | Core checksums, manifest diff, heuristics |
+| Malware / heuristic scanning | **Partial** | PHP heuristics only — not a full AV engine |
+| Threat intelligence / cloud SaaS | **Not shipped** | Future roadmap |
+
+### Known gaps
+
+- Audit log CSV / NDJSON export — not implemented
+- Full-site automatic middleware on every hook — SDK is opt-in per route
+- Multisite — not formally certified
+
+---
+
+## Documentation
+
+| Document | Purpose |
+| --- | --- |
+| [readme.txt](readme.txt) | WordPress.org plugin directory readme (canonical public description) |
+| [docs/WHY_NIYIGUARD.md](docs/WHY_NIYIGUARD.md) | Why install, comparisons, reusable marketing copy |
+| [docs/USAGE.md](docs/USAGE.md) | Developer and operator usage |
+| [docs/MU_LOADER_INSTALL.md](docs/MU_LOADER_INSTALL.md) | Early-load MU plugin setup |
+| [docs/STAGING_TEST_PLAN.md](docs/STAGING_TEST_PLAN.md) | Staging QA checklist |
+| [docs/CYPRESS_E2E.md](docs/CYPRESS_E2E.md) | Cypress E2E automation |
+| [docs/PRIVACY.md](docs/PRIVACY.md) | Privacy policy for site owners and reviewers |
+| [ROADMAP_AGILE.md](ROADMAP_AGILE.md) | Sprint backlog |
+
+### Optional licensing module (commercial builds)
+
+Offline HMAC licensing was extracted for private/commercial forks:
+
+```bash
+bash packages/niyiguard-licensing/scripts/build-licensing-zip.sh
 ```
 
----
-
-## Authentication Security
-
-* [ ] Brute-force protection
-* [ ] Failed login detection
-* [ ] Session management
-* [ ] Suspicious login alerts
-* [ ] Device tracking
-* [ ] Login notifications
+See [packages/niyiguard-licensing/INTEGRATION.md](packages/niyiguard-licensing/INTEGRATION.md).
 
 ---
 
-## Two-Factor Authentication
+## License
 
-* [ ] TOTP support
-* [ ] Email OTP
-* [ ] Backup codes
-* [ ] Trusted devices
-* [ ] Recovery flow
-
----
-
-## CSRF Protection
-
-* [ ] Secure token generation
-* [ ] Token expiration
-* [ ] Middleware validation
-* [ ] Form protection helpers
-* [ ] API token support
-
----
-
-## Signed URLs
-
-* [ ] Temporary signed URLs
-* [ ] Expiring links
-* [ ] Download protection
-* [ ] Invite links
-* [ ] Password reset links
-
-Example:
-
-```php
-Security::signedUrl('/download/123', expires: 3600);
-```
-
----
-
-## Security Headers
-
-* [ ] CSP support
-* [ ] HSTS support
-* [ ] X-Frame-Options
-* [ ] Referrer Policy
-* [ ] Permissions Policy
-* [ ] Header presets
-
----
-
-## Audit Logging
-
-* [ ] Login logs
-* [ ] Failed login logs
-* [ ] Plugin change logs
-* [ ] Role change logs
-* [ ] Admin activity logs
-* [ ] WooCommerce activity logs
-* [ ] Export functionality
-
----
-
-## Developer SDK
-
-* [ ] Security helper APIs
-* [ ] Route protection helpers
-* [ ] Middleware registration APIs
-* [ ] Event system
-* [ ] Extension support
-* [ ] Validation system
-
-Example:
-
-```php
-Security::protectRoute('/admin/export');
-```
-
----
-
-# WooCommerce Security
-
-## Planned Features
-
-* [ ] Fake checkout prevention
-* [ ] Coupon abuse prevention
-* [ ] Bot cart protection
-* [ ] Registration spam protection
-* [ ] API abuse protection
-* [ ] Checkout anomaly detection
-
----
-
-# Malware & Integrity Features
-
-## Future Features
-
-* [ ] File integrity monitoring
-* [ ] Core file verification
-* [ ] Suspicious PHP detection
-* [ ] Malware signature scanning
-* [ ] Obfuscated code detection
-
----
-
-# SaaS Roadmap
-
-## Cloud Features
-
-* [ ] Central dashboard
-* [ ] Multi-site management
-* [ ] Attack analytics
-* [ ] Shared threat intelligence
-* [ ] Remote controls
-* [ ] Security reports
-
----
-
-# Technical Architecture
-
-## Backend Stack
-
-* [ ] PHP 8.2+
-* [ ] Composer
-* [ ] PSR-4 autoloading
-* [ ] Dependency Injection Container
-* [ ] WordPress REST API
-* [ ] Event system
-* [ ] Monolog integration
-
----
-
-## Frontend Stack
-
-* [ ] React admin dashboard
-* [ ] Gutenberg components
-* [ ] Responsive admin UI
-* [ ] Settings dashboard
-* [ ] Log viewer
-
----
-
-# Suggested Folder Structure
-
-```txt
-presssentinel/
-├── bootstrap/
-├── config/
-├── resources/
-├── routes/
-├── src/
-│   ├── Core/
-│   ├── Middleware/
-│   ├── Security/
-│   ├── Auth/
-│   ├── Logging/
-│   ├── Validation/
-│   ├── Http/
-│   ├── Admin/
-│   └── WooCommerce/
-├── storage/
-│   ├── logs/
-│   └── cache/
-├── tests/
-├── vendor/
-├── press-sentinel.php
-└── composer.json
-```
-
----
-
-# Development Roadmap
-
-# Phase 1 — Foundation
-
-## Architecture
-
-* [ ] Setup GitHub repository
-* [ ] Setup Composer
-* [ ] Configure PSR-4 autoloading
-* [ ] Create plugin bootstrap
-* [ ] Build service container
-* [ ] Create configuration system
-* [ ] Setup logging
-* [ ] Setup coding standards
-
----
-
-# Phase 2 — Security Core
-
-## Middleware Engine
-
-* [ ] Request pipeline
-* [ ] Middleware manager
-* [ ] Middleware execution order
-* [ ] Request interception
-* [ ] Response handling
-
-## Security Features
-
-* [ ] Rate limiter
-* [ ] Login protection
-* [ ] CSRF middleware
-* [ ] Signed URLs
-* [ ] Security headers
-
----
-
-# Phase 3 — Developer APIs
-
-## SDK
-
-* [ ] Security helper functions
-* [ ] Public API documentation
-* [ ] Validation system
-* [ ] Event system
-* [ ] Extension architecture
-
----
-
-# Phase 4 — Logging & Dashboard
-
-## Dashboard
-
-* [ ] Security overview page
-* [ ] Logs page
-* [ ] Settings page
-* [ ] Threat analytics
-* [ ] Alerts UI
-
-## Logging
-
-* [ ] Audit logs
-* [ ] Search logs
-* [ ] Export logs
-* [ ] Log retention settings
-
----
-
-# Phase 5 — WooCommerce Security
-
-## WooCommerce Module
-
-* [ ] Checkout protection
-* [ ] Registration protection
-* [ ] API throttling
-* [ ] Fraud detection basics
-
----
-
-# Phase 6 — Testing & Launch
-
-## Testing
-
-* [ ] Unit tests
-* [ ] Integration tests
-* [ ] WordPress compatibility tests
-* [ ] WooCommerce compatibility tests
-* [ ] Performance testing
-* [ ] Shared hosting tests
-
-## Launch
-
-* [ ] Documentation website
-* [ ] Landing page
-* [ ] GitHub releases
-* [ ] Demo videos
-* [ ] Beta user onboarding
-
----
-
-# Monetization Plan
-
-## Free Version
-
-* [ ] Middleware engine
-* [ ] Basic rate limiting
-* [ ] Security headers
-* [ ] Audit logs
-* [ ] Signed URLs
-
----
-
-## Pro Version
-
-* [ ] 2FA
-* [ ] WooCommerce protection
-* [ ] Advanced analytics
-* [ ] Threat intelligence
-* [ ] Device management
-* [ ] Premium support
-
----
-
-# Documentation Checklist
-
-## Developer Docs
-
-* [ ] Installation guide
-* [ ] Middleware guide
-* [ ] SDK documentation
-* [ ] API references
-* [ ] Extension development guide
-* [ ] WooCommerce integration guide
-
-## User Docs
-
-* [ ] Quick start guide
-* [ ] Security best practices
-* [ ] Troubleshooting
-* [ ] FAQ
-
----
-
-# Branding Checklist
-
-* [ ] Logo design
-* [ ] Brand colors
-* [ ] Website domain
-* [ ] Documentation branding
-* [ ] Social media accounts
-* [ ] GitHub organization
-
----
-
-# Marketing Checklist
-
-## Content Strategy
-
-* [ ] Launch website
-* [ ] Technical blog
-* [ ] YouTube tutorials
-* [ ] Dev articles
-* [ ] SEO pages
-* [ ] Product Hunt launch
-
-## Community Building
-
-* [ ] GitHub community
-* [ ] Discord server
-* [ ] Reddit engagement
-* [ ] Facebook groups
-* [ ] WordPress communities
-
----
-
-# Performance Goals
-
-* [ ] Minimal memory usage
-* [ ] Low request overhead
-* [ ] Shared hosting compatibility
-* [ ] Fast admin dashboard
-* [ ] Lazy-loaded modules
-
----
-
-# Security Goals
-
-* [ ] Secure coding standards
-* [ ] OWASP best practices
-* [ ] Dependency scanning
-* [ ] Static analysis
-* [ ] Responsible disclosure policy
-
----
-
-# Future Vision
-
-PressSentinel evolves into:
-
-* Security framework for WordPress
-* Developer infrastructure layer
-* WooCommerce security platform
-* SaaS security management suite
-* Cloud-integrated security ecosystem
-
----
-
-# License
-
-Planned License:
-
-* Open-source core
-* Commercial premium modules
-
----
-
-# Inspiration
-
-Inspired by:
-
-* Laravel
-* Symfony
-* Modern PHP architecture
-* Developer-first tooling
-
----
-
-# Final Goal
-
-PressSentinel should feel like:
-
-> "What WordPress security would look like if Laravel designed it today."
+GPL-2.0-or-later. See [license.txt](license.txt).

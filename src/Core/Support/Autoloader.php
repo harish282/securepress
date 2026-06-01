@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Support;
+namespace NiyiGuard\Core\Support;
 
 final class Autoloader
 {
-    private const PREFIX = 'PressSentinel\\';
+    private const PREFIX = 'NiyiGuard\\';
 
     public static function register(): void
     {
@@ -21,7 +21,7 @@ final class Autoloader
 
         $relativeClass = substr($class, strlen(self::PREFIX));
         $relativePath = str_replace('\\', '/', $relativeClass) . '.php';
-        $filePath = PRESS_SENTINEL_SRC_PATH . '/' . $relativePath;
+        $filePath = NIYIGUARD_SRC_PATH . '/' . $relativePath;
 
         if (is_readable($filePath)) {
             require_once $filePath;

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Lockout;
+namespace NiyiGuard\Core\Auth\Lockout;
 
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Transient-backed implementation. Uses two namespaced keys per logical lockout

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Middleware;
+namespace NiyiGuard\Core\Middleware;
 
 interface MiddlewareInterface
 {

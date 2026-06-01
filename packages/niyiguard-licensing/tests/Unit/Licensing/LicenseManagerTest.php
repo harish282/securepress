@@ -1,0 +1,217 @@
+<?php
+
+declare(strict_types=1);
+
+namespace NiyiGuard\Tests\Unit\Licensing;
+
+use PHPUnit\Framework\TestCase;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Licensing\BetaTrial;
+use NiyiGuard\Core\Licensing\LicenseManager;
+use NiyiGuard\Core\Licensing\LicenseStatus;
+use NiyiGuard\Core\Licensing\LicenseValidatorInterface;
+use NiyiGuard\Core\Licensing\LocalLicenseValidator;
+use NiyiGuard\Core\Licensing\StaticLicenseValidator;
+use NiyiGuard\Tests\Stubs\WpStubState;
+
+/**
+ * @see \NiyiGuard\Core\Licensing\LicenseManager
+ */
+final class LicenseManagerTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        WpStubState::$options = [];
+    }
+
+    protected function tearDown(): void
+    {
+        WpStubState::$options = [];
+        if (\function_exists('remove_all_filters')) {
+            \remove_all_filters('niyiguard_config');
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $overrides
+     */
+    private function manager(LicenseValidatorInterface $validator, array $overrides = []): LicenseManager
+    {
+        if ($overrides !== [] && \function_exists('add_filter')) {
+            \add_filter(
+                'niyiguard_config',
+                static function (array $config) use ($overrides): array {
+                    return array_replace_recursive($config, $overrides);
+                }
+            );
+        }
+
+        return new LicenseManager($validator, new Config());
+    }
+
+    public function test_is_not_pro_without_any_key(): void
+    {
+        $manager = $this->manager(new LocalLicenseValidator('secret'));
+
+        self::assertFalse($manager->isPro());
+        self::assertSame(LicenseStatus::STATE_NONE, $manager->status()->state);
+    }
+
+    public function test_is_pro_with_valid_option_key(): void
+    {
+        $validator = new LocalLicenseValidator('secret');
+        $key = $validator->issue('PRO', time(), time() + 86400 * 30);
+        WpStubState::$options[LicenseManager::OPTION_NAME] = $key;
+
+        $manager = $this->manager($validator);
+
+        self::assertTrue($manager->isPro());
+        self::assertSame('pro', $manager->tier());
+    }
+
+    public function test_invalid_option_key_is_not_pro(): void
+    {
+        WpStubState::$options[LicenseManager::OPTION_NAME] = 'garbage';
+        $manager = $this->manager(new LocalLicenseValidator('secret'));
+
+        self::assertFalse($manager->isPro());
+        self::assertSame(LicenseStatus::STATE_INVALID, $manager->status()->state);
+    }
+
+    public function test_config_license_key_used_when_option_missing(): void
+    {
+        $validator = new LocalLicenseValidator('secret');
+        $key = $validator->issue('PRO', time(), time() + 86400);
+
+        $manager = $this->manager($validator, [
+            'pro_license' => ['license_key' => $key],
+        ]);
+
+        self::assertTrue($manager->isPro());
+    }
+
+    public function test_static_validator_accepts_allowlisted_key(): void
+    {
+        WpStubState::$options[LicenseManager::OPTION_NAME] = 'TEST-1234';
+        $manager = $this->manager(new StaticLicenseValidator([
+            'TEST-1234' => ['tier' => 'pro'],
+        ]));
+
+        self::assertTrue($manager->isPro());
+        self::assertSame('pro', $manager->tier());
+    }
+
+    public function test_set_license_persists_and_returns_status(): void
+    {
+        $validator = new LocalLicenseValidator('secret');
+        $key = $validator->issue('AGENCY', time(), time() + 86400);
+
+        $manager = $this->manager($validator);
+        $status = $manager->setLicense($key);
+
+        self::assertTrue($status->isActive());
+        self::assertSame('agency', $status->tier);
+        self::assertSame($key, WpStubState::$options[LicenseManager::OPTION_NAME]);
+    }
+
+    public function test_clear_license_removes_option_and_resets_status(): void
+    {
+        $validator = new LocalLicenseValidator('secret');
+        $key = $validator->issue('PRO', time(), time() + 86400);
+        WpStubState::$options[LicenseManager::OPTION_NAME] = $key;
+
+        $manager = $this->manager($validator);
+        self::assertTrue($manager->isPro());
+
+        $manager->clearLicense();
+
+        self::assertArrayNotHasKey(LicenseManager::OPTION_NAME, WpStubState::$options);
+        self::assertFalse($manager->isPro());
+    }
+
+    public function test_status_is_cached_within_request(): void
+    {
+        $validator = new class implements LicenseValidatorInterface {
+            public int $calls = 0;
+
+            public function validate(string $key): LicenseStatus
+            {
+                $this->calls++;
+
+                return LicenseStatus::active('pro', null);
+            }
+        };
+        WpStubState::$options[LicenseManager::OPTION_NAME] = 'anything';
+
+        $manager = $this->manager($validator);
+        $manager->isPro();
+        $manager->status();
+        $manager->tier();
+
+        self::assertSame(1, $validator->calls);
+    }
+
+    public function test_beta_trial_unlocks_pro_without_a_key_when_programme_enabled(): void
+    {
+        $manager = $this->manager(new LocalLicenseValidator('secret'), [
+            'pro_license' => [
+                'beta_trial' => [
+                    'enabled' => true,
+                    'duration_days' => 14,
+                ],
+            ],
+        ]);
+
+        self::assertTrue($manager->isPro());
+        self::assertSame(LicenseStatus::STATE_BETA_TRIAL, $manager->status()->state);
+        self::assertTrue($manager->status()->hasProAccess());
+        self::assertFalse($manager->status()->isActive());
+        self::assertNotNull($manager->status()->expiresAt);
+    }
+
+    public function test_expired_beta_trial_does_not_grant_pro(): void
+    {
+        WpStubState::$options[BetaTrial::STARTED_AT_OPTION] = time() - (400 * 86400);
+
+        $manager = $this->manager(new LocalLicenseValidator('secret'), [
+            'pro_license' => [
+                'beta_trial' => [
+                    'enabled' => true,
+                    'duration_days' => 30,
+                ],
+            ],
+        ]);
+
+        self::assertFalse($manager->isPro());
+        self::assertSame(LicenseStatus::STATE_NONE, $manager->status()->state);
+    }
+
+    public function test_early_access_unlocks_pro_without_a_key(): void
+    {
+        $manager = $this->manager(new LocalLicenseValidator('secret'), [
+            'pro_license' => ['early_access' => true],
+        ]);
+
+        self::assertTrue($manager->isPro());
+        self::assertSame(LicenseStatus::STATE_EARLY_ACCESS, $manager->status()->state);
+        self::assertTrue($manager->status()->hasProAccess());
+        self::assertFalse($manager->status()->isActive());
+        self::assertNull($manager->status()->expiresAt);
+    }
+
+    public function test_early_access_takes_precedence_over_beta_trial(): void
+    {
+        $manager = $this->manager(new LocalLicenseValidator('secret'), [
+            'pro_license' => [
+                'early_access' => true,
+                'beta_trial' => [
+                    'enabled' => true,
+                    'duration_days' => 14,
+                ],
+            ],
+        ]);
+
+        self::assertSame(LicenseStatus::STATE_EARLY_ACCESS, $manager->status()->state);
+        self::assertTrue($manager->isPro());
+    }
+}

@@ -2,19 +2,20 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Sessions;
+namespace NiyiGuard\Core\Auth\Sessions;
 
 /**
- * DDL for the PressSentinel sessions table, mirrored on the audit-log schema pattern.
+ * DDL for the NiyiGuard sessions table, mirrored on the audit-log schema pattern.
  *
  * Stored separately from `wp_user_meta['session_tokens']` because that field is
  * (a) opaque/serialised, (b) overwritten on every login, and (c) not designed for
  * arbitrary querying. Our table supports `findActiveForUser()` and pruning natively.
  */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter, WordPress.DB.DirectDatabaseQuery.SchemaChange -- Schema DDL via dbDelta; DROP uses internal table names only.
 final class SessionSchema
 {
-    public const TABLE = 'presssentinel_sessions';
-    public const VERSION_OPTION = 'presssentinel_sessions_db_version';
+    public const TABLE = 'niyiguard_sessions';
+    public const VERSION_OPTION = 'niyiguard_sessions_db_version';
     public const VERSION = 1;
 
     public function tableName(): string
@@ -61,8 +62,7 @@ final class SessionSchema
         $table = $this->tableName();
         $charsetCollate = $this->charsetCollate();
 
-        return <<<SQL
-CREATE TABLE {$table} (
+        return 'CREATE TABLE ' . $table . ' (
     id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
     user_id BIGINT UNSIGNED NOT NULL,
     token VARCHAR(64) NOT NULL,
@@ -77,8 +77,7 @@ CREATE TABLE {$table} (
     UNIQUE KEY token_idx (token),
     KEY user_idx (user_id, revoked_at),
     KEY fingerprint_idx (user_id, fingerprint_hash)
-) {$charsetCollate};
-SQL;
+) ' . $charsetCollate . ';';
     }
 
     private function runDbDelta(string $sql): bool

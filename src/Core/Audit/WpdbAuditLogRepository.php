@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Audit;
+namespace NiyiGuard\Core\Audit;
 
 use RuntimeException;
 
@@ -18,6 +18,7 @@ use RuntimeException;
  * writes throw — failing loud on writes is intentional, silent failure here would mean
  * losing audit entries, which is exactly the problem this feature exists to solve.
  */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom tables; names from schema helpers; values use $wpdb->prepare().
 final class WpdbAuditLogRepository implements AuditLogRepositoryInterface
 {
     public function __construct(private readonly AuditLogSchema $schema)
@@ -37,11 +38,16 @@ final class WpdbAuditLogRepository implements AuditLogRepositoryInterface
         );
 
         if ($inserted === false || $inserted === 0) {
-            throw new RuntimeException(sprintf(
-                'Failed to persist audit event "%s": %s',
-                $event->action,
-                is_object($wpdb) && isset($wpdb->last_error) ? (string) $wpdb->last_error : 'unknown wpdb error'
-            ));
+            $wpdbError = is_object($wpdb) && isset($wpdb->last_error)
+                ? (string) $wpdb->last_error
+                : 'unknown wpdb error';
+            throw new RuntimeException(
+                sprintf(
+                    'Failed to persist audit event "%s": %s',
+                    esc_html($event->action),
+                    esc_html($wpdbError)
+                )
+            );
         }
 
         $newId = isset($wpdb->insert_id) ? (int) $wpdb->insert_id : 0;

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
- * Settings → PressSentinel Rate Limiting admin page.
+ * Settings → NiyiGuard Rate Limiting admin page.
  *
  * Lets a site admin turn the global rate-limit middleware on/off and tune
  * its limit + window values without editing `config/plugin.php`. Mirrors
@@ -23,21 +23,21 @@ use PressSentinel\Core\View\View;
  *    canonical and bounds-checked.
  *  - The page is a thin shell — form scaffolding lives in
  *    `resources/views/admin/settings/rate-limit.php`.
- *  - The same `enabled` flag is mirrored on the PressSentinel dashboard's
+ *  - The same `enabled` flag is mirrored on the NiyiGuard dashboard's
  *    feature-toggle form. Both surfaces read/write through `RateLimitOptions`
  *    so they never drift apart.
  */
 final class RateLimitSettingsPage
 {
-    public const PAGE_SLUG = 'presssentinel-rate-limit';
+    public const PAGE_SLUG = 'niyiguard-rate-limit';
 
-    public const OPTION_GROUP = 'presssentinel_rate_limit_group';
+    public const OPTION_GROUP = 'niyiguard_rate_limit_group';
 
     /**
      * Single section: there are only three fields and they're all part of
      * one logical concern. Splitting would be ceremonial.
      */
-    public const SECTION = 'presssentinel_section_rate_limit';
+    public const SECTION = 'niyiguard_section_rate_limit';
 
     /** @var array{enabled: bool, limit: int, window: int}|null */
     private ?array $cachedOptions = null;
@@ -57,8 +57,8 @@ final class RateLimitSettingsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel Rate Limiting',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard Rate Limiting',
             'Rate Limiting',
             'manage_options',
             self::PAGE_SLUG,
@@ -103,7 +103,7 @@ final class RateLimitSettingsPage
 
     public function renderIntro(): void
     {
-        echo '<p>Caps how many requests a single client may make in a fixed window. Authenticated users are bucketed by user id; anonymous clients by IP. When the cap is exceeded, PressSentinel responds with HTTP <code>429 Too Many Requests</code> and emits standard <code>Retry-After</code> / <code>X-RateLimit-*</code> headers.</p>';
+        echo '<p>Caps how many requests a single client may make in a fixed window. Authenticated users are bucketed by user id; anonymous clients by IP. When the cap is exceeded, NiyiGuard responds with HTTP <code>429 Too Many Requests</code> and emits standard <code>Retry-After</code> / <code>X-RateLimit-*</code> headers.</p>';
         echo '<p>This is a <strong>global</strong> middleware. Per-route limits set via the <code>Security::rateLimit()</code> SDK still apply on top of this.</p>';
     }
 
@@ -113,8 +113,8 @@ final class RateLimitSettingsPage
         $name = $this->name('enabled');
         printf(
             '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Apply the global rate limit on every request</label>',
-            WpHelper::escapeAttribute($name),
-            $checked
+            esc_attr($name),
+            esc_attr($checked)
         );
     }
 
@@ -122,14 +122,16 @@ final class RateLimitSettingsPage
     {
         $value = (int) $this->valueOf('limit');
         $name = $this->name('limit');
+        $limitMin = (int) RateLimitOptions::LIMIT_MIN;
+        $limitMax = (int) RateLimitOptions::LIMIT_MAX;
         printf(
-            '<input type="number" name="%s" value="%s" min="%d" max="%d" class="small-text"> <span class="description">Requests allowed per window, per bucket. Range: %d&ndash;%d.</span>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute((string) $value),
-            RateLimitOptions::LIMIT_MIN,
-            RateLimitOptions::LIMIT_MAX,
-            RateLimitOptions::LIMIT_MIN,
-            RateLimitOptions::LIMIT_MAX
+            '<input type="number" name="%s" value="%s" min="%s" max="%s" class="small-text"> <span class="description">Requests allowed per window, per bucket. Range: %s&ndash;%s.</span>',
+            esc_attr($name),
+            esc_attr((string) $value),
+            esc_attr((string) $limitMin),
+            esc_attr((string) $limitMax),
+            esc_html((string) $limitMin),
+            esc_html((string) $limitMax)
         );
     }
 
@@ -137,14 +139,16 @@ final class RateLimitSettingsPage
     {
         $value = (int) $this->valueOf('window');
         $name = $this->name('window');
+        $windowMin = (int) RateLimitOptions::WINDOW_MIN;
+        $windowMax = (int) RateLimitOptions::WINDOW_MAX;
         printf(
-            '<input type="number" name="%s" value="%s" min="%d" max="%d" class="small-text"> <span class="description">Seconds. Common: 60 (per minute), 3600 (per hour). Range: %d&ndash;%d.</span>',
-            WpHelper::escapeAttribute($name),
-            WpHelper::escapeAttribute((string) $value),
-            RateLimitOptions::WINDOW_MIN,
-            RateLimitOptions::WINDOW_MAX,
-            RateLimitOptions::WINDOW_MIN,
-            RateLimitOptions::WINDOW_MAX
+            '<input type="number" name="%s" value="%s" min="%s" max="%s" class="small-text"> <span class="description">Seconds. Common: 60 (per minute), 3600 (per hour). Range: %s&ndash;%s.</span>',
+            esc_attr($name),
+            esc_attr((string) $value),
+            esc_attr((string) $windowMin),
+            esc_attr((string) $windowMax),
+            esc_html((string) $windowMin),
+            esc_html((string) $windowMax)
         );
     }
 

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Sdk;
+namespace NiyiGuard\Sdk;
 
-use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
-use PressSentinel\Core\Container;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutPolicy;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutService;
+use NiyiGuard\Core\Container;
 
 /**
  * Developer surface for the login-lockout subsystem.
  *
  * Useful for plugins that want to participate in the same brute-force defence as
- * PressSentinel's own login kernel. For example, a custom REST login endpoint can:
+ * NiyiGuard's own login kernel. For example, a custom REST login endpoint can:
  *
  * ```php
  * $api = Security::lockout();

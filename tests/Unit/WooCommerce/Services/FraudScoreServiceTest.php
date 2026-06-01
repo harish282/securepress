@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\WooCommerce\Services;
+namespace NiyiGuard\Tests\Unit\WooCommerce\Services;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Signal;
-use PressSentinel\WooCommerce\Services\FraudScoreService;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Signal;
+use NiyiGuard\WooCommerce\Services\FraudScoreService;
 
 /**
- * @see \PressSentinel\WooCommerce\Services\FraudScoreService
+ * @see \NiyiGuard\WooCommerce\Services\FraudScoreService
  */
 final class FraudScoreServiceTest extends TestCase
 {

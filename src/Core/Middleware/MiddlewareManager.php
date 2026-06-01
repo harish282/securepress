@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Middleware;
+namespace NiyiGuard\Core\Middleware;
 
-use PressSentinel\Core\Container;
+use NiyiGuard\Core\Container;
 
 final class MiddlewareManager
 {
@@ -34,6 +34,7 @@ final class MiddlewareManager
             }
 
             if (!$instance instanceof MiddlewareInterface) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Internal middleware resolution error.
                 throw new MiddlewareException(sprintf('Resolved middleware "%s" is invalid.', $class));
             }
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Headers;
+namespace NiyiGuard\Core\Headers;
 
 /**
  * Controls how much referrer information browsers send on outbound navigations / requests.

@@ -1,0 +1,52 @@
+🎉 harish282 - Congratulations!
+
+The plugin was approved.	The Plugins Team volunteers are pleased to inform you that your plugin hosting request has been approved and the review process is now complete.
+
+Please read this email carefully to understand the next steps. To allow us to focus on other plugin reviews, we kindly ask you to not reply to this email unless you encounter an issue after reviewing the provided links and following the suggested actions.
+Repository details
+SVN URL: https://plugins.svn.wordpress.org/niyiguard
+Using Subversion with the Plugin Directory
+Your account will be granted commit access to your Subversion (SVN) repository within one (1) hour.
+Directory details
+Public URL: https://wordpress.org/plugins/niyiguard. The page will not be visible until you upload the plugin files using SVN.
+How your readme.txt works (this controls your public page)
+Plugin Assets (banners, screenshots, icons shown in the public page)
+Due to directory size, it may take up to 72 hours for search results and your user profile to fully update.
+
+👉 Your next steps
+
+Add plugins@wordpress.org to your email whitelist to ensure you receive important updates regarding your plugin. If we’re unable to contact you, your plugin may be closed.
+Follow https://make.wordpress.org/plugins for important announcements and updates.
+Upload your code to the directory via SVN once your access is activated.
+Continue reviewing the Plugin Guidelines — all plugins, developers, and support staff are required to follow them: https://developer.wordpress.org/plugins/wordpress-org/detailed-plugin-guidelines/
+
+🔧 SVN Credentials & Tips
+
+Our SVN system functions as a release system (not like Git), so you should only push ready-to-use versions of your plugin.
+Your SVN username is your WordPress.org username (not your email).
+Usernames are case-sensitive (e.g. JoDoe123HAY must be used exactly as registered).
+Your SVN password is separate from your WordPress.org password. You can set or retrieve it in the "Account & Security" section of your WordPress profile: https://profiles.wordpress.org/me/profile/edit/group/3/?screen=svn-password
+This is a common password for all your repositories.
+We cannot upload your code for you — you will need to use an SVN client of your choice.
+Please read all the links before asking us for help. Note that we will not be able to give you explicit usage directions, as many SVN clients are out there, and we are not experts in all of them.
+
+📚 Helpful Resources
+
+Plugin Directory Guidelines
+Plugin Developer FAQ
+readme.txt standard & validator
+Block-Specific Plugin Guidelines
+
+A Note on Security & Compliance
+
+A successful review does not guarantee that your plugin is entirely free from security issues or guideline violations — we are all human and mistakes happen. We recommend you to keep the guidelines in mind and regularly checking your code with tools such as PHPCS+WPCS and Plugin Check to keep it secure, compliant, and compatible.
+
+From this point forward, we will not re-review your code manually unless a guideline or security issue is flagged by the community or the automated scanners. If an issue arises, your plugin may be temporarily or permanently closed and you will be notified about that. This is standard procedure for all plugins, and we appreciate your understanding.
+
+Please ensure ongoing compliance with all Plugin Guidelines. Violations — such as including non-GPL-compliant code, failing to maintain source code, tracking users without consent, intentionally restricting included functionality, or manipulating reviews — among others may result in permanent removal from the directory. Staying listed in the directory requires ongoing compliance with our guidelines. We want to keep you included. Ultimately, maintaining compliance is your responsibility.
+
+To ensure smooth processing for everyone, please do not reply to this email unless you have specific questions.
+
+Thank you for sharing your work with the WordPress community — best of luck with your plugin! 🚀
+
+Review ID: APPROVED niyiguard/harish282/27May26/T4 31May26/4.0.2 (P0TDX319097HGN)

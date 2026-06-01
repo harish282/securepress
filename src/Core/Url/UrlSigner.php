@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Url;
+namespace NiyiGuard\Core\Url;
 
 use Closure;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * HMAC-SHA256 URL signer.
@@ -172,6 +173,7 @@ final class UrlSigner
                 continue;
             }
             if (!is_scalar($value)) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Signed URL validation diagnostic.
                 throw new SignedUrlException(sprintf('Signed URL parameter "%s" must be scalar.', $key));
             }
             $sanitized[$key] = is_bool($value) ? ($value ? '1' : '0') : (string) $value;
@@ -225,8 +227,8 @@ final class UrlSigner
      */
     private function parseUrl(string $url): ?array
     {
-        $parts = parse_url($url);
-        if ($parts === false) {
+        $parts = WpHelper::parseUrl($url);
+        if (! is_array($parts)) {
             return null;
         }
 

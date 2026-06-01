@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Auth;
+namespace NiyiGuard\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\Notifications\AuthNotifier;
-use PressSentinel\Core\Auth\Notifications\ArrayMailer;
-use PressSentinel\Core\Logging\NullLogger;
+use NiyiGuard\Core\Auth\Notifications\AuthNotifier;
+use NiyiGuard\Core\Auth\Notifications\ArrayMailer;
+use NiyiGuard\Core\Logging\NullLogger;
 
 final class AuthNotifierTest extends TestCase
 {

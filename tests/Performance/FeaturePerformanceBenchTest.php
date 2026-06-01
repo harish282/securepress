@@ -2,35 +2,35 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Performance;
+namespace NiyiGuard\Tests\Performance;
 
 use Closure;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Audit\ArrayAuditLogRepository;
-use PressSentinel\Core\Audit\AuditEvent;
-use PressSentinel\Core\Audit\AuditLogger;
-use PressSentinel\Core\Auth\Lockout\ArrayLockoutStore;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\HeaderRegistryFactory;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Integrity\Heuristics\EvalBase64Heuristic;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Core\RateLimit\ArrayStore;
-use PressSentinel\Core\RateLimit\RateLimiter;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseModule;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\Middleware\RateLimitMiddleware;
-use PressSentinel\Middleware\SecurityHeadersMiddleware;
-use PressSentinel\Tests\Stubs\WpStubState;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Services\FraudScoreService;
+use NiyiGuard\Core\Audit\ArrayAuditLogRepository;
+use NiyiGuard\Core\Audit\AuditEvent;
+use NiyiGuard\Core\Audit\AuditLogger;
+use NiyiGuard\Core\Auth\Lockout\ArrayLockoutStore;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutPolicy;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutService;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\HeaderRegistryFactory;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Integrity\Heuristics\EvalBase64Heuristic;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Core\RateLimit\ArrayStore;
+use NiyiGuard\Core\RateLimit\RateLimiter;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseModule;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\Middleware\RateLimitMiddleware;
+use NiyiGuard\Middleware\SecurityHeadersMiddleware;
+use NiyiGuard\Tests\Stubs\WpStubState;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Services\FraudScoreService;
 
 /**
  * Micro-benchmarks for code paths that correspond to dashboard features in
- * {@see \PressSentinel\Admin\FeatureRegistry}. These are not load tests; they
+ * {@see \NiyiGuard\Admin\FeatureRegistry}. These are not load tests; they
  * measure repeated in-process work with in-memory stubs only.
  *
  * Thresholds are intentionally loose so CI and slower machines stay green;
@@ -59,7 +59,7 @@ final class FeaturePerformanceBenchTest extends TestCase
         $this->serverBackup = $_SERVER;
         $_SERVER = [
             'REMOTE_ADDR' => '203.0.113.10',
-            'HTTP_USER_AGENT' => 'PressSentinelPerf/1.0',
+            'HTTP_USER_AGENT' => 'NiyiGuardPerf/1.0',
             'REQUEST_URI' => '/',
         ];
         WpStubState::$homeUrl = 'https://example.test';
@@ -156,7 +156,7 @@ final class FeaturePerformanceBenchTest extends TestCase
         $logger = new AuditLogger(new ArrayAuditLogRepository(), new NullLogger());
         $event = AuditEvent::make('perf.probe', 'other', 'info')
             ->withActor(2, 'Perf User')
-            ->withRequest('203.0.113.10', 'PressSentinelPerf/1.0', '/');
+            ->withRequest('203.0.113.10', 'NiyiGuardPerf/1.0', '/');
 
         $seconds = $this->bench(static function () use ($logger, $event): void {
             $logger->record($event);

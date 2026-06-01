@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Headers;
+namespace NiyiGuard\Core\Headers;
 
 /**
  * Builds a populated {@see HeaderRegistry} from {@see SecurityHeadersOptions}.

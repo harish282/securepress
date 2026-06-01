@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Middleware;
+namespace NiyiGuard\Middleware;
 
 use Closure;
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Core\Middleware\MiddlewareInterface;
-use PressSentinel\Core\RateLimit\RateLimiter;
-use PressSentinel\Core\Recovery\SafeMode;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Core\Middleware\MiddlewareInterface;
+use NiyiGuard\Core\RateLimit\RateLimiter;
+use NiyiGuard\Core\Recovery\SafeMode;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Enforces request-rate limits via {@see RateLimiter}.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\RateLimit;
+namespace NiyiGuard\Core\RateLimit;
 
 /**
  * Persistence contract for rate-limit counters.

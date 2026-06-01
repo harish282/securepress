@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\TwoFactor;
+namespace NiyiGuard\Core\Auth\TwoFactor;
 
 use InvalidArgumentException;
 
@@ -50,6 +50,7 @@ final class Base32
         for ($i = 0, $len = strlen($clean); $i < $len; $i++) {
             $position = strpos(self::ALPHABET, $clean[$i]);
             if ($position === false) {
+                // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- TOTP decode diagnostic, not rendered in HTML.
                 throw new InvalidArgumentException(sprintf('Invalid base32 character "%s".', $clean[$i]));
             }
             $bits .= str_pad(decbin($position), 5, '0', STR_PAD_LEFT);

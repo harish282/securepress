@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth;
+namespace NiyiGuard\Core\Auth;
 
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Resolves the effective authentication-hardening configuration for the current request.
@@ -19,7 +19,7 @@ use PressSentinel\Core\Support\WpHelper;
  *  - Single autoloaded read on boot rather than ~10 separate `get_option` calls.
  *  - Atomic save semantics from the admin page — partial writes can't leave the system
  *    in an inconsistent half-on/half-off state.
- *  - Mirrors the {@see \PressSentinel\Core\Headers\SecurityHeadersOptions} contract so the
+ *  - Mirrors the {@see \NiyiGuard\Core\Headers\SecurityHeadersOptions} contract so the
  *    settings-page glue is familiar.
  *
  * Storage shape (single autoloaded option):
@@ -50,7 +50,7 @@ use PressSentinel\Core\Support\WpHelper;
  */
 final class AuthHardeningOptions
 {
-    public const OPTION_NAME = 'presssentinel_auth_hardening';
+    public const OPTION_NAME = 'niyiguard_auth_hardening';
 
     public function __construct(private readonly Config $config)
     {
@@ -80,7 +80,7 @@ final class AuthHardeningOptions
 
     /**
      * Flips just the master `enabled` flag, preserving every other auth
-     * setting. Used by the centralized PressSentinel dashboard so admins don't
+     * setting. Used by the centralized NiyiGuard dashboard so admins don't
      * have to dig into the full settings page to disable the module.
      */
     public function setEnabled(bool $enabled): void
@@ -174,13 +174,13 @@ final class AuthHardeningOptions
     {
         $candidate = is_string($value) ? trim($value) : '';
         if ($candidate === '') {
-            return 'PressSentinel';
+            return 'NiyiGuard';
         }
 
         // Issuer ends up in the otpauth:// URI label — control characters and `:` would
         // break parsing in some authenticator apps. Strip them here so the admin can't
         // accidentally save a value that breaks every user's enrolment.
-        $candidate = preg_replace('/[\x00-\x1F\x7F:]+/', '', $candidate) ?? 'PressSentinel';
+        $candidate = preg_replace('/[\x00-\x1F\x7F:]+/', '', $candidate) ?? 'NiyiGuard';
 
         return mb_substr($candidate, 0, 64);
     }

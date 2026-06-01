@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Services;
+namespace NiyiGuard\WooCommerce\Services;
 
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
 
 /**
- * Turns an accumulated set of {@see \PressSentinel\WooCommerce\Detection\Signal}s into
+ * Turns an accumulated set of {@see \NiyiGuard\WooCommerce\Detection\Signal}s into
  * a final {@see Decision}.
  *
  * Two configurable thresholds:

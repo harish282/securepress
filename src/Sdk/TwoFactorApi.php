@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Sdk;
+namespace NiyiGuard\Sdk;
 
-use PressSentinel\Core\Auth\TwoFactor\PendingChallenge;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorMethod;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorService;
-use PressSentinel\Core\Auth\TwoFactor\TwoFactorState;
-use PressSentinel\Core\Container;
+use NiyiGuard\Core\Auth\TwoFactor\PendingChallenge;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorMethod;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorService;
+use NiyiGuard\Core\Auth\TwoFactor\TwoFactorState;
+use NiyiGuard\Core\Container;
 
 /**
  * Developer-facing surface for everything 2FA.
@@ -54,7 +54,7 @@ final class TwoFactorApi
 
     /**
      * Mints a challenge token for a user who has 2FA enabled — useful when wiring
-     * PressSentinel 2FA into a non-WordPress login flow (e.g., a headless app calling a
+     * NiyiGuard 2FA into a non-WordPress login flow (e.g., a headless app calling a
      * REST endpoint).
      *
      * For email_otp this also sends the OTP email; for TOTP the user just enters the

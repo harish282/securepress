@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Sdk;
+namespace NiyiGuard\Sdk;
 
-use PressSentinel\Core\Container;
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Pipelines\ApiPipeline;
-use PressSentinel\WooCommerce\Pipelines\CartPipeline;
-use PressSentinel\WooCommerce\Pipelines\CheckoutPipeline;
-use PressSentinel\WooCommerce\Pipelines\PipelineResult;
-use PressSentinel\WooCommerce\Pipelines\RegistrationPipeline;
-use PressSentinel\WooCommerce\WooCommerceModule;
+use NiyiGuard\Core\Container;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Pipelines\ApiPipeline;
+use NiyiGuard\WooCommerce\Pipelines\CartPipeline;
+use NiyiGuard\WooCommerce\Pipelines\CheckoutPipeline;
+use NiyiGuard\WooCommerce\Pipelines\PipelineResult;
+use NiyiGuard\WooCommerce\Pipelines\RegistrationPipeline;
+use NiyiGuard\WooCommerce\WooCommerceModule;
 
 /**
  * Developer-facing facade over the WooCommerce protection pipelines.

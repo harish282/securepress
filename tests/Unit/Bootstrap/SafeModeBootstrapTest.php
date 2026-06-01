@@ -2,34 +2,41 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Bootstrap;
+namespace NiyiGuard\Tests\Unit\Bootstrap;
 
-use PHPUnit\Framework\Attributes\PreserveGlobalState;
-use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Recovery\SafeMode;
 
 final class SafeModeBootstrapTest extends TestCase
 {
-    #[RunInSeparateProcess]
-    #[PreserveGlobalState(false)]
-    public function test_env_true_defines_constant_when_not_already_set(): void
+    public function test_config_safe_mode_defines_constant_in_fresh_process(): void
     {
-        if (!\defined('ABSPATH')) {
-            \define('ABSPATH', __DIR__ . '/../../');
-        }
-        if (!\defined('PRESS_SENTINEL_BOOTSTRAP_PATH')) {
-            \define('PRESS_SENTINEL_BOOTSTRAP_PATH', dirname(__DIR__, 3) . '/bootstrap');
+        if (\defined('NIYIGUARD_SAFE_MODE')) {
+            self::markTestSkipped('NIYIGUARD_SAFE_MODE already defined in parent process');
         }
 
-        $_ENV['PRESS_SENTINEL_SAFE_MODE'] = 'true';
-        $_SERVER['PRESS_SENTINEL_SAFE_MODE'] = 'true';
-        putenv('PRESS_SENTINEL_SAFE_MODE=true');
+        $root = dirname(__DIR__, 3);
+        $bootstrap = $root . '/bootstrap';
+        $fixture = $root . '/tests/fixtures/config-safe-mode';
 
-        require PRESS_SENTINEL_BOOTSTRAP_PATH . '/safe-mode.php';
+        $script = <<<PHP
+<?php
+define('ABSPATH', '/tmp');
+define('NIYIGUARD_CONFIG_PATH', '{$fixture}');
+define('NIYIGUARD_BOOTSTRAP_PATH', '{$bootstrap}');
+require NIYIGUARD_BOOTSTRAP_PATH . '/safe-mode.php';
+echo (defined('NIYIGUARD_SAFE_MODE') && NIYIGUARD_SAFE_MODE) ? '1' : '0';
+PHP;
 
-        self::assertTrue(\defined('PRESS_SENTINEL_SAFE_MODE'));
-        self::assertTrue(PRESS_SENTINEL_SAFE_MODE);
-        self::assertTrue(SafeMode::isActive());
+        $tmp = tempnam(sys_get_temp_dir(), 'ps-safe-mode-');
+        self::assertNotFalse($tmp);
+        file_put_contents($tmp, $script);
+
+        $output = [];
+        $exitCode = 0;
+        exec(PHP_BINARY . ' ' . escapeshellarg($tmp), $output, $exitCode);
+        @unlink($tmp);
+
+        self::assertSame(0, $exitCode);
+        self::assertSame(['1'], $output);
     }
 }

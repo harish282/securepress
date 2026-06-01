@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Logging;
+namespace NiyiGuard\Core\Logging;
 
 final class NullLogger implements LoggerInterface
 {

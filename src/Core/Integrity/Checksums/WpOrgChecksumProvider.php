@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity\Checksums;
+namespace NiyiGuard\Core\Integrity\Checksums;
 
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * Real WP.org checksum provider — queries

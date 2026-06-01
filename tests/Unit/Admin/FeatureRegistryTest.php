@@ -2,26 +2,23 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Admin;
+namespace NiyiGuard\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Admin\FeatureRegistry;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\Licensing\LicenseStatus;
-use PressSentinel\Core\Licensing\LicenseValidatorInterface;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Tests\Stubs\WpStubState;
-use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
+use NiyiGuard\Admin\FeatureRegistry;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Tests\Stubs\WpStubState;
+use NiyiGuard\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
- * @see \PressSentinel\Admin\FeatureRegistry
+ * @see \NiyiGuard\Admin\FeatureRegistry
  *
  * The FeatureRegistry is the dashboard's source of truth. These tests pin
  * down the three guarantees the dashboard relies on:
@@ -138,36 +135,9 @@ final class FeatureRegistryTest extends TestCase
         self::assertSame(['audit_log'], $changed);
     }
 
-    public function test_is_pro_reflects_license_manager(): void
-    {
-        // Default validator: no license = not pro.
-        $free = $this->makeRegistry();
-        self::assertFalse($free->isPro());
-
-        // Same fixture but with a static "always pro" validator.
-        $pro = $this->makeRegistry(isPro: true);
-        self::assertTrue($pro->isPro());
-    }
-
-    private function makeRegistry(bool $isPro = false): FeatureRegistry
+    private function makeRegistry(): FeatureRegistry
     {
         $config = new Config();
-        $validator = new class ($isPro) implements LicenseValidatorInterface {
-            public function __construct(private readonly bool $isPro)
-            {
-            }
-
-            public function validate(string $key): LicenseStatus
-            {
-                return $this->isPro
-                    ? LicenseStatus::active('pro', null)
-                    : LicenseStatus::none();
-            }
-        };
-        if ($isPro) {
-            // Any non-empty key triggers the validator above.
-            WpStubState::$options[LicenseManager::OPTION_NAME] = 'KEY-FOR-TESTING';
-        }
 
         return new FeatureRegistry(
             new AuditLogOptions($config),
@@ -177,7 +147,6 @@ final class FeatureRegistryTest extends TestCase
             new WooCommerceProtectionOptions($config),
             new RateLimitOptions($config),
             new UrlDisguiseOptions($config),
-            new LicenseManager($validator, new Config()),
         );
     }
 }

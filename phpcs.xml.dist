@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<ruleset name="NiyiGuard">
+    <description>WordPress Plugin Check / PHPCS rules for NiyiGuard.</description>
+
+    <file>.</file>
+    <exclude-pattern>vendor/*</exclude-pattern>
+    <exclude-pattern>tests/*</exclude-pattern>
+    <exclude-pattern>build/*</exclude-pattern>
+    <exclude-pattern>storage/tmp/*</exclude-pattern>
+    <exclude-pattern>niyiguard-niyiguard-php-*.md</exclude-pattern>
+
+    <rule ref="WordPress"/>
+    <rule ref="PluginCheck"/>
+
+    <!-- Included view templates use local variables, not unprefixed globals. -->
+    <rule ref="WordPress.NamingConventions.PrefixAllGlobals">
+        <exclude-pattern>*/resources/views/*</exclude-pattern>
+        <exclude-pattern>*/bootstrap/safe-mode.php</exclude-pattern>
+    </rule>
+
+    <!-- Custom plugin tables use $wpdb directly; names come from schema helpers only. -->
+    <rule ref="WordPress.DB.DirectDatabaseQuery">
+        <exclude-pattern>*/src/Core/*/Wpdb*.php</exclude-pattern>
+        <exclude-pattern>*/src/Core/*/*Schema.php</exclude-pattern>
+        <exclude-pattern>*/src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
+    </rule>
+    <rule ref="WordPress.DB.DirectDatabaseQuery.NoCaching">
+        <exclude-pattern>*/src/Core/*/Wpdb*.php</exclude-pattern>
+        <exclude-pattern>*/src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
+    </rule>
+    <rule ref="WordPress.DB.DirectDatabaseQuery.SchemaChange">
+        <exclude-pattern>*/src/Core/*/*Schema.php</exclude-pattern>
+    </rule>
+    <rule ref="PluginCheck.Security.DirectDB.UnescapedDBParameter">
+        <exclude-pattern>*/src/Core/*/Wpdb*.php</exclude-pattern>
+        <exclude-pattern>*/src/Core/*/*Schema.php</exclude-pattern>
+        <exclude-pattern>*/src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
+    </rule>
+    <rule ref="WordPress.DB.PreparedSQL.InterpolatedNotPrepared">
+        <exclude-pattern>*/src/Admin/Diagnostics/HealthDiagnosticsCollector.php</exclude-pattern>
+    </rule>
+
+    <!-- Log channel registers a scoped error handler for the write operation only. -->
+    <rule ref="WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler">
+        <exclude-pattern>src/Core/Logging/FileLogger.php</exclude-pattern>
+    </rule>
+
+    <!-- CSRF middleware reads superglobals to locate and verify nonce tokens. -->
+    <rule ref="WordPress.Security.NonceVerification">
+        <exclude-pattern>src/Middleware/CsrfProtectionMiddleware.php</exclude-pattern>
+    </rule>
+    <rule ref="WordPress.Security.ValidatedSanitizedInput">
+        <exclude-pattern>src/Middleware/CsrfProtectionMiddleware.php</exclude-pattern>
+    </rule>
+
+    <!-- Listeners inspect core admin/editor requests (nonce verified separately or N/A). -->
+    <rule ref="WordPress.Security.NonceVerification">
+        <exclude-pattern>src/Core/Audit/Listeners/FileEditorListener.php</exclude-pattern>
+    </rule>
+    <rule ref="WordPress.Security.ValidatedSanitizedInput">
+        <exclude-pattern>src/Core/Audit/Listeners/FileEditorListener.php</exclude-pattern>
+    </rule>
+
+    <!-- wp-admin screens: GET filters and admin_post handlers verify nonces before POST writes. -->
+    <rule ref="WordPress.Security.NonceVerification">
+        <exclude-pattern>src/Admin/*</exclude-pattern>
+    </rule>
+
+    <!-- Login / 2FA challenge flows mirror core wp-login.php request shape. -->
+    <rule ref="WordPress.Security.NonceVerification">
+        <exclude-pattern>src/Auth/*</exclude-pattern>
+    </rule>
+    <rule ref="WordPress.Security.ValidatedSanitizedInput">
+        <exclude-pattern>src/Auth/*</exclude-pattern>
+    </rule>
+
+    <!-- WooCommerce middleware reads request metadata for abuse detection only. -->
+    <rule ref="WordPress.Security.ValidatedSanitizedInput">
+        <exclude-pattern>src/WooCommerce/WooCommerceModule.php</exclude-pattern>
+    </rule>
+    <rule ref="WordPress.Security.NonceVerification">
+        <exclude-pattern>src/WooCommerce/WooCommerceModule.php</exclude-pattern>
+    </rule>
+
+    <!-- Central superglobal accessors; callers receive sanitized values. -->
+    <rule ref="WordPress.Security.ValidatedSanitizedInput">
+        <exclude-pattern>src/Core/Support/WpHelper.php</exclude-pattern>
+    </rule>
+</ruleset>

@@ -2,15 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Admin;
+namespace NiyiGuard\Tests\Unit\Admin;
 
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
-use PressSentinel\Admin\AuditLogPage;
-use PressSentinel\Admin\FileIntegrityPage;
-use PressSentinel\Admin\HealthDiagnosticsPage;
-use PressSentinel\Admin\LicensePage;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Admin\AuditLogPage;
+use NiyiGuard\Admin\FileIntegrityPage;
+use NiyiGuard\Admin\HealthDiagnosticsPage;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
  * Regression coverage for the bug that left `Prune now` / `Clear all logs` /
@@ -47,12 +46,12 @@ final class AdminPageRegistrationTest extends TestCase
         $page->register();
 
         self::assertTrue(
-            WpStubState::hasAction('admin_post_presssentinel_clear_audit_logs'),
-            'AuditLogPage must register the admin_post_presssentinel_clear_audit_logs handler so the "Clear all logs" button works.'
+            WpStubState::hasAction('admin_post_niyiguard_clear_audit_logs'),
+            'AuditLogPage must register the admin_post_niyiguard_clear_audit_logs handler so the "Clear all logs" button works.'
         );
         self::assertTrue(
-            WpStubState::hasAction('admin_post_presssentinel_prune_audit_logs'),
-            'AuditLogPage must register the admin_post_presssentinel_prune_audit_logs handler so the "Run prune now" button works.'
+            WpStubState::hasAction('admin_post_niyiguard_prune_audit_logs'),
+            'AuditLogPage must register the admin_post_niyiguard_prune_audit_logs handler so the "Run prune now" button works.'
         );
         self::assertTrue(
             WpStubState::hasAction('admin_menu'),
@@ -66,11 +65,11 @@ final class AdminPageRegistrationTest extends TestCase
         $page->register();
 
         $expected = [
-            'admin_post_presssentinel_integrity_rescan',
-            'admin_post_presssentinel_integrity_review',
-            'admin_post_presssentinel_integrity_delete',
-            'admin_post_presssentinel_integrity_clear',
-            'admin_post_presssentinel_integrity_reset_baseline',
+            'admin_post_niyiguard_integrity_rescan',
+            'admin_post_niyiguard_integrity_review',
+            'admin_post_niyiguard_integrity_delete',
+            'admin_post_niyiguard_integrity_clear',
+            'admin_post_niyiguard_integrity_reset_baseline',
         ];
         foreach ($expected as $hook) {
             self::assertTrue(
@@ -89,15 +88,6 @@ final class AdminPageRegistrationTest extends TestCase
             WpStubState::hasAction('admin_menu'),
             'HealthDiagnosticsPage must register admin_menu to add its submenu.'
         );
-    }
-
-    public function test_license_page_registers_save_and_clear_admin_post_hooks(): void
-    {
-        $page = (new ReflectionClass(LicensePage::class))->newInstanceWithoutConstructor();
-        $page->register();
-
-        self::assertTrue(WpStubState::hasAction('admin_post_presssentinel_license_save'));
-        self::assertTrue(WpStubState::hasAction('admin_post_presssentinel_license_clear'));
     }
 
     /**
@@ -134,12 +124,25 @@ final class AdminPageRegistrationTest extends TestCase
      * `admin_post_{action}`, and never fires `admin_menu`. Anything registered
      * inside `admin_menu` would be missed entirely on form submissions.
      */
+    public function test_dashboard_post_handler_registers_when_is_admin_false_at_wire_time(): void
+    {
+        WpStubState::$isAdmin = false;
+
+        $page = (new ReflectionClass(\NiyiGuard\Admin\NiyiGuardMenuPage::class))->newInstanceWithoutConstructor();
+        $page->registerPostHandler();
+
+        self::assertTrue(
+            WpStubState::hasAction('admin_post_niyiguard_features'),
+            'Dashboard save must register admin_post_niyiguard_features even when is_admin() was false during MU/front-end bootstrap.'
+        );
+    }
+
     public function test_admin_post_handlers_registered_via_init_run_on_form_submission(): void
     {
         $invoked = false;
 
         \add_action('init', static function () use (&$invoked): void {
-            \add_action('admin_post_presssentinel_test', static function () use (&$invoked): void {
+            \add_action('admin_post_niyiguard_test', static function () use (&$invoked): void {
                 $invoked = true;
             });
         });
@@ -148,7 +151,7 @@ final class AdminPageRegistrationTest extends TestCase
         WpStubState::dispatchAction('init');
         // admin_menu is intentionally NOT fired here — admin-post.php skips it.
         WpStubState::dispatchAction('admin_init');
-        WpStubState::dispatchAction('admin_post_presssentinel_test');
+        WpStubState::dispatchAction('admin_post_niyiguard_test');
 
         self::assertTrue(
             $invoked,

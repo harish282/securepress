@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\RateLimit;
+namespace NiyiGuard\Tests\Unit\RateLimit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
  * @see RateLimitOptions

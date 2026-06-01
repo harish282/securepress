@@ -2,26 +2,22 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Recovery;
+namespace NiyiGuard\Core\Recovery;
 
 /**
  * Emergency recovery when operators lock themselves out of wp-login or wp-admin.
  *
- * Enable via the plugin `.env` file (copy from `.env.example`):
- *
- *     PRESS_SENTINEL_SAFE_MODE=true
- *
- * Or in `wp-config.php` **before** WordPress loads plugins (above
+ * Enable in `wp-config.php` **before** WordPress loads plugins (above
  * `require_once ABSPATH . 'wp-settings.php';`):
  *
- *     define('PRESS_SENTINEL_SAFE_MODE', true);
+ *     define('NIYIGUARD_SAFE_MODE', true);
  *
- * A wp-config `define()` takes precedence when it is loaded before the plugin.
+ * Or set `recovery.safe_mode` to `true` in config/plugin.php (wp-config wins if both are set).
  *
  * While active, configured bypasses disable the highest-risk lockout paths without
- * changing stored options — remove or set the constant to `false` once recovery is done.
+ * changing stored options — remove or disable once recovery is done.
  *
- * Tests may enable safe mode via the {@see 'presssentinel_safe_mode'} filter.
+ * Tests may enable safe mode via the {@see 'niyiguard_safe_mode'} filter.
  */
 final class SafeMode
 {
@@ -40,7 +36,7 @@ final class SafeMode
 
     public static function isActive(): bool
     {
-        if (defined('PRESS_SENTINEL_SAFE_MODE') && PRESS_SENTINEL_SAFE_MODE) {
+        if (defined('NIYIGUARD_SAFE_MODE') && NIYIGUARD_SAFE_MODE) {
             return true;
         }
 
@@ -48,7 +44,7 @@ final class SafeMode
             return false;
         }
 
-        return (bool) \apply_filters('presssentinel_safe_mode', false);
+        return (bool) \apply_filters('niyiguard_safe_mode', false);
     }
 
     /**
@@ -62,7 +58,7 @@ final class SafeMode
 
         $bypasses = self::DEFAULT_BYPASSES;
         if (\function_exists('apply_filters')) {
-            $filtered = \apply_filters('presssentinel_safe_mode_bypasses', $bypasses);
+            $filtered = \apply_filters('niyiguard_safe_mode_bypasses', $bypasses);
             if (is_array($filtered)) {
                 $bypasses = $filtered;
             }
@@ -82,7 +78,7 @@ final class SafeMode
 
         $bypasses = self::DEFAULT_BYPASSES;
         if (\function_exists('apply_filters')) {
-            $filtered = \apply_filters('presssentinel_safe_mode_bypasses', $bypasses);
+            $filtered = \apply_filters('niyiguard_safe_mode_bypasses', $bypasses);
             if (is_array($filtered)) {
                 $bypasses = $filtered;
             }

@@ -2,14 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Middleware;
+namespace NiyiGuard\Middleware;
 
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Logging\NullLogger;
-use PressSentinel\Core\Middleware\MiddlewareInterface;
-use PressSentinel\Core\Url\NonceStoreInterface;
-use PressSentinel\Core\Url\SignedUrlResult;
-use PressSentinel\Core\Url\UrlSigner;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Logging\NullLogger;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\Middleware\MiddlewareInterface;
+use NiyiGuard\Core\Url\NonceStoreInterface;
+use NiyiGuard\Core\Url\SignedUrlResult;
+use NiyiGuard\Core\Url\UrlSigner;
 
 /**
  * Verifies that the current request URL carries a valid signature minted by {@see UrlSigner}.
@@ -96,8 +97,8 @@ final class SignedUrlMiddleware implements MiddlewareInterface
             return $request['url'];
         }
 
-        $requestUri = $_SERVER['REQUEST_URI'] ?? null;
-        if (is_string($requestUri) && $requestUri !== '') {
+        $requestUri = WpHelper::requestUri();
+        if ($requestUri !== null) {
             return $requestUri;
         }
 

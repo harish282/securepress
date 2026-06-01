@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Auth;
+namespace NiyiGuard\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Config\Config;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * @see \PressSentinel\Core\Auth\AuthHardeningOptions
+ * @see \NiyiGuard\Core\Auth\AuthHardeningOptions
  */
 final class AuthHardeningOptionsTest extends TestCase
 {
@@ -43,7 +43,7 @@ final class AuthHardeningOptionsTest extends TestCase
         self::assertSame(50, $resolved['suspicion']['alert_threshold']);
         self::assertTrue($resolved['suspicion']['rules']['new_device']);
 
-        self::assertSame('PressSentinel', $resolved['two_factor']['issuer']);
+        self::assertSame('NiyiGuard', $resolved['two_factor']['issuer']);
         self::assertSame(600, $resolved['two_factor']['challenge_ttl_seconds']);
 
         self::assertTrue($resolved['notifications']['enabled']);
@@ -168,6 +168,6 @@ final class AuthHardeningOptionsTest extends TestCase
 
         $sanitized = $options->sanitize(['two_factor' => ['issuer' => '   ']]);
 
-        self::assertSame('PressSentinel', $sanitized['two_factor']['issuer']);
+        self::assertSame('NiyiGuard', $sanitized['two_factor']['issuer']);
     }
 }

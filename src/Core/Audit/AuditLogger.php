@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Audit;
+namespace NiyiGuard\Core\Audit;
 
-use PressSentinel\Core\Logging\LoggerInterface;
-use PressSentinel\Core\Support\WpHelper;
+use NiyiGuard\Core\Logging\LoggerInterface;
+use NiyiGuard\Core\Support\WpHelper;
 use Throwable;
 
 /**

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\SuspiciousLogin;
+namespace NiyiGuard\Core\Auth\SuspiciousLogin;
 
-use PressSentinel\Core\Auth\Sessions\DeviceFingerprint;
+use NiyiGuard\Core\Auth\Sessions\DeviceFingerprint;
 
 /**
  * Snapshot of "who is trying to log in, from where" passed to the rule engine.

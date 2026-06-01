@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Support;
+namespace NiyiGuard\Tests\Unit\Support;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Support\RequestContext;
+use NiyiGuard\Core\Support\RequestContext;
 
 /**
- * @see \PressSentinel\Core\Support\RequestContext
+ * @see \NiyiGuard\Core\Support\RequestContext
  */
 final class RequestContextTest extends TestCase
 {

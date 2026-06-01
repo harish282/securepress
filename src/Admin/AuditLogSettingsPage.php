@@ -2,23 +2,23 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Audit\AuditEventLevel;
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Support\WpHelper;
-use PressSentinel\Core\View\View;
+use NiyiGuard\Core\Audit\AuditEventLevel;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Support\WpHelper;
+use NiyiGuard\Core\View\View;
 
 /**
- * PressSentinel → Audit log settings: retention, automatic pruning, and minimum DB level.
+ * NiyiGuard → Audit log settings: retention, automatic pruning, and minimum DB level.
  */
 final class AuditLogSettingsPage
 {
-    public const PAGE_SLUG = 'presssentinel-audit-settings';
+    public const PAGE_SLUG = 'niyiguard-audit-settings';
 
-    public const OPTION_GROUP = 'presssentinel_audit_log_group';
+    public const OPTION_GROUP = 'niyiguard_audit_log_group';
 
-    public const SECTION = 'presssentinel_section_audit_log';
+    public const SECTION = 'niyiguard_section_audit_log';
 
     public function __construct(
         private readonly AuditLogOptions $options,
@@ -35,8 +35,8 @@ final class AuditLogSettingsPage
     public function addMenu(): void
     {
         WpHelper::addSubmenuPage(
-            PressSentinelMenuPage::PARENT_SLUG,
-            'PressSentinel Audit Log Settings',
+            NiyiGuardMenuPage::PARENT_SLUG,
+            'NiyiGuard Audit Log Settings',
             'Audit log settings',
             'manage_options',
             self::PAGE_SLUG,
@@ -92,13 +92,15 @@ final class AuditLogSettingsPage
     {
         $name = AuditLogOptions::OPTION_NAME . '[retention_days]';
         $value = $this->options->retentionDays();
+        $retentionMin = (int) AuditLogOptions::RETENTION_MIN;
+        $retentionMax = (int) AuditLogOptions::RETENTION_MAX;
         printf(
-            '<input type="number" class="small-text" name="%1$s" value="%2$d" min="%3$d" max="%4$d" step="1">'
-            . '<p class="description">Entries older than this are removed when pruning runs. Use <strong>0</strong> to keep all rows (disables age-based deletion). Maximum %4$d days.</p>',
-            WpHelper::escapeAttribute($name),
-            $value,
-            AuditLogOptions::RETENTION_MIN,
-            AuditLogOptions::RETENTION_MAX
+            '<input type="number" class="small-text" name="%1$s" value="%2$s" min="%3$s" max="%4$s" step="1">'
+            . '<p class="description">Entries older than this are removed when pruning runs. Use <strong>0</strong> to keep all rows (disables age-based deletion). Maximum %4$s days.</p>',
+            esc_attr($name),
+            esc_attr((string) $value),
+            esc_attr((string) $retentionMin),
+            esc_attr((string) $retentionMax)
         );
     }
 
@@ -109,9 +111,9 @@ final class AuditLogSettingsPage
         printf(
             '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Run the daily prune cron</label>'
             . '<p class="description">Requires retention &gt; 0. You can still prune manually from the <a href="%3$s">audit log viewer</a>.</p>',
-            WpHelper::escapeAttribute($name),
-            $checked,
-            WpHelper::escapeAttribute(
+            esc_attr($name),
+            esc_attr($checked),
+            esc_attr(
                 \function_exists('admin_url')
                     ? (string) \call_user_func('admin_url', 'admin.php?page=' . AuditLogPage::PAGE_SLUG)
                     : '#'
@@ -123,17 +125,16 @@ final class AuditLogSettingsPage
     {
         $name = AuditLogOptions::OPTION_NAME . '[min_storage_level]';
         $current = $this->options->minStorageLevel();
-        echo '<select name="' . WpHelper::escapeAttribute($name) . '">';
+        echo '<select name="' . esc_attr($name) . '">';
         foreach (AuditEventLevel::all() as $level) {
-            $selected = $level === $current ? ' selected' : '';
             printf(
                 '<option value="%1$s"%2$s>%1$s</option>',
-                WpHelper::escapeAttribute($level),
-                $selected
+                esc_attr($level),
+                esc_attr($level === $current ? ' selected' : '')
             );
         }
         echo '</select>';
-        echo '<p class="description">Events below this severity are not written to <code>wp_presssentinel_audit_logs</code> '
+        echo '<p class="description">Events below this severity are not written to <code>wp_niyiguard_audit_logs</code> '
             . '(recommended: <code>notice</code> or higher for production). They can still be mirrored to the file log below.</p>';
     }
 
@@ -142,9 +143,9 @@ final class AuditLogSettingsPage
         $checked = $this->options->mirrorToFileLogger() ? ' checked' : '';
         $name = AuditLogOptions::OPTION_NAME . '[mirror_to_file_logger]';
         printf(
-            '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Also write stored (and sub-threshold) events to <code>storage/logs/presssentinel.log</code></label>',
-            WpHelper::escapeAttribute($name),
-            $checked
+            '<label><input type="hidden" name="%1$s" value="0"><input type="checkbox" name="%1$s" value="1"%2$s> Also write stored (and sub-threshold) events to <code>wp-content/uploads/niyiguard/logs/niyiguard.log</code></label>',
+            esc_attr($name),
+            esc_attr($checked)
         );
     }
 }

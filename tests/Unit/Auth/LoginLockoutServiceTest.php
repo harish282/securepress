@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Auth;
+namespace NiyiGuard\Tests\Unit\Auth;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Auth\Lockout\ArrayLockoutStore;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutPolicy;
-use PressSentinel\Core\Auth\Lockout\LoginLockoutService;
+use NiyiGuard\Core\Auth\Lockout\ArrayLockoutStore;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutPolicy;
+use NiyiGuard\Core\Auth\Lockout\LoginLockoutService;
 
 final class LoginLockoutServiceTest extends TestCase
 {

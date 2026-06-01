@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Lockout;
+namespace NiyiGuard\Core\Auth\Lockout;
 
 /**
  * Tunable thresholds for the lockout state machine.

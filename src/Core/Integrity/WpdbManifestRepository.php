@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity;
+namespace NiyiGuard\Core\Integrity;
 
 /**
  * Production manifest repository backed by `$wpdb`.
@@ -19,6 +19,7 @@ namespace PressSentinel\Core\Integrity;
  *    the next scan, which is recoverable, while explicit transactions interact badly with
  *    wpdb's connection lifecycle.
  */
+// phpcs:disable WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared, PluginCheck.Security.DirectDB.UnescapedDBParameter -- Custom tables; names from schema helpers; values use $wpdb->prepare().
 final class WpdbManifestRepository implements ManifestRepositoryInterface
 {
     public function __construct(private readonly IntegritySchema $schema)

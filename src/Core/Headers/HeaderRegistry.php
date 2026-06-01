@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Headers;
+namespace NiyiGuard\Core\Headers;
 
 /**
  * Aggregates configured {@see HeaderInterface} instances and renders them to a wire-ready

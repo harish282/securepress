@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit;
+namespace NiyiGuard\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Middleware\CsrfProtectionMiddleware;
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Middleware\CsrfProtectionMiddleware;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 final class CsrfProtectionMiddlewareTest extends TestCase
 {

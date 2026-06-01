@@ -1,0 +1,156 @@
+<?php
+
+declare(strict_types=1);
+
+namespace NiyiGuard\Core\Licensing;
+
+use NiyiGuard\Core\Config\Config;
+use NiyiGuard\Core\Support\WpHelper;
+
+/**
+ * The plugin's single source of truth for "is this install Pro?".
+ *
+ * Resolution order (first match wins, low priority → high):
+ *
+ *   1. `wp_option('niyiguard_pro_license')` — the admin-managed key on the Settings → License page.
+ *   2. `pro_license.license_key` in config/plugin.php — optional shipped default (usually empty).
+ *   3. `NIYIGUARD_PRO_LICENSE` constant in wp-config.php — staging / CI overrides.
+ *   4. `apply_filters('niyiguard.pro_license', '')` — programmatic override (extensions, tests).
+ *
+ * After resolution the key is validated through the injected
+ * {@see LicenseValidatorInterface}. When there is **no** resolvable key (or an
+ * empty string) and no validator outcome qualifies as {@see LicenseStatus::isActive()},
+ * the manager may return {@see LicenseStatus::STATE_EARLY_ACCESS} (no expiry, no
+ * purchase) or {@see LicenseStatus::STATE_BETA_TRIAL} for a time-boxed programme —
+ * see `config/plugin.php` (`pro_license.early_access`, `pro_license.beta_trial.*`)
+ * and {@see BetaTrial}. Early access is evaluated before the beta trial window.
+ *
+ * The "is Pro" check is wrapped in a filter (`niyiguard.is_pro`) so:
+ *  - test suites can flip behaviour without faking a license key;
+ *  - integration packs (e.g., a future "Pro Bundle" plugin) can flip behaviour for
+ *    the whole site without rewriting the manager.
+ */
+final class LicenseManager
+{
+    public const OPTION_NAME = 'niyiguard_pro_license';
+
+    public const PHP_CONSTANT = 'NIYIGUARD_PRO_LICENSE';
+
+    public const FILTER_LICENSE = 'niyiguard.pro_license';
+
+    public const FILTER_IS_PRO = 'niyiguard.is_pro';
+
+    private ?LicenseStatus $cached = null;
+
+    public function __construct(
+        private readonly LicenseValidatorInterface $validator,
+        private readonly Config $config,
+    ) {
+    }
+
+    public function isPro(): bool
+    {
+        $isPro = $this->status()->hasProAccess();
+
+        if (\function_exists('apply_filters')) {
+            $isPro = (bool) \call_user_func('apply_filters', self::FILTER_IS_PRO, $isPro, $this);
+        }
+
+        return $isPro;
+    }
+
+    public function tier(): string
+    {
+        return $this->status()->tier;
+    }
+
+    public function status(): LicenseStatus
+    {
+        return $this->cached ??= $this->resolveStatus();
+    }
+
+    /**
+     * Persists a license key into the autoloaded option, re-validates, and returns the
+ * resulting status. An invalid key is still persisted (so the admin can see WHY it
+ * was rejected), but {@see isPro()} will return false unless early access or beta
+ * trial still applies.
+     */
+    public function setLicense(string $key): LicenseStatus
+    {
+        $key = trim($key);
+        WpHelper::updateOption(self::OPTION_NAME, $key);
+        $this->cached = null;
+
+        return $this->status();
+    }
+
+    public function clearLicense(): void
+    {
+        WpHelper::deleteOption(self::OPTION_NAME);
+        $this->cached = null;
+    }
+
+    /**
+     * Resets the in-memory cache. Required between tests so flipping the filter is
+     * observable.
+     */
+    public function flushCache(): void
+    {
+        $this->cached = null;
+    }
+
+    private function resolveStatus(): LicenseStatus
+    {
+        $key = $this->resolveKey();
+        $validated = $this->validator->validate($key);
+
+        if ($validated->isActive()) {
+            return $validated;
+        }
+
+        // Key material is present but the signature / expiry / format failed —
+        // never mask a broken key behind the beta programme.
+        if ($key !== '') {
+            return $validated;
+        }
+
+        if ($this->earlyAccessEnabled()) {
+            return LicenseStatus::earlyAccess();
+        }
+
+        if (BetaTrial::isWithinWindow($this->config)) {
+            $end = BetaTrial::trialEndsAt($this->config);
+            if ($end !== null && $end > time()) {
+                return LicenseStatus::betaTrial($end);
+            }
+        }
+
+        return $validated;
+    }
+
+    private function resolveKey(): string
+    {
+        $candidates = [
+            (string) WpHelper::getOption(self::OPTION_NAME, ''),
+            (string) $this->config->get('pro_license.license_key', ''),
+            \defined(self::PHP_CONSTANT) ? (string) \constant(self::PHP_CONSTANT) : '',
+        ];
+
+        if (\function_exists('apply_filters')) {
+            $candidates[] = (string) \call_user_func('apply_filters', self::FILTER_LICENSE, '', $this);
+        }
+
+        foreach ($candidates as $candidate) {
+            if (trim($candidate) !== '') {
+                return trim($candidate);
+            }
+        }
+
+        return '';
+    }
+
+    private function earlyAccessEnabled(): bool
+    {
+        return (bool) $this->config->get('pro_license.early_access', false);
+    }
+}

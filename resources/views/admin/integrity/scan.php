@@ -1,11 +1,17 @@
 <?php
 
 declare(strict_types=1);
+if (! defined('ABSPATH')) {
+    exit;
+}
 
-use PressSentinel\Admin\FileIntegrityPage;
-use PressSentinel\Core\Integrity\Finding;
-use PressSentinel\Core\Integrity\FindingSeverity;
-use PressSentinel\Core\Support\WpHelper;
+// phpcs:disable WordPress.NamingConventions.PrefixAllGlobals -- View template locals, not globals.
+
+
+use NiyiGuard\Admin\FileIntegrityPage;
+use NiyiGuard\Core\Integrity\Finding;
+use NiyiGuard\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Support\WpHelper;
 
 /**
  * @var list<Finding>          $findings
@@ -22,16 +28,6 @@ use PressSentinel\Core\Support\WpHelper;
  */
 
 $adminUrl = WpHelper::adminUrl('admin-post.php');
-$nonceField = static function (string $action): string {
-    if (\function_exists('wp_nonce_field')) {
-        ob_start();
-        \call_user_func('wp_nonce_field', $action);
-
-        return (string) ob_get_clean();
-    }
-
-    return '';
-};
 
 $severityClass = static function (string $severity): string {
     return match ($severity) {
@@ -54,11 +50,11 @@ foreach ($open as $finding) {
 
 ?>
 <div class="wrap">
-    <h1>PressSentinel &mdash; File integrity</h1>
+    <h1>NiyiGuard &mdash; File integrity</h1>
 
     <?php if (is_string($status) && $status !== '') : ?>
         <div class="notice notice-info is-dismissible">
-            <p><strong><?php echo WpHelper::escapeHtml($status); ?></strong></p>
+            <p><strong><?php echo esc_html($status); ?></strong></p>
         </div>
     <?php endif; ?>
 
@@ -81,7 +77,7 @@ foreach ($open as $finding) {
             </tr>
             <?php foreach ($severityBuckets as $level => $count) : ?>
                 <tr>
-                    <th scope="row"><?php echo WpHelper::escapeHtml($severityLabels[$level] ?? $level); ?></th>
+                    <th scope="row"><?php echo esc_html($severityLabels[$level] ?? $level); ?></th>
                     <td><?php echo (int) $count; ?></td>
                 </tr>
             <?php endforeach; ?>
@@ -93,7 +89,7 @@ foreach ($open as $finding) {
                     <?php else : ?>
                         <ul style="margin:0;">
                             <?php foreach ($scannerSummary as $scanner) : ?>
-                                <li><code><?php echo WpHelper::escapeHtml($scanner['name']); ?></code></li>
+                                <li><code><?php echo esc_html($scanner['name']); ?></code></li>
                             <?php endforeach; ?>
                         </ul>
                     <?php endif; ?>
@@ -104,22 +100,22 @@ foreach ($open as $finding) {
 
     <h2 style="margin-top: 2em;">Actions</h2>
     <p>
-        <form method="post" action="<?php echo WpHelper::escapeUrl($adminUrl); ?>" style="display:inline-block; margin-right: 8px;">
-            <input type="hidden" name="action" value="presssentinel_integrity_rescan" />
-            <?php echo $nonceField(FileIntegrityPage::NONCE_ACTION); ?>
+        <form method="post" action="<?php echo esc_url($adminUrl); ?>" style="display:inline-block; margin-right: 8px;">
+            <input type="hidden" name="action" value="niyiguard_integrity_rescan" />
+            <?php WpHelper::adminNonceField(FileIntegrityPage::NONCE_ACTION); ?>
             <button type="submit" class="button button-primary">Run scan now</button>
         </form>
 
-        <form method="post" action="<?php echo WpHelper::escapeUrl($adminUrl); ?>" style="display:inline-block; margin-right: 8px;">
-            <input type="hidden" name="action" value="presssentinel_integrity_clear" />
-            <?php echo $nonceField(FileIntegrityPage::NONCE_ACTION); ?>
+        <form method="post" action="<?php echo esc_url($adminUrl); ?>" style="display:inline-block; margin-right: 8px;">
+            <input type="hidden" name="action" value="niyiguard_integrity_clear" />
+            <?php WpHelper::adminNonceField(FileIntegrityPage::NONCE_ACTION); ?>
             <button type="submit" class="button" onclick="return confirm('Permanently delete every finding?');">Clear all findings</button>
         </form>
 
-        <form method="post" action="<?php echo WpHelper::escapeUrl($adminUrl); ?>" style="display:inline-block;">
-            <input type="hidden" name="action" value="presssentinel_integrity_reset_baseline" />
+        <form method="post" action="<?php echo esc_url($adminUrl); ?>" style="display:inline-block;">
+            <input type="hidden" name="action" value="niyiguard_integrity_reset_baseline" />
             <input type="hidden" name="scope" value="" />
-            <?php echo $nonceField(FileIntegrityPage::NONCE_ACTION); ?>
+            <?php WpHelper::adminNonceField(FileIntegrityPage::NONCE_ACTION); ?>
             <button type="submit" class="button" onclick="return confirm('Reset every baseline? The next scan will rebuild them.');">Reset all baselines</button>
         </form>
     </p>
@@ -144,38 +140,38 @@ foreach ($open as $finding) {
                 <?php foreach ($open as $finding) : ?>
                     <tr>
                         <td>
-                            <span class="<?php echo WpHelper::escapeAttribute($severityClass($finding->severity)); ?>" style="margin:0; padding:2px 8px;">
-                                <?php echo WpHelper::escapeHtml($severityLabels[$finding->severity] ?? $finding->severity); ?>
+                            <span class="<?php echo esc_attr($severityClass($finding->severity)); ?>" style="margin:0; padding:2px 8px;">
+                                <?php echo esc_html($severityLabels[$finding->severity] ?? $finding->severity); ?>
                             </span>
                         </td>
                         <td>
-                            <?php echo WpHelper::escapeHtml($typeLabels[$finding->type] ?? $finding->type); ?>
+                            <?php echo esc_html($typeLabels[$finding->type] ?? $finding->type); ?>
                         </td>
-                        <td><?php echo WpHelper::escapeHtml($finding->scope); ?></td>
+                        <td><?php echo esc_html($finding->scope); ?></td>
                         <td>
-                            <code><?php echo WpHelper::escapeHtml($finding->path); ?></code><br>
-                            <small><?php echo WpHelper::escapeHtml($finding->message); ?></small>
+                            <code><?php echo esc_html($finding->path); ?></code><br>
+                            <small><?php echo esc_html($finding->message); ?></small>
                             <?php if ($finding->details !== []) : ?>
                                 <details style="margin-top: 4px;">
                                     <summary>Details</summary>
                                     <pre style="white-space:pre-wrap;background:#f6f7f7;padding:8px;border-left:3px solid #c3c4c7;font-size:11px;"><?php
-                                        echo WpHelper::escapeHtml((string) json_encode($finding->details, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                                        echo esc_html((string) json_encode($finding->details, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
                                     ?></pre>
                                 </details>
                             <?php endif; ?>
                         </td>
-                        <td><?php echo WpHelper::escapeHtml(gmdate('Y-m-d H:i:s', $finding->createdAt)); ?> UTC</td>
+                        <td><?php echo esc_html(gmdate('Y-m-d H:i:s', $finding->createdAt)); ?> UTC</td>
                         <td>
-                            <form method="post" action="<?php echo WpHelper::escapeUrl($adminUrl); ?>" style="display:inline-block;">
-                                <input type="hidden" name="action" value="presssentinel_integrity_review" />
+                            <form method="post" action="<?php echo esc_url($adminUrl); ?>" style="display:inline-block;">
+                                <input type="hidden" name="action" value="niyiguard_integrity_review" />
                                 <input type="hidden" name="id" value="<?php echo (int) ($finding->id ?? 0); ?>" />
-                                <?php echo $nonceField(FileIntegrityPage::NONCE_ACTION); ?>
+                                <?php WpHelper::adminNonceField(FileIntegrityPage::NONCE_ACTION); ?>
                                 <button type="submit" class="button button-small">Mark reviewed</button>
                             </form>
-                            <form method="post" action="<?php echo WpHelper::escapeUrl($adminUrl); ?>" style="display:inline-block;">
-                                <input type="hidden" name="action" value="presssentinel_integrity_delete" />
+                            <form method="post" action="<?php echo esc_url($adminUrl); ?>" style="display:inline-block;">
+                                <input type="hidden" name="action" value="niyiguard_integrity_delete" />
                                 <input type="hidden" name="id" value="<?php echo (int) ($finding->id ?? 0); ?>" />
-                                <?php echo $nonceField(FileIntegrityPage::NONCE_ACTION); ?>
+                                <?php WpHelper::adminNonceField(FileIntegrityPage::NONCE_ACTION); ?>
                                 <button type="submit" class="button button-small">Delete</button>
                             </form>
                         </td>

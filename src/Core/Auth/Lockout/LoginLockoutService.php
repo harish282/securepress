@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Lockout;
+namespace NiyiGuard\Core\Auth\Lockout;
 
-use PressSentinel\Core\Recovery\SafeMode;
+use NiyiGuard\Core\Recovery\SafeMode;
 
 /**
  * Coordinates the failed-login counter / lockout lifecycle behind a friendly API.

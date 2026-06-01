@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-use PressSentinel\Tests\Stubs\WpStubState;
+use NiyiGuard\Tests\Stubs\WpStubState;
 
 /**
- * Lightweight stand-ins for the WordPress functions consumed via {@see PressSentinel\Core\Support\WpHelper}.
+ * Lightweight stand-ins for the WordPress functions consumed via {@see NiyiGuard\Core\Support\WpHelper}.
  *
  * Behavior is driven by {@see WpStubState}; tests reset and configure that state per-case so the
  * helper's `function_exists` checks pass and exercise the real WP-aware code paths.
@@ -38,6 +38,34 @@ if (!function_exists('wp_unslash')) {
         }
 
         return $value;
+    }
+}
+
+if (!function_exists('esc_html')) {
+    function esc_html(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('esc_attr')) {
+    function esc_attr(string $text): string
+    {
+        return htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
+    }
+}
+
+if (!function_exists('esc_url')) {
+    function esc_url(string $url): string
+    {
+        return $url;
+    }
+}
+
+if (!function_exists('wp_kses_post')) {
+    function wp_kses_post(string $data): string
+    {
+        return $data;
     }
 }
 

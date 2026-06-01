@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Tests\Unit\Audit;
+namespace NiyiGuard\Tests\Unit\Audit;
 
 use PHPUnit\Framework\TestCase;
-use PressSentinel\Core\Audit\AuditEventLevel;
+use NiyiGuard\Core\Audit\AuditEventLevel;
 
 final class AuditEventLevelTest extends TestCase
 {

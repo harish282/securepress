@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Logging;
+namespace NiyiGuard\Core\Logging;
 
 /**
  * Append-only JSON-line logger that writes to a single file on disk.
@@ -79,7 +79,7 @@ final class FileLogger implements LoggerInterface
         $bytes = @file_put_contents($this->logFilePath, $line . PHP_EOL, FILE_APPEND | LOCK_EX);
         if ($bytes === false) {
             $this->lastError = sprintf(
-                'PressSentinel could not write to the log file at %s. Verify that the directory is writable by the web server (typically www-data or apache).',
+                'NiyiGuard could not write to the log file at %s. Verify that the directory is writable by the web server (typically www-data or apache).',
                 $this->logFilePath
             );
             $this->ready = false;
@@ -145,7 +145,7 @@ final class FileLogger implements LoggerInterface
         }
         if (!is_dir($directory)) {
             $this->lastError = sprintf(
-                'PressSentinel could not create the log directory at %s. Please create it manually and chmod it so the web server can write to it (e.g. `chmod 755`).',
+                'NiyiGuard could not create the log directory at %s. Please create it manually and chmod it so the web server can write to it (e.g. `chmod 755`).',
                 $directory
             );
 
@@ -157,9 +157,10 @@ final class FileLogger implements LoggerInterface
         // read-only — we want to fall through to the writability check below
         // and emit a clean lastError, not a PHP warning.
         if (!file_exists($this->logFilePath)) {
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_touch -- Log file bootstrap before WP_Filesystem is available.
             if (@touch($this->logFilePath) === false) {
                 $this->lastError = sprintf(
-                    'PressSentinel could not create the log file at %s. The directory exists but is not writable by the web server.',
+                    'NiyiGuard could not create the log file at %s. The directory exists but is not writable by the web server.',
                     $this->logFilePath
                 );
 
@@ -169,6 +170,7 @@ final class FileLogger implements LoggerInterface
             // some hosts run PHP via FastCGI as a different user; the chmod
             // might be refused. We don't care: the file already exists at that
             // point and the worst case is "logs are 0664".
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_chmod -- Best-effort log file permissions after creation.
             @chmod($this->logFilePath, 0644);
             $this->dropProtectionFiles($directory);
         }
@@ -176,9 +178,10 @@ final class FileLogger implements LoggerInterface
         // Step 3: writability. A file that exists but isn't writable means
         // either bad ownership or read-only mount — same operator action
         // regardless, so we render one consolidated message.
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_is_writable -- Log path writability probe for operator guidance.
         if (!is_writable($this->logFilePath)) {
             $this->lastError = sprintf(
-                'PressSentinel log file at %s is not writable. Run `chmod 644 %s` (and `chown` to the web server user if needed).',
+                'NiyiGuard log file at %s is not writable. Run `chmod 644 %s` (and `chown` to the web server user if needed).',
                 $this->logFilePath,
                 $this->logFilePath
             );
@@ -203,6 +206,7 @@ final class FileLogger implements LoggerInterface
     private function makeDirectory(string $directory): void
     {
         $silent = static fn (): bool => true;
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Scoped handler around mkdir only; restored in finally.
         set_error_handler($silent);
         try {
             if (\function_exists('wp_mkdir_p')) {
@@ -210,6 +214,7 @@ final class FileLogger implements LoggerInterface
 
                 return;
             }
+            // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_mkdir -- Fallback when wp_mkdir_p is unavailable (tests/CLI).
             if (!mkdir($directory, 0755, true) && !is_dir($directory)) {
                 // Caller checks `is_dir()` after this returns; we don't need
                 // to surface anything further — the failure path collapses
@@ -232,7 +237,7 @@ final class FileLogger implements LoggerInterface
         if (!file_exists($htaccess)) {
             @file_put_contents(
                 $htaccess,
-                "# PressSentinel log directory — not web-accessible.\n"
+                "# NiyiGuard log directory — not web-accessible.\n"
                 . "<IfModule mod_authz_core.c>\n  Require all denied\n</IfModule>\n"
                 . "<IfModule !mod_authz_core.c>\n  Order allow,deny\n  Deny from all\n</IfModule>\n"
             );

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity;
+namespace NiyiGuard\Core\Integrity;
 
 /**
  * Persistence for {@see Finding} rows.

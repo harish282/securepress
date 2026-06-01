@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity;
+namespace NiyiGuard\Core\Integrity;
 
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
@@ -39,7 +39,7 @@ final class ManifestBuilder
         '/.git/',
         '/.svn/',
         '/vendor/bin/',
-        '/storage/cache/',
+        '/uploads/niyiguard/',
         '/cache/',
         '/wp-content/cache/',
         '/wp-content/upgrade/',

@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\WooCommerce\Middleware\Registration;
+namespace NiyiGuard\WooCommerce\Middleware\Registration;
 
-use PressSentinel\Core\Recovery\SafeMode;
-use PressSentinel\WooCommerce\Detection\Decision;
-use PressSentinel\WooCommerce\Detection\DetectionContext;
-use PressSentinel\WooCommerce\Detection\Signal;
-use PressSentinel\WooCommerce\Middleware\WcMiddlewareInterface;
-use PressSentinel\WooCommerce\Storage\AbuseCounterStoreInterface;
+use NiyiGuard\Core\Recovery\SafeMode;
+use NiyiGuard\WooCommerce\Detection\Decision;
+use NiyiGuard\WooCommerce\Detection\DetectionContext;
+use NiyiGuard\WooCommerce\Detection\Signal;
+use NiyiGuard\WooCommerce\Middleware\WcMiddlewareInterface;
+use NiyiGuard\WooCommerce\Storage\AbuseCounterStoreInterface;
 
 /**
  * Per-IP registration throttle.

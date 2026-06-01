@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core;
+namespace NiyiGuard\Core;
 
 use Closure;
 use RuntimeException;
@@ -37,6 +37,7 @@ final class Container
         }
 
         if (!array_key_exists($id, $this->bindings)) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- DI container diagnostic, not rendered in HTML.
             throw new RuntimeException(sprintf('Service "%s" is not registered.', $id));
         }
 

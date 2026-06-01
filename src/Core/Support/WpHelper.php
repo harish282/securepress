@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Support;
+namespace NiyiGuard\Core\Support;
 
+// phpcs:disable WordPress.Security.NonceVerification, WordPress.Security.ValidatedSanitizedInput -- Sanitized superglobal accessors; mutating callers verify nonces first.
 final class WpHelper
 {
     public static function addAction(string $hook, callable $callback, int $priority = 10, int $acceptedArgs = 1): void
@@ -83,9 +84,13 @@ final class WpHelper
             return 0;
         }
 
-        $result = \call_user_func('wp_verify_nonce', $nonce, $action);
+        $result = \call_user_func('wp_verify_nonce', self::sanitizeTextField(self::unslash($nonce)), $action);
 
-        return is_int($result) && $result > 0 ? $result : 0;
+        if ($result === false || $result === 0 || $result === '0') {
+            return 0;
+        }
+
+        return (int) $result > 0 ? (int) $result : 0;
     }
 
     public static function createNonce(string $action): string
@@ -126,6 +131,88 @@ final class WpHelper
         }
 
         return stripslashes($value);
+    }
+
+    public static function sanitizeTextField(string $value): string
+    {
+        if (\function_exists('sanitize_text_field')) {
+            return (string) \call_user_func('sanitize_text_field', $value);
+        }
+
+        return trim($value);
+    }
+
+    /**
+     * Normalized {@see $_SERVER} value (unslashed + sanitized); empty strings become null.
+     */
+    public static function getServerString(string $key): ?string
+    {
+        if (!isset($_SERVER[$key]) || !is_scalar($_SERVER[$key])) {
+            return null;
+        }
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Unslashed and validated by caller.
+        $raw = $_SERVER[$key];
+        $value = is_string($raw) ? self::unslash($raw) : (string) $raw;
+        $value = self::sanitizeTextField($value);
+
+        return $value === '' ? null : $value;
+    }
+
+    public static function getRequestMethod(): string
+    {
+        return strtoupper(self::getServerString('REQUEST_METHOD') ?? 'GET');
+    }
+
+    /**
+     * Read-only admin/list {@see $_GET} parameter (sanitized).
+     */
+    public static function getQueryString(string $key, string $default = ''): string
+    {
+        if (!isset($_GET[$key])) {
+            return $default;
+        }
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.NonceVerification.Recommended -- Sanitized below; used for admin filters and pagination.
+        $raw = $_GET[$key];
+
+        return self::sanitizeTextField(self::unslash(is_string($raw) ? $raw : (string) $raw));
+    }
+
+    public static function getQueryInt(string $key, int $default, int $min, int $max): int
+    {
+        if (!isset($_GET[$key]) || !is_numeric($_GET[$key])) {
+            return $default;
+        }
+
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Admin list pagination/filter query arg.
+        $value = (int) $_GET[$key];
+
+        return max($min, min($max, $value));
+    }
+
+    public static function getPostString(string $key, string $default = ''): string
+    {
+        if (!isset($_POST[$key])) {
+            return $default;
+        }
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Unslashed and sanitized below; callers verify nonces on mutating requests.
+        $raw = $_POST[$key];
+
+        return self::sanitizeTextField(self::unslash(is_string($raw) ? $raw : (string) $raw));
+    }
+
+    public static function getRequestString(string $key, string $default = ''): string
+    {
+        if (!isset($_REQUEST[$key])) {
+            return $default;
+        }
+
+        // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- Unslashed and sanitized below.
+        $raw = $_REQUEST[$key];
+
+        return self::sanitizeTextField(self::unslash(is_string($raw) ? $raw : (string) $raw));
     }
 
     public static function getTransient(string $name): mixed
@@ -182,7 +269,7 @@ final class WpHelper
      *
      * Used by the integrity-monitoring checksum provider. Routed through the helper
      * (rather than calling `wp_remote_get` directly) so tests can stub the network call
-     * via {@see \PressSentinel\Tests\Stubs\WpStubState}.
+     * via {@see \NiyiGuard\Tests\Stubs\WpStubState}.
      */
     public static function remoteGet(string $url, int $timeoutSeconds = 10): ?string
     {
@@ -261,8 +348,8 @@ final class WpHelper
      */
     public static function getClientIp(): ?string
     {
-        $remote = $_SERVER['REMOTE_ADDR'] ?? null;
-        if (!is_string($remote) || $remote === '') {
+        $remote = self::getServerString('REMOTE_ADDR');
+        if ($remote === null) {
             return null;
         }
 
@@ -376,6 +463,23 @@ final class WpHelper
         return htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
     }
 
+    /**
+     * @return array<string, mixed>|int|string|null
+     */
+    public static function parseUrl(string $url, int $component = -1): array|int|string|null
+    {
+        if (\function_exists('wp_parse_url')) {
+            $parsed = \call_user_func('wp_parse_url', $url, $component);
+
+            return $parsed === false ? null : $parsed;
+        }
+
+        // phpcs:ignore WordPress.WP.AlternativeFunctions.parse_url_parse_url -- Fallback when wp_parse_url is unavailable (tests/CLI).
+        $parsed = parse_url($url, $component);
+
+        return $parsed === false ? null : $parsed;
+    }
+
     public static function adminUrl(string $path = ''): string
     {
         if (\function_exists('admin_url')) {
@@ -417,8 +521,8 @@ final class WpHelper
 
     public static function userAgent(): ?string
     {
-        $ua = $_SERVER['HTTP_USER_AGENT'] ?? null;
-        if (!is_string($ua) || $ua === '') {
+        $ua = self::getServerString('HTTP_USER_AGENT');
+        if ($ua === null) {
             return null;
         }
 
@@ -427,8 +531,8 @@ final class WpHelper
 
     public static function requestUri(): ?string
     {
-        $uri = $_SERVER['REQUEST_URI'] ?? null;
-        if (!is_string($uri) || $uri === '') {
+        $uri = self::getServerString('REQUEST_URI');
+        if ($uri === null) {
             return null;
         }
 
@@ -470,8 +574,8 @@ final class WpHelper
      * `$parentSlug` must already have been registered via {@see addMenuPage()} (or be
      * a core WP slug like `tools.php`). Passing the same value for `$parentSlug` and
      * `$menuSlug` is the standard way to override the auto-created first submenu's
-     * label — used by {@see \PressSentinel\Admin\PressSentinelMenuPage} to rename the
-     * landing item from "Secure Press" to "Dashboard".
+     * label — used by {@see \NiyiGuard\Admin\NiyiGuardMenuPage} to rename the
+     * landing item from the auto-generated first submenu label to "Dashboard".
      */
     public static function addSubmenuPage(
         string $parentSlug,
@@ -510,14 +614,55 @@ final class WpHelper
         }
     }
 
+    /**
+     * Reads a form nonce from POST first (admin-post / options.php), then REQUEST.
+     *
+     * Nonces are unslashed + sanitized before verification.
+     */
+    public static function getNonceFromRequest(string $field = '_wpnonce'): string
+    {
+        if (isset($_POST[$field]) && is_string($_POST[$field])) {
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Unslashed below.
+            return self::sanitizeTextField(self::unslash($_POST[$field]));
+        }
+
+        if (isset($_REQUEST[$field]) && is_string($_REQUEST[$field])) {
+            // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash -- Unslashed below.
+            return self::sanitizeTextField(self::unslash($_REQUEST[$field]));
+        }
+
+        return '';
+    }
+
     public static function verifyAdminNonce(string $action, string $field = '_wpnonce'): bool
     {
-        $nonce = $_REQUEST[$field] ?? '';
-        if (!is_string($nonce) || $nonce === '') {
+        if (\function_exists('check_admin_referer')) {
+            $result = \call_user_func('check_admin_referer', $action, $field, false);
+
+            return $result !== false && $result !== 0;
+        }
+
+        $nonce = self::getNonceFromRequest($field);
+        if ($nonce === '') {
             return false;
         }
 
         return self::verifyNonce($nonce, $action) > 0;
+    }
+
+    /**
+     * Prints a WordPress admin nonce field. Do not wrap in {@see wp_kses_post()} —
+     * KSES strips hidden inputs and breaks {@see verifyAdminNonce()}.
+     */
+    public static function adminNonceField(
+        string $action,
+        string $name = '_wpnonce',
+        bool $referer = true,
+        bool $display = true,
+    ): void {
+        if (\function_exists('wp_nonce_field')) {
+            \call_user_func('wp_nonce_field', $action, $name, $referer, $display);
+        }
     }
 
     public static function safeRedirect(string $url): void
@@ -703,7 +848,7 @@ final class WpHelper
     }
 
     /**
-     * Fires a WordPress action with the given arguments. Used by PressSentinel to
+     * Fires a WordPress action with the given arguments. Used by NiyiGuard to
      * synthesise `wp_login` after a 2FA-verified login so other listeners (the audit
      * logger, third-party plugins) see the same hook they would on a vanilla flow.
      */

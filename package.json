@@ -1,0 +1,13 @@
+{
+  "name": "niyiguard",
+  "private": true,
+  "description": "NiyiGuard WordPress security plugin — Cypress staging E2E",
+  "scripts": {
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "test:e2e": "cypress run --spec 'cypress/e2e/staging/**/*.cy.js'"
+  },
+  "devDependencies": {
+    "cypress": "^13.17.0"
+  }
+}

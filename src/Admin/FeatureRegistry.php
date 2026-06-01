@@ -2,55 +2,18 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Admin;
+namespace NiyiGuard\Admin;
 
-use PressSentinel\Core\Audit\AuditLogOptions;
-use PressSentinel\Core\Auth\AuthHardeningOptions;
-use PressSentinel\Core\Headers\SecurityHeadersOptions;
-use PressSentinel\Core\Integrity\IntegrityOptions;
-use PressSentinel\Core\Licensing\LicenseManager;
-use PressSentinel\Core\RateLimit\RateLimitOptions;
-use PressSentinel\Core\UrlDisguise\UrlDisguiseOptions;
-use PressSentinel\WooCommerce\Admin\WooCommerceProtectionOptions;
+use NiyiGuard\Core\Audit\AuditLogOptions;
+use NiyiGuard\Core\Auth\AuthHardeningOptions;
+use NiyiGuard\Core\Headers\SecurityHeadersOptions;
+use NiyiGuard\Core\Integrity\IntegrityOptions;
+use NiyiGuard\Core\RateLimit\RateLimitOptions;
+use NiyiGuard\Core\UrlDisguise\UrlDisguiseOptions;
+use NiyiGuard\WooCommerce\Admin\WooCommerceProtectionOptions;
 
 /**
  * Source of truth for the "what features can the dashboard toggle?" question.
- *
- * Each registered feature is a triple of:
- *
- *  - `key`            — stable identifier used by the dashboard form fields
- *                       (e.g. `auth_hardening`). Never user-visible.
- *  - `label`          — short title shown in the dashboard tile / toggle row.
- *  - `description`    — one-line operator-facing summary of what the toggle
- *                       controls. Keep it factual — "this turns off X" — not
- *                       marketing copy.
- *  - `isEnabled()`    — current effective state. Reads through the matching
- *                       Options class so it reflects whatever's persisted in
- *                       `wp_options` overlaid on `config/plugin.php`.
- *  - `setEnabled()`   — flips just the master `enabled` flag without touching
- *                       any of the feature's granular sub-settings. That way
- *                       admins can freely toggle on/off from the dashboard
- *                       without ever losing their detailed configuration.
- *  - `isPro`          — whether the toggle is gated behind a Pro license.
- *                       Free users see the toggle disabled with an upgrade
- *                       hint; clicking still works once they activate a key.
- *
- * Centralizing this list here means:
- *
- *  - The dashboard view stays dumb — it just iterates whatever the registry
- *    gives it.
- *  - The admin-post handler reuses the same key→feature mapping it just
- *    rendered, so there's no risk of a form field name drifting away from
- *    its handler.
- *  - Adding another feature (e.g. a future "Backups" module) is a single
- *    `add()` call here and one new tile in the view — no Plugin.php or DI
- *    surgery needed.
- *
- * Pro gating is a soft check by design: we still allow the option to be
- * written, but the matching module's hook bootstrap (e.g. WooCommerceModule)
- * is what actually decides whether to act on it. That keeps the dashboard
- * logic about "what the admin asked for" and pushes "what we're licensed to
- * do" down to where it belongs.
  */
 final class FeatureRegistry
 {
@@ -65,13 +28,7 @@ final class FeatureRegistry
         WooCommerceProtectionOptions $wcProtection,
         RateLimitOptions $rateLimit,
         UrlDisguiseOptions $urlDisguise,
-        private readonly LicenseManager $license,
     ) {
-        // Closures (not arrow fns) for the setters because arrow fns implicitly
-        // return their expression — incompatible with a `void` return type and
-        // a hard PHP TypeError once the runtime would coerce the void method's
-        // result. Keeping the body explicit also makes "what does flipping this
-        // toggle actually call" greppable.
         $this->features = [
             new FeatureDescriptor(
                 key: 'auth_hardening',
@@ -136,12 +93,12 @@ final class FeatureRegistry
             new FeatureDescriptor(
                 key: 'woocommerce_protection',
                 label: 'WooCommerce Protection',
-                description: 'Behavioural abuse prevention for checkout, registration, cart and REST endpoints. Requires a Pro license.',
+                description: 'Behavioural abuse prevention for checkout, registration, cart and REST endpoints.',
                 isEnabled: static fn (): bool => $wcProtection->isEnabled(),
                 setEnabled: static function (bool $on) use ($wcProtection): void {
                     $wcProtection->setEnabled($on);
                 },
-                isPro: true,
+                isPro: false,
             ),
         ];
     }
@@ -165,18 +122,7 @@ final class FeatureRegistry
         return null;
     }
 
-    public function isPro(): bool
-    {
-        return $this->license->isPro();
-    }
-
     /**
-     * Applies an `[key => on|off]` map. Unknown keys are silently ignored —
-     * we never want a stale form field to throw on save. Pro-gated features
-     * still accept the flip when the install isn't licensed so the operator
-     * can pre-configure intent; the corresponding module's bootstrap
-     * decides whether to actually run.
-     *
      * @param array<string, bool> $desired
      * @return list<string> Feature keys that were actually flipped.
      */
@@ -189,7 +135,7 @@ final class FeatureRegistry
             }
             $next = $desired[$feature->key];
             if ($feature->isEnabled() === $next) {
-                continue; // No-op: avoid touching wp_options when nothing changed.
+                continue;
             }
             $feature->setEnabled($next);
             $changed[] = $feature->key;

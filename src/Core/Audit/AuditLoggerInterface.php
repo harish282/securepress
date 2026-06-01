@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Audit;
+namespace NiyiGuard\Core\Audit;
 
 /**
  * Public contract for recording audit events.

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Sessions;
+namespace NiyiGuard\Core\Auth\Sessions;
 
 /**
  * Stable identifier for "this is the same device/browser combination as before".

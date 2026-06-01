@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 #
-# Package Press Sentinel for WordPress.
+# Package NiyiGuard for WordPress.
 # Excludes tests, dev tooling, git metadata, and Composer dev dependencies.
+# Ships readme.txt and license.txt (required for WordPress.org). Privacy policy: docs/PRIVACY.md.
 #
 # Usage (from repo root):
 #   bash scripts/build-release-zip.sh dev
-#     Copy runtime files to ../plugins/presssentinel (local WordPress plugins dir).
+#     Copy runtime files to ../plugins/niyiguard (local WordPress plugins dir).
 #   bash scripts/build-release-zip.sh prod
 #     Build a distribution zip in ./build (default).
 #   bash scripts/build-release-zip.sh prod /path/to/output-dir
@@ -17,8 +18,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGIN_SLUG="presssentinel"
-MAIN_FILE="$ROOT/press-sentinel.php"
+PLUGIN_SLUG="niyiguard"
+MAIN_FILE="$ROOT/niyiguard.php"
 
 MODE="prod"
 OUT_DIR="$ROOT/build"
@@ -65,51 +66,54 @@ copy_if_exists() {
   fi
 }
 
+# WordPress.org and directory reviewers expect these at the plugin root.
+copy_required() {
+  local dest="$1"
+  local rel="$2"
+  if [[ ! -e "$ROOT/$rel" ]]; then
+    echo "error: required release file missing: $rel" >&2
+    exit 1
+  fi
+  cp -a "$ROOT/$rel" "$dest/"
+}
+
 stage_plugin_to() {
   local dest="$1"
   mkdir -p "$dest"
 
-  copy_if_exists "$dest" "press-sentinel.php"
+  copy_if_exists "$dest" "niyiguard.php"
   copy_if_exists "$dest" "bootstrap"
   copy_if_exists "$dest" "config"
   copy_if_exists "$dest" "src"
   copy_if_exists "$dest" "resources"
   copy_if_exists "$dest" "mu-loader"
-  copy_if_exists "$dest" ".env.example"
-  copy_if_exists "$dest" "README.md"
-
-  # Storage: ship directory skeleton + lockdown files only (never local *.log).
-  mkdir -p "$dest/storage/logs"
-  if [[ -f "$ROOT/storage/logs/.htaccess" ]]; then
-    cp -a "$ROOT/storage/logs/.htaccess" "$dest/storage/logs/"
-  fi
-  if [[ -f "$ROOT/storage/logs/index.html" ]]; then
-    cp -a "$ROOT/storage/logs/index.html" "$dest/storage/logs/"
-  fi
-  for subdir in cache tmp; do
-    if [[ -d "$ROOT/storage/$subdir" ]]; then
-      mkdir -p "$dest/storage/$subdir"
-      shopt -s nullglob
-      for f in "$ROOT/storage/$subdir"/.* "$ROOT/storage/$subdir"/*; do
-        [[ -e "$f" ]] || continue
-        base="$(basename "$f")"
-        [[ "$base" == "." || "$base" == ".." ]] && continue
-        cp -a "$f" "$dest/storage/$subdir/"
-      done
-      shopt -u nullglob
+  for doc in docs/WHY_NIYIGUARD.md docs/USAGE.md docs/MU_LOADER_INSTALL.md docs/PRIVACY.md; do
+    if [[ -f "$ROOT/$doc" ]]; then
+      mkdir -p "$dest/docs"
+      cp -a "$ROOT/$doc" "$dest/docs/"
     fi
   done
+
+  # Required for WordPress.org (readme parser, GPL distribution). Only readme.txt at plugin root (Plugin Check).
+  copy_required "$dest" "readme.txt"
+  copy_required "$dest" "license.txt"
+
+  # Writable runtime data (logs, cache, temp) lives under wp-content/uploads/niyiguard — not in the plugin package.
+
+  # Drop legacy paths removed from source (cp -a does not delete stale deploy files).
+  rm -f "$dest/bootstrap/env.php" "$dest/env.example" "$dest/.env" "$dest/.env.local"
+  rm -rf "$dest/storage" 2>/dev/null || true
 }
 
 if [[ "$MODE" == "dev" ]]; then
-  DEV_DEST="$(cd "$ROOT/../plugins" && pwd)/$PLUGIN_SLUG"
+  DEV_DEST="$(cd "$ROOT/../../plugins" && pwd)/$PLUGIN_SLUG"
   mkdir -p "$(dirname "$DEV_DEST")"
   stage_plugin_to "$DEV_DEST"
   echo "Deployed to $DEV_DEST (version $VERSION)"
   exit 0
 fi
 
-STAGE="$(mktemp -d "${TMPDIR:-/tmp}/presssentinel-release.XXXXXX")"
+STAGE="$(mktemp -d "${TMPDIR:-/tmp}/niyiguard-release.XXXXXX")"
 trap 'rm -rf "$STAGE"' EXIT
 
 DEST="$STAGE/$PLUGIN_SLUG"

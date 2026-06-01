@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Integrity\Heuristics;
+namespace NiyiGuard\Core\Integrity\Heuristics;
 
-use PressSentinel\Core\Integrity\FindingSeverity;
+use NiyiGuard\Core\Integrity\FindingSeverity;
 
 /**
  * Catches the "let's hide which function we're calling" obfuscation tricks.

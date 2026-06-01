@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Support;
+namespace NiyiGuard\Core\Support;
 
 /**
  * Cheap, side-effect-free detector for "what kind of WordPress request is this?"
@@ -124,9 +124,7 @@ final class RequestContext
         if (\defined('REST_REQUEST') && \constant('REST_REQUEST')) {
             return true;
         }
-        $uri = isset($_SERVER['REQUEST_URI']) && is_string($_SERVER['REQUEST_URI'])
-            ? $_SERVER['REQUEST_URI']
-            : '';
+        $uri = WpHelper::requestUri() ?? '';
         if ($uri === '') {
             return false;
         }

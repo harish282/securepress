@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace PressSentinel\Core\Auth\Lockout;
+namespace NiyiGuard\Core\Auth\Lockout;
 
 /**
  * Persistence contract for failed-login counters.
