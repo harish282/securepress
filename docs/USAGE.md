@@ -1797,7 +1797,7 @@ If you toggled `preload`: there is no easy escape — see <https://hstspreload.o
 
 Make sure:
 
-1. The plugin is actually active (it's a no-op while inactive).
+1. The plugin is actually active (it's a no-op while inactive, including when the MU loader is installed).
 2. The header is enabled in **NiyiGuard → Security Headers** and saved.
 3. The page hits `send_headers` — most WP requests do, but `wp-cron.php` and a few admin AJAX endpoints can short-circuit before that point.
 4. No higher-priority `send_headers` hook (or a downstream proxy / CDN) is stripping the header. The dispatcher hooks at priority `1`, so most plugin-set headers will run after it; if something replaces a header you're trying to set, increase `Priority` or set the header at a different layer (Apache `Header set`, nginx `add_header`).

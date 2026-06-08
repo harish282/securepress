@@ -26,6 +26,7 @@ The MU loader makes NiyiGuard load early in WordPress so incoming requests can b
 
    - Keep `NiyiGuard` active in standard plugins list.
    - The MU loader only bootstraps the main plugin earlier.
+   - If you deactivate NiyiGuard in **Plugins**, the MU loader will not boot it (rate limiting, headers, and other protections stop). Remove the MU loader file only if you no longer want early-load support on re-activation.
 
 4. Verify:
 
