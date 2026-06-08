@@ -36,13 +36,13 @@ final class RateLimitOptionsTest extends TestCase
         self::assertSame(
             [
                 'enabled' => false,
-                'limit' => 60,
+                'limit' => 200,
                 'window' => 60,
             ],
             $options->all()
         );
         self::assertFalse($options->isEnabled());
-        self::assertSame(60, $options->limit());
+        self::assertSame(200, $options->limit());
         self::assertSame(60, $options->window());
     }
 

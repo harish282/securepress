@@ -27,7 +27,7 @@ use NiyiGuard\Core\Support\WpHelper;
  */
 final class RateLimitMiddleware implements MiddlewareInterface
 {
-    public const DEFAULT_LIMIT = 60;
+    public const DEFAULT_LIMIT = 200;
 
     public const DEFAULT_WINDOW = 60;
 

@@ -135,7 +135,7 @@ final class RateLimitOptions
     {
         return [
             'enabled' => $this->toBool($raw['enabled'] ?? true),
-            'limit' => $this->clampInt($raw['limit'] ?? 60, self::LIMIT_MIN, self::LIMIT_MAX),
+            'limit' => $this->clampInt($raw['limit'] ?? 200, self::LIMIT_MIN, self::LIMIT_MAX),
             'window' => $this->clampInt($raw['window'] ?? 60, self::WINDOW_MIN, self::WINDOW_MAX),
         ];
     }

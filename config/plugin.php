@@ -53,7 +53,7 @@ return [
         'enabled' => false,
         // Requests allowed per `window` seconds, per bucket
         // (per-user when authenticated, per-IP otherwise).
-        'limit' => 60,
+        'limit' => 200,
         'window' => 60,
     ],
     'signed_url' => [

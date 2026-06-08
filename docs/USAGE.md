@@ -265,7 +265,7 @@ $container->singleton(
 
 ```php
 'rate_limit' => [
-    'limit'  => 60,   // 60 requests
+    'limit'  => 200,   // 200 requests
     'window' => 60,   // per 60 seconds
 ],
 ```
@@ -288,7 +288,7 @@ When the request is allowed:
 $result['rate_limit'] === [
     'allowed'     => true,
     'key'         => 'ip:203.0.113.10' | 'user:42' | ...,
-    'limit'       => 60,
+    'limit'       => 200,
     'hits'        => 7,
     'remaining'   => 53,
     'retry_after' => 0,
@@ -1368,7 +1368,7 @@ Security::isFeatureEnabled('pro');                    // alias
 | `logging.channel` | `file` | `file` or anything else (NullLogger) |
 | `logging.level` | `info` | reserved (FileLogger) |
 | `logging.file` | `niyiguard.log` | log filename under `wp-content/uploads/niyiguard/logs/` |
-| `rate_limit.limit` `60` | global RateLimitMiddleware |
+| `rate_limit.limit` `200` | global RateLimitMiddleware |
 | `rate_limit.window` `60` | global RateLimitMiddleware (seconds) |
 | `signed_url.ttl_default` | `3600` | `Security::signedUrl()` when no `expires` is passed |
 | `signed_url.secret` | `` (empty) | URL signing secret; empty uses `wp_salt('auth')` — **set in production** |
